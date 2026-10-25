@@ -15,12 +15,15 @@ chmod 700 /root/.ssh
 curl -fsSL "https://github.com/${GITHUB_USER}.keys" > /root/.ssh/authorized_keys
 chmod 600 /root/.ssh/authorized_keys
 ssh-keygen -A > /dev/null
-pkill -x sshd || true   # a re-run replaces the server of the previous run
-/usr/sbin/sshd -E /tmp/sshd.log -o ListenAddress=127.0.0.1 -o PasswordAuthentication=no \
+# Our own port: Colab's sshd_config says 2222, which something on the runtime already uses.
+PORT=2022
+pkill -f "sshd -p ${PORT}" || true   # a re-run replaces the server of the previous run
+rm -f /tmp/sshd.log
+/usr/sbin/sshd -p "${PORT}" -E /tmp/sshd.log -o ListenAddress=127.0.0.1 -o PasswordAuthentication=no \
   -o PermitRootLogin=prohibit-password
 sleep 1
-if ! (exec 3<> /dev/tcp/127.0.0.1/22) 2> /dev/null; then
-  echo "sshd is not listening on 127.0.0.1:22. Its log:" && cat /tmp/sshd.log && exit 1
+if ! (exec 3<> "/dev/tcp/127.0.0.1/${PORT}") 2> /dev/null; then
+  echo "sshd is not listening on 127.0.0.1:${PORT}. Its log:" && cat /tmp/sshd.log && exit 1
 fi
 
 # An SSH login starts with a clean environment: give it the notebook's PATH, CUDA and Colab variables.
@@ -32,7 +35,7 @@ curl -fsSL -o /usr/local/bin/cloudflared \
   https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
 chmod +x /usr/local/bin/cloudflared
 echo "Starting the tunnel (full log: /tmp/cloudflared.log)..."
-cloudflared tunnel --no-autoupdate --url ssh://127.0.0.1:22 2>&1 | while read -r line; do
+cloudflared tunnel --no-autoupdate --url "ssh://127.0.0.1:${PORT}" 2>&1 | while read -r line; do
   echo "$line" >> /tmp/cloudflared.log
   if [[ -z ${host:-} && $line =~ https://([a-z0-9-]+\.trycloudflare\.com) ]]; then
     host=${BASH_REMATCH[1]}
