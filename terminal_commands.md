@@ -105,14 +105,15 @@ Host *.trycloudflare.com
 2. **Wait about 30 seconds** (the new host name needs time to appear in DNS), then in your terminal:
 
 ```bash
-ssh <HOST>.trycloudflare.com                         # lands in /content/fpt_entrance_test
+ssh <HOST>.trycloudflare.com                         # lands in the code folder on Drive
 tmux new -s main                                     # anything long runs inside tmux: detach Ctrl-b d
 tmux attach -t main                                  # back to it after an SSH drop
 nvidia-smi
 python src/train.py experiment=<EXP>
 ```
 
-New code: `git pull` in `/content/fpt_entrance_test`. Data and logs: Drive (`/content/drive/MyDrive/...`).
+Code: `/content/drive/MyDrive/it/fpt/fpt_entrance_test`, kept between sessions. Update it only by: edit on the Mac,
+`git push`, then `git pull` there (cell 2 does it). Never edit code on Colab. Data and logs: Drive.
 Changing the runtime type (GPU to CPU or back) gives a new machine: run cells 1, 2, 4 again and use the new host.
 
 ### Troubleshooting

@@ -29,7 +29,8 @@ fi
 # An SSH login starts with a clean environment: give it the notebook's PATH, CUDA and Colab variables.
 export -p | grep -E '^declare -x (PATH|LD_LIBRARY_PATH|LIBRARY_PATH|PYTHONPATH|CUDA[A-Z_]*|NV[A-Z_]*|COLAB[A-Z_]*)=' \
   > /root/.colab_env
-grep -q colab_env /root/.bashrc || echo 'source /root/.colab_env; cd /content/fpt_entrance_test' >> /root/.bashrc
+REPO=$(cd "$(dirname "$0")/.." && pwd)   # an SSH login starts in this repo, wherever it is cloned
+grep -q colab_env /root/.bashrc || echo "source /root/.colab_env; cd '${REPO}'" >> /root/.bashrc
 
 curl -fsSL -o /usr/local/bin/cloudflared \
   https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
