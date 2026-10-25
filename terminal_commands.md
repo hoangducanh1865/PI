@@ -7,7 +7,7 @@ detects the platform (`src/utils/platform.py`) and reads its paths from `configs
 |---|---|---|---|
 | `local` (Mac, PC) | PC: RTX 3050 | edit code, light tests on fake data, data packing | your terminal |
 | `kaggle` | 2x T4, 30 h per week | interactive sessions and background runs up to 12 h | your terminal: `kaggle_shell.py`, `kaggle_run.py` (section 2) |
-| `colab` | T4 | interactive GPU work | `notebooks/colab.ipynb` in VS Code or the browser; SSH with a paid plan (section 3) |
+| `colab` | T4 (or a CPU runtime for downloads) | interactive work, data download to Drive | your terminal: `ssh` through a tunnel opened by `notebooks/colab.ipynb` (section 3) |
 
 Use the GPUs, not the TPUs (Kaggle TPU v5e-8, Colab TPU v5e-1): PyTorch on a TPU needs `torch_xla` and code changes.
 
@@ -54,6 +54,11 @@ tmux new -d -s <EXP> "python src/train.py experiment=<EXP> 2>&1 | tee /kaggle/wo
 tail -n 20 /kaggle/working/<EXP>.log
 ```
 
+The line-by-line shell has no full-screen programs (`vim`, `htop`, `tmux attach`): follow a run with `tail`, stop it
+with `tmux kill-session -t <EXP>`. Anything outside `/kaggle/working` disappears when the session ends.
+If the script fails with HTTP 403 / 404 or a connection error, the session ended or its URL changed: copy the new URL
+into `.env`.
+
 ### Background run (batch mode: no browser, up to 12 h)
 
 Push the code to GitHub first (Kaggle clones the pushed commit), then:
@@ -69,19 +74,19 @@ Add `--dry-run` to only write the kernel folder. The kernel also shows on kaggle
 
 ## 3. Colab
 
-Open `notebooks/colab.ipynb` in VS Code with the Google Colab extension (Select Kernel > Colab > New Colab Server >
-GPU T4), or in the browser (File > Open notebook > GitHub). Run cells 1-2 once per session, then put your command in
-cell 3, for example `COMMAND = "python src/train.py experiment=<EXP>"`.
+The notebook `notebooks/colab.ipynb` is local only (gitignored, it holds `HF_TOKEN`). Open it in VS Code with the Google
+Colab extension (Select Kernel > Colab > New Colab Server > GPU T4, or CPU for downloads).
 
-### SSH (only with a paid plan and compute units left)
+Rules: the Colab FAQ forbids SSH on free runtimes (allowed with a paid plan and compute units left). On the free account
+Colab may end the runtime without warning: keep important results on Drive.
 
-The Colab FAQ forbids SSH on free runtimes. With a paid plan, once:
+### One-time setup on your machine
 
 ```bash
 brew install cloudflared
 ```
 
-and add to `~/.ssh/config` (the tunnel host name changes every session, so no host key is kept):
+Add to `~/.ssh/config` (the tunnel host name changes every session, so no host key is kept):
 
 ```text
 Host *.trycloudflare.com
@@ -93,10 +98,28 @@ Host *.trycloudflare.com
     ServerAliveInterval 30
 ```
 
-Run cell 4 of the notebook (keep it running) and connect with the host it prints:
+### Every session
+
+1. In the notebook run cell 1 (mount Drive), cell 2 (clone or `git pull` the code, install) and cell 4 (SSH tunnel).
+   Keep cell 4 running: stopping it closes the tunnel. Cell 4 prints `SSH ready. On your machine:  ssh <HOST>`.
+2. **Wait about 30 seconds** (the new host name needs time to appear in DNS), then in your terminal:
 
 ```bash
 ssh <HOST>.trycloudflare.com                         # lands in /content/fpt_entrance_test
-tmux new -s main                                     # detach: Ctrl-b d, back: tmux attach -t main
+tmux new -s main                                     # anything long runs inside tmux: detach Ctrl-b d
+tmux attach -t main                                  # back to it after an SSH drop
+nvidia-smi
 python src/train.py experiment=<EXP>
 ```
+
+New code: `git pull` in `/content/fpt_entrance_test`. Data and logs: Drive (`/content/drive/MyDrive/...`).
+Changing the runtime type (GPU to CPU or back) gives a new machine: run cells 1, 2, 4 again and use the new host.
+
+### Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `dial tcp: lookup <HOST>: no such host` | you connected before the host was in DNS, and macOS cached "no such host" | `sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder`, then ssh again (or wait a few minutes) |
+| `websocket: bad handshake` | the tunnel is down (cell 4 stopped, runtime restarted) | run cell 4 again, use the new host |
+| cell 4 prints `sshd is not listening on 127.0.0.1:2022` and a log | the SSH server did not start | paste the log to Claude |
+| Colab Secrets error about `HF_TOKEN` | Secrets only work in the Colab web UI, not in VS Code | define `HF_TOKEN = "..."` in the local notebook |
