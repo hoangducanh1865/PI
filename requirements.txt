@@ -1,5 +1,8 @@
 # Colab and Kaggle already ship PyTorch: add torch / torchvision here without pins, so pip keeps their builds.
 hydra-core>=1.3.2
+h5py
+numpy
+pillow
 
 # scripts/kaggle_shell.py
 websocket-client

@@ -30,6 +30,19 @@ python src/train.py experiment=baseline --cfg job    # print the composed config
 pytest                                               # configs compose on every platform
 ```
 
+## Data: pack Grasp-Anything++ (once, on Colab)
+
+Raw files (downloaded from Hugging Face) in `MyDrive/it/fpt/datasets/raw/`; output in `.../processed/`. CPU runtime is
+enough; about 30-40 min (one sequential pass over the 65 GB image zip). Run it inside tmux; the log goes to `/content`,
+never into the code folder:
+
+```bash
+tmux new -d -s prep "python scripts/prepare_data.py --raw /content/drive/MyDrive/it/fpt/datasets/raw --out /content/drive/MyDrive/it/fpt/datasets/processed 2>&1 | tee /content/prepare_data.log"
+tail -n 5 /content/prepare_data.log
+```
+
+Expected end: `done in ... min` and `processed/{train,test_seen,test_unseen}.h5` + `stats.json`.
+
 ## 2. Kaggle
 
 ### Interactive session, from your terminal
