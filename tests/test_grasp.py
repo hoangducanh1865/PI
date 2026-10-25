@@ -4,9 +4,9 @@ src/utils/grasp.py: rectangle geometry, IoU and angle rule, and the round trip g
 Author: Duc Anh Hoang
 """
 
-import numpy as np
 import pytest
 
+np = pytest.importorskip("numpy")
 pytest.importorskip("skimage")
 from src.utils.grasp import WIDTH_SCALE, corners, decode, draw_maps, iou, success  # noqa: E402
 
