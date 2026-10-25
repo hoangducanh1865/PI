@@ -3,6 +3,7 @@ hydra-core>=1.3.2
 h5py
 numpy
 pillow
+transformers   # CLIP text encoder (scripts/cache_text_emb.py)
 
 # scripts/kaggle_shell.py
 websocket-client
