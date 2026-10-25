@@ -32,9 +32,14 @@ export -p | grep -E '^declare -x (PATH|LD_LIBRARY_PATH|LIBRARY_PATH|PYTHONPATH|C
 REPO=$(cd "$(dirname "$0")/.." && pwd)   # an SSH login starts in this repo, wherever it is cloned
 grep -q colab_env /root/.bashrc || echo "source /root/.colab_env; cd '${REPO}'" >> /root/.bashrc
 
-curl -fsSL -o /usr/local/bin/cloudflared \
-  https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
-chmod +x /usr/local/bin/cloudflared
+# A re-run in the same runtime: stop the old tunnel, and keep the binary (it cannot be overwritten while it runs).
+pkill -f "cloudflared tunnel" || true
+if [[ ! -x /usr/local/bin/cloudflared ]]; then
+  curl -fsSL -o /usr/local/bin/cloudflared \
+    https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+  chmod +x /usr/local/bin/cloudflared
+fi
+rm -f /tmp/cloudflared.log
 echo "Starting the tunnel (full log: /tmp/cloudflared.log)..."
 cloudflared tunnel --no-autoupdate --url "ssh://127.0.0.1:${PORT}" 2>&1 | while read -r line; do
   echo "$line" >> /tmp/cloudflared.log
