@@ -1,0 +1,6 @@
+# Output folder of a run: <log_dir>/<name>/<YYYY-MM-DD>_<HH-MM-SS>/ (.hydra/config.yaml = the full config used).
+run:
+  dir: ${paths.log_dir}/${name}/${now:%Y-%m-%d}_${now:%H-%M-%S}
+sweep:
+  dir: ${paths.log_dir}/${name}/multirun_${now:%Y-%m-%d}_${now:%H-%M-%S}
+  subdir: ${hydra.job.num}

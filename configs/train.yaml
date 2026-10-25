@@ -1,0 +1,13 @@
+# Main training config. One run = configs/experiment/<EXP>.yaml, which holds only what differs from this file:
+#   python src/train.py experiment=<EXP> [KEY=VALUE ...]
+# paths: src/train.py detects the platform (local | colab | kaggle) and adds paths=<platform>; PLATFORM=<name> or
+# paths=<name> on the command line overrides it.
+
+defaults:
+  - _self_
+  - paths: local
+  - hydra: default
+  - experiment: null
+
+name: debug   # run name; each experiment sets its own (output folder <log_dir>/<name>/...)
+seed: 42

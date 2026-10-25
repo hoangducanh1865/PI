@@ -1,0 +1,7 @@
+# Paths on Colab. The code (/content/fpt_entrance_test) is cloned again in every session. The data is copied from
+# Drive to the local disk before training (reading Drive directly is slow); logs and checkpoints go to Drive so they
+# survive the end of the session.
+root_dir: ${oc.env:PROJECT_ROOT}   # set by src/train.py and src/eval.py
+drive_dir: /content/drive/MyDrive/fpt_entrance_test
+data_dir: /content/data
+log_dir: ${paths.drive_dir}/logs

@@ -1,0 +1,6 @@
+# Paths on Kaggle. The code (/tmp/fpt_entrance_test) is cloned by notebooks/kaggle.ipynb in every run. The data
+# is a Kaggle Dataset uploaded once (read-only, mounted under /kaggle/input/); /kaggle/working is the run's output,
+# downloaded with `kaggle kernels output` (terminal_commands.md).
+root_dir: ${oc.env:PROJECT_ROOT}   # set by src/train.py and src/eval.py
+data_dir: /kaggle/input/grasp-anything-pp   # slug of the Kaggle Dataset: change it here if it differs
+log_dir: /kaggle/working/logs

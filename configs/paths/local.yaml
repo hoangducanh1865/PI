@@ -1,0 +1,4 @@
+# Paths on the Mac or the PC: data and logs inside the repo (both gitignored).
+root_dir: ${oc.env:PROJECT_ROOT}   # set by src/train.py and src/eval.py
+data_dir: ${paths.root_dir}/data
+log_dir: ${paths.root_dir}/logs

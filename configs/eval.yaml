@@ -1,0 +1,11 @@
+# Main evaluation config: success rate on the Seen and Unseen test splits and their harmonic mean H.
+#   python src/eval.py ckpt_path=<CKPT> [KEY=VALUE ...]
+
+defaults:
+  - _self_
+  - paths: local
+  - hydra: default
+
+name: eval
+seed: 42
+ckpt_path: ???   # checkpoint to evaluate
