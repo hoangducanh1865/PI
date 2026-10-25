@@ -1,4 +1,0 @@
-# @package _global_
-# Baseline: GR-ConvNet with a frozen CLIP text embedding (the "GR-ConvNet + CLIP" row of Vuong et al., CVPR 2024),
-# trained on our subset of Grasp-Anything++.
-name: baseline

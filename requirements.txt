@@ -1,5 +1,6 @@
 # Colab and Kaggle already ship PyTorch: add torch / torchvision here without pins, so pip keeps their builds.
 hydra-core>=1.3.2
+lightning
 h5py
 numpy
 pillow

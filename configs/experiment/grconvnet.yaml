@@ -1,0 +1,4 @@
+# @package _global_
+# GR-ConvNet without text (Kumra et al., IROS 2020): the same network and training as the authors' code, image only.
+# Shows what the language adds when compared with grconvnet_clip.
+name: grconvnet

@@ -1,0 +1,10 @@
+# @package _global_
+# Baseline "GR-ConvNet + CLIP" of Vuong et al. (CVPR 2024, Table 2; App. E.1): frozen CLIP text encoder, ALBEF-style
+# fusion of text and image features, the rest as in the authors' GR-ConvNet training.
+name: grconvnet_clip
+
+data:
+  text_model: clip-vit-base-patch32
+
+model:
+  fusion: albef

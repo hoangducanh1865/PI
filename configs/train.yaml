@@ -1,7 +1,8 @@
 # Main training config. One run = configs/experiment/<EXP>.yaml, which holds only what differs from this file:
 #   python src/train.py experiment=<EXP> [KEY=VALUE ...]
 # paths: src/train.py detects the platform (local | colab | kaggle) and adds paths=<platform>; PLATFORM=<name> or
-# paths=<name> on the command line overrides it.
+# paths=<name> on the command line overrides it. Values marked "authors" are the defaults of the Grasp-Anything
+# authors' train_network.py (github.com/Fsoft-AIC/Grasp-Anything).
 
 defaults:
   - _self_
@@ -9,5 +10,25 @@ defaults:
   - hydra: default
   - experiment: null
 
-name: debug   # run name; each experiment sets its own (output folder <log_dir>/<name>/...)
-seed: 42
+name: debug        # run name; each experiment sets its own (output folder <log_dir>/<name>/...)
+seed: 123          # authors
+ckpt_path: null    # resume a stopped run: <run folder>/checkpoints/last.ckpt (full training state)
+
+data:
+  dir: ${paths.data_dir}   # train.h5, test_seen.h5, test_unseen.h5 (+ <split>_text_<text_model>.npz)
+  text_model: null         # clip-vit-base-patch32: read the cached CLIP text features
+  batch_size: 8            # authors
+  num_workers: 2
+
+model:
+  fusion: null             # albef: the image features attend to the CLIP text tokens (src/models/grconvnet.py)
+  channel_size: 32         # authors
+  dropout: 0.1             # authors (--use-dropout 1 --dropout-prob 0.1)
+  lr: 1.0e-3               # authors (Adam, PyTorch default learning rate)
+
+trainer:
+  max_epochs: 50               # authors
+  limit_train_batches: 1000    # authors (--batches-per-epoch): 8,000 random training samples per epoch
+  accelerator: auto
+  log_every_n_steps: 50
+  deterministic: false

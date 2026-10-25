@@ -7,5 +7,9 @@ defaults:
   - hydra: default
 
 name: eval
-seed: 42
-ckpt_path: ???   # checkpoint to evaluate
+ckpt_path: ???   # checkpoint to evaluate (its text model is read from it)
+
+data:
+  dir: ${paths.data_dir}
+  batch_size: 32
+  num_workers: 2

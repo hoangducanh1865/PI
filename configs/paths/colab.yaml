@@ -1,7 +1,7 @@
-# Paths on Colab. The code is kept on Drive (MyDrive/it/fpt/fpt_entrance_test, updated with git pull only). The data
-# is copied from Drive to the local disk before training (reading Drive directly is slow); logs and checkpoints go to
-# Drive so they survive the end of the session.
+# Paths on Colab. The code is kept on Drive (MyDrive/it/fpt/fpt_entrance_test, updated with git pull only); nothing
+# is written into it. The packed data is read once into RAM straight from Drive; logs and checkpoints go to Drive so
+# they survive the end of the session.
 root_dir: ${oc.env:PROJECT_ROOT}   # set by src/train.py and src/eval.py
-drive_dir: /content/drive/MyDrive/fpt_entrance_test
-data_dir: /content/data
+drive_dir: /content/drive/MyDrive/it/fpt
+data_dir: ${paths.drive_dir}/datasets/processed   # the output of scripts/prepare_data.py
 log_dir: ${paths.drive_dir}/logs
