@@ -34,7 +34,8 @@ chmod +x /usr/local/bin/cloudflared
 echo "Starting the tunnel (full log: /tmp/cloudflared.log)..."
 cloudflared tunnel --no-autoupdate --url ssh://127.0.0.1:22 2>&1 | while read -r line; do
   echo "$line" >> /tmp/cloudflared.log
-  if [[ $line =~ https://([a-z0-9-]+\.trycloudflare\.com) ]]; then
-    echo "SSH ready. On your machine:  ssh ${BASH_REMATCH[1]}"
+  if [[ -z ${host:-} && $line =~ https://([a-z0-9-]+\.trycloudflare\.com) ]]; then
+    host=${BASH_REMATCH[1]}
+    echo "SSH ready. On your machine:  ssh ${host}"
   fi
 done
