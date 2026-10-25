@@ -45,6 +45,20 @@ python scripts/cache_text_emb.py --processed /content/drive/MyDrive/it/fpt/datas
 
 Expected end: `done in ... min` and `processed/{train,test_seen,test_unseen}.h5` + `stats.json`.
 
+## Train and evaluate (any platform; on Colab inside tmux, over SSH)
+
+```bash
+python -u src/train.py experiment=<EXP> +trainer.fast_dev_run=true      # smoke test: 1 train + 1 val batch
+tmux new -d -s train "python -u src/train.py experiment=<EXP> 2>&1 | tee <LOG_DIR>/<EXP>/console_$(date +%F_%H-%M-%S).log"
+tail -n 3 <LOG_DIR>/<EXP>/<RUN>/metrics.csv                             # epoch, step, losses, val/success
+python -u src/train.py experiment=<EXP> ckpt_path=<LOG_DIR>/<EXP>/<RUN>/checkpoints/last.ckpt   # resume after a cut
+python -u src/eval.py ckpt_path=<LOG_DIR>/<EXP>/<RUN>/checkpoints/<BEST>.ckpt   # Seen, Unseen, H -> <LOG_DIR>/eval/<RUN>/
+```
+
+`<EXP>`: `grconvnet` (image only) or `grconvnet_clip` (the paper's baseline). `<LOG_DIR>` on Colab:
+`/content/drive/MyDrive/it/fpt/logs`. One epoch on a Colab T4 takes about 5 min, a full run (50 epochs) about 4 h.
+`-u` keeps Python from buffering the output, so the log shows the progress bar.
+
 ## 2. Kaggle
 
 ### Interactive session, from your terminal
