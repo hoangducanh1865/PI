@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Open an SSH server on this Colab runtime, reachable from your machine through a Cloudflare quick tunnel (no account).
+# Run by the last cell of notebooks/colab.ipynb; the cell must keep running: stopping it closes the tunnel.
+# Login: root with the public keys of the GitHub account (https://github.com/<user>.keys), no password.
+# Colab allows SSH only with a paid plan and a positive compute-unit balance (Colab FAQ); free runtimes forbid it.
+#
+# Author: Duc Anh Hoang
+set -euo pipefail
+GITHUB_USER=${GITHUB_USER:-hoangducanh1865}
+
+apt-get -qq update > /dev/null
+apt-get -qq install -y openssh-server tmux > /dev/null
+mkdir -p /root/.ssh /run/sshd
+chmod 700 /root/.ssh
+curl -fsSL "https://github.com/${GITHUB_USER}.keys" > /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
+ssh-keygen -A > /dev/null
+/usr/sbin/sshd -o PasswordAuthentication=no -o PermitRootLogin=prohibit-password
+
+# An SSH login starts with a clean environment: give it the notebook's PATH, CUDA and Colab variables.
+export -p | grep -E '^declare -x (PATH|LD_LIBRARY_PATH|LIBRARY_PATH|PYTHONPATH|CUDA[A-Z_]*|NV[A-Z_]*|COLAB[A-Z_]*)=' \
+  > /root/.colab_env
+grep -q colab_env /root/.bashrc || echo 'source /root/.colab_env; cd /content/fpt_entrance_test' >> /root/.bashrc
+
+curl -fsSL -o /usr/local/bin/cloudflared \
+  https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+chmod +x /usr/local/bin/cloudflared
+echo "Starting the tunnel (full log: /tmp/cloudflared.log)..."
+cloudflared tunnel --no-autoupdate --url ssh://localhost:22 2>&1 | while read -r line; do
+  echo "$line" >> /tmp/cloudflared.log
+  if [[ $line =~ https://([a-z0-9-]+\.trycloudflare\.com) ]]; then
+    echo "SSH ready. On your machine:  ssh ${BASH_REMATCH[1]}"
+  fi
+done
