@@ -17,7 +17,6 @@ local machine, Google Colab and Kaggle.
 | `configs/` | [Hydra](https://hydra.cc) configs: `train.yaml`, `eval.yaml`; `experiment/` one file per run (only what differs); `paths/` one file per platform |
 | `src/` | entry points `train.py`, `eval.py`; `utils/` |
 | `scripts/` | `kaggle_shell.py` (shell on a Kaggle session from the terminal), `kaggle_run.py` (background run on Kaggle), `colab_ssh.sh` (SSH into a Colab runtime) |
-| `notebooks/` | thin launchers for Colab and Kaggle: commands only, no code |
 | `.env.example` | local settings to copy into `.env` (gitignored) |
 | `tests/` | config and platform checks (`pytest`) |
 | `paper/` | LaTeX source of the paper (CVPR 2026 template) |
