@@ -18,6 +18,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # repo root
 sys.path.insert(0, ROOT)  # src.* importable when run as a script
+sys.dont_write_bytecode = True  # no __pycache__ in the code folder (on Colab it is read-only by rule)
 os.environ.setdefault("PROJECT_ROOT", ROOT)  # read by configs/paths/*.yaml
 
 import hydra  # noqa: E402

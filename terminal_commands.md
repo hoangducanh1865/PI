@@ -33,12 +33,14 @@ pytest                                               # configs compose on every 
 ## Data: pack Grasp-Anything++ (once, on Colab)
 
 Raw files (downloaded from Hugging Face) in `MyDrive/it/fpt/datasets/raw/`; output in `.../processed/`. CPU runtime is
-enough; about 30-40 min (one sequential pass over the 65 GB image zip). Run it inside tmux; the log goes to `/content`,
-never into the code folder:
+enough; about 40 min (one sequential pass over the 65 GB image zip). Run it inside tmux; the log goes to Drive
+(`logs/scripts/`), never into the code folder:
 
 ```bash
-tmux new -d -s prep "python scripts/prepare_data.py --raw /content/drive/MyDrive/it/fpt/datasets/raw --out /content/drive/MyDrive/it/fpt/datasets/processed 2>&1 | tee /content/prepare_data.log"
-tail -n 5 /content/prepare_data.log
+mkdir -p /content/drive/MyDrive/it/fpt/logs/scripts
+tmux new -d -s prep "python scripts/prepare_data.py --raw /content/drive/MyDrive/it/fpt/datasets/raw --out /content/drive/MyDrive/it/fpt/datasets/processed 2>&1 | tee /content/drive/MyDrive/it/fpt/logs/scripts/prepare_data.log"
+tail -n 5 /content/drive/MyDrive/it/fpt/logs/scripts/prepare_data.log
+python scripts/cache_text_emb.py --processed /content/drive/MyDrive/it/fpt/datasets/processed   # then: CLIP text features (~2 min)
 ```
 
 Expected end: `done in ... min` and `processed/{train,test_seen,test_unseen}.h5` + `stats.json`.
@@ -86,6 +88,18 @@ Example: `python scripts/kaggle_run.py "python src/train.py experiment=baseline"
 Add `--dry-run` to only write the kernel folder. The kernel also shows on kaggle.com (Your Work > Code).
 
 ## 3. Colab
+
+Everything Colab produces stays on Drive, under `/content/drive/MyDrive/it/fpt/`:
+
+| Folder | Content |
+|---|---|
+| `fpt_entrance_test/` | the code: updated with `git pull` only, nothing is ever written into it |
+| `datasets/raw/` | the Hugging Face downloads (`Grasp-Anything/`, `Grasp-Anything-pp/`) |
+| `datasets/processed/` | packed splits `*.h5`, text caches `*_text_*.npz`, `stats.json`; `test/` = 20 samples drawn for inspection |
+| `logs/<EXP>/<DATE>_<TIME>/` | one training run: `.hydra/config.yaml`, `metrics.csv`, `checkpoints/` |
+| `logs/eval/<DATE>_<TIME>/` | one evaluation: `results.json`, `predictions_<split>.npz` |
+| `logs/scripts/` | logs of the data scripts |
+| `analysis/` | figures and tables of the checks and the error analysis |
 
 The notebook `notebooks/colab.ipynb` is local only (gitignored, it holds `HF_TOKEN`). Open it in VS Code with the Google
 Colab extension (Select Kernel > Colab > New Colab Server > GPU T4, or CPU for downloads).
