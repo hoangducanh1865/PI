@@ -218,3 +218,26 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ---> fpt_entrance_test
+.DS_Store
+# local only (the repo is public): AI agent guide, notes and chat history; reference material
+/AGENTS.md
+/CLAUDE.md
+/agents/
+/docs/
+# data, runs and scratch (on Colab: Drive; on Kaggle: Datasets and kernel outputs)
+/data/
+/logs/
+/outputs/
+/multirun/
+/tmp/
+# LaTeX build files and the compiled paper
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
+/paper/*.pdf
