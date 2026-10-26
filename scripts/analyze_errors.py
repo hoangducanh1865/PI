@@ -14,7 +14,10 @@ splits, since an image of one split can hold objects of another):
     wrong_geometry  the centre is on the right object, but position or opening miss every ground-truth grasp
 Writes into <OUT_DIR>: summary.json (shares per split, also for part-distinct objects), failures.csv (one row per
 failed prompt) and failures_<type>.png (--draw random failures per type: prompt, target mask in green, other objects
-in blue, ground truth in red, prediction in yellow).
+in blue, ground truth in red, prediction in yellow). --export "background=100,wrong_object=50" also writes random
+failures of those types to export/: one 448 x 448 image each with only the predicted rectangle and its centre in
+yellow (no mask, no ground truth, so a judge is not biased) and export/manifest.csv, the input of
+scripts/judge_failures.py.
 
 Author: Duc Anh Hoang
 """
@@ -92,6 +95,9 @@ def main(argv=None):
     parser.add_argument("--data", required=True, help="folder with the packed splits (scripts/prepare_data.py)")
     parser.add_argument("--out", required=True)
     parser.add_argument("--draw", type=int, default=8, help="failures drawn per type")
+    parser.add_argument(
+        "--export", default="", help='failures to export per type, e.g. "background=100,wrong_object=50"'
+    )
     args = parser.parse_args(argv)
     os.makedirs(args.out, exist_ok=True)
     rng = np.random.default_rng(0)
@@ -152,6 +158,29 @@ def main(argv=None):
         for k, p in enumerate(panels):
             sheet.paste(p, ((k % 4) * 448, (k // 4) * 478))
         sheet.save(os.path.join(args.out, f"failures_{kind}.png"))
+
+    if args.export:  # clean images for an outside judge: the prediction only
+        export = os.path.join(args.out, "export")
+        os.makedirs(export, exist_ok=True)
+        manifest = [["file", "split", "key", "prompt", "type"]]
+        for item in args.export.split(","):
+            kind, n = item.split("=")
+            items = to_draw[kind]
+            for j in rng.choice(len(items), min(int(n), len(items)), replace=False):
+                split, i = items[j]
+                with h5py.File(os.path.join(args.data, f"{split}.h5")) as f:
+                    key, prompt = f["keys"][i].decode(), f["prompts"][i].decode()
+                    image = Image.fromarray(f["images"][f["image_index"][i]]).resize((448, 448))
+                pred = loaded[split][0][i]
+                d = ImageDraw.Draw(image)
+                d.polygon([tuple(p) for p in 2 * corners(*pred)], outline=(255, 255, 0), width=3)
+                x, y = 2 * pred[0], 2 * pred[1]
+                d.ellipse([x - 5, y - 5, x + 5, y + 5], fill=(255, 255, 0), outline=(0, 0, 0))
+                name = f"{kind}_{len(manifest):03d}.png"
+                image.save(os.path.join(export, name))
+                manifest.append([name, split, key, prompt, kind])
+        with open(os.path.join(export, "manifest.csv"), "w", newline="") as f:
+            csv.writer(f).writerows(manifest)
     print(f"written: {args.out}", flush=True)
 
 
