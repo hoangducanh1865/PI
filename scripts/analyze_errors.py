@@ -156,6 +156,8 @@ def main(argv=None):
             target = masks[object_of(key)]
             others = [m for o, m in masks.items() if o != object_of(key)]
             panels.append(draw(image, prompt, target, others, gts, pred_grasps[i], kind))
+        if not panels:  # --draw 0
+            continue
         sheet = Image.new("RGB", (448 * 4, 478 * ((len(panels) + 3) // 4)), "white")
         for k, p in enumerate(panels):
             sheet.paste(p, ((k % 4) * 448, (k // 4) * 478))
