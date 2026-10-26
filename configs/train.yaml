@@ -33,6 +33,6 @@ trainer:
   max_epochs: 50               # authors
   limit_train_batches: 1000    # authors (--batches-per-epoch): 8,000 random training samples per epoch
   accelerator: auto
-  devices: 1                   # one GPU like the baseline run (Kaggle has 2 T4: Lightning would start DDP)
+  devices: auto                # every GPU of the machine (Kaggle 2 x T4: DDP, effective batch 16); devices=1 for one
   log_every_n_steps: 50
   deterministic: false
