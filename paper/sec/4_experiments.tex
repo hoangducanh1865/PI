@@ -1,0 +1,55 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\paragraph{Setup.}
+We use the official split files of the Grasp-Anything code: objects of \texttt{seen.obj} are cut 90\%/10\% into training and Seen test as in the authors' script, and \texttt{unseen.obj} is the Unseen test.
+One prompt is one sample: 27.0k training, 3.0k Seen and 13.5k Unseen test prompts.
+A prediction succeeds if its IoU with a ground-truth grasp exceeds 25\% and its angle differs by less than $30^{\circ}$~\cite{kumra2020antipodal}; H is the harmonic mean of Seen and Unseen.
+Training follows the authors' code: Adam, learning rate $10^{-3}$, batch 8, 50 epochs of 1,000 batches; we use $\lambda = 0.1$ and $\tau = 0.07$ without tuning.
+\TODO{state the number of GPUs of each run; the proposed run used 2 GPUs (effective batch 16).}
+
+\paragraph{Dataset observations.}
+On 1,000 random test objects with several parts, the part prompts of 70\% (Seen) and 83\% (Unseen) of the objects have near-identical grasp centres (within 5 pixels).
+29\% and 39\% of the objects in the official Seen and Unseen files have no Grasp-Anything++ label.
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    Method & Seen & Unseen & H \\
+    \midrule
+    CLIPORT~\cite{shridhar2021cliport}$^\dagger$ & 0.36 & 0.26 & 0.29 \\
+    LGD~\cite{vuong2024language}$^\dagger$ & 0.48 & 0.42 & 0.45 \\
+    MaskGrasp~\cite{vo2024maskgrasp}$^\dagger$ & 0.50 & 0.46 & 0.48 \\
+    GraspMamba~\cite{nguyen2024graspmamba}$^\dagger$ & 0.63 & 0.41 & 0.52 \\
+    \midrule
+    GR-ConvNet + CLIP$^\dagger$ & 0.37 & 0.18 & 0.24 \\
+    GR-ConvNet + CLIP, reproduced & 0.354 & 0.256 & 0.297 \\
+    + region-text contrastive (ours) & - & - & - \\
+    \bottomrule
+  \end{tabular}
+  \caption{Success rates on Grasp-Anything++. $^\dagger$ as reported by the authors (other data subsets); only the lower block shares our split and training. MaskGrasp's H is the harmonic mean of its reported Seen and Unseen.}
+  \label{tab:main}
+\end{table}
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabular}{@{}lcccc@{}}
+    \toprule
+    & \multicolumn{2}{c}{Baseline} & \multicolumn{2}{c}{Ours} \\
+    Share of failures & Seen & Unseen & Seen & Unseen \\
+    \midrule
+    Wrong object & 55\% & 57\% & - & - \\
+    Right object, wrong geometry & 30\% & 28\% & - & - \\
+    No grasp predicted & 12\% & 12\% & - & - \\
+    \bottomrule
+  \end{tabular}
+  \caption{Failure types, judged by two vision-language models on 1,000 failures of the baseline (84\% agreement; agreed cases only).}
+  \label{tab:errors}
+\end{table}
+
+\paragraph{Results.}
+\Cref{tab:main} compares the methods and \cref{tab:errors} the failure types.
+\TODO{describe the gain on Seen / Unseen / H and whether the share of wrong-object failures drops.}

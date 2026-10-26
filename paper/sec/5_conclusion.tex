@@ -1,0 +1,7 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+A failure analysis of a reproduced baseline showed that language-driven grasp detection on Grasp-Anything++ fails mostly by grasping the wrong object.
+A region-text contrastive loss that uses the other objects of the scene as negatives targets this error at no inference cost.
+\TODO{one sentence on the result.}
+Limitations: the loss needs object masks for training, part-level grounding cannot be learnt from the current labels, and we tuned neither $\lambda$ nor $\tau$.
