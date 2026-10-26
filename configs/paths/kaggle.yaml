@@ -1,6 +1,8 @@
-# Paths on Kaggle. The code (/tmp/fpt_entrance_test) is cloned by notebooks/kaggle.ipynb in every run. The data
-# is a Kaggle Dataset uploaded once (read-only, mounted under /kaggle/input/); /kaggle/working is the run's output,
-# downloaded with `kaggle kernels output` (terminal_commands.md).
+# Paths on Kaggle, the same layout as Colab under /kaggle/working (the session's output folder): code/fpt_entrance_test
+# is this repo, data/ the datasets and everything the repo writes. The packed data is the Kaggle Dataset
+# grasp-anything-pp, mounted read-only under /kaggle/input/; data/datasets/processed/Grasp-Anything-pp is a link to it
+# (terminal_commands.md, section Kaggle).
 root_dir: ${oc.env:PROJECT_ROOT}   # set by src/train.py and src/eval.py
-data_dir: /kaggle/input/grasp-anything-pp   # slug of the Kaggle Dataset: change it here if it differs
-log_dir: /kaggle/working/logs
+base_dir: /kaggle/working
+data_dir: ${paths.base_dir}/data/datasets/processed/Grasp-Anything-pp
+log_dir: ${paths.base_dir}/data/fpt_entrance_test/logs

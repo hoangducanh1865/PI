@@ -32,15 +32,15 @@ pytest                                               # configs compose on every 
 
 ## Data: pack Grasp-Anything++ (once, on Colab)
 
-Raw files (downloaded from Hugging Face) in `MyDrive/it/fpt/datasets/raw/`; output in `.../processed/`. CPU runtime is
+Raw files (downloaded from Hugging Face) in `<BASE>/data/datasets/raw/`; output in `.../processed/Grasp-Anything-pp/`. CPU runtime is
 enough; about 40 min (one sequential pass over the 65 GB image zip). Run it inside tmux; the log goes to Drive
 (`logs/scripts/`), never into the code folder:
 
 ```bash
-mkdir -p /content/drive/MyDrive/it/fpt/logs/scripts
-tmux new -d -s prep "python scripts/prepare_data.py --raw /content/drive/MyDrive/it/fpt/datasets/raw --out /content/drive/MyDrive/it/fpt/datasets/processed/Grasp-Anything-pp 2>&1 | tee /content/drive/MyDrive/it/fpt/logs/scripts/prepare_data.log"
-tail -n 5 /content/drive/MyDrive/it/fpt/logs/scripts/prepare_data.log
-python scripts/cache_text_emb.py --processed /content/drive/MyDrive/it/fpt/datasets/processed/Grasp-Anything-pp   # then: CLIP text features (~2 min)
+mkdir -p /content/drive/MyDrive/it/fpt/data/fpt_entrance_test/logs/scripts
+tmux new -d -s prep "python scripts/prepare_data.py --raw /content/drive/MyDrive/it/fpt/data/datasets/raw --out /content/drive/MyDrive/it/fpt/data/datasets/processed/Grasp-Anything-pp 2>&1 | tee /content/drive/MyDrive/it/fpt/data/fpt_entrance_test/logs/scripts/prepare_data.log"
+tail -n 5 /content/drive/MyDrive/it/fpt/data/fpt_entrance_test/logs/scripts/prepare_data.log
+python scripts/cache_text_emb.py --processed /content/drive/MyDrive/it/fpt/data/datasets/processed/Grasp-Anything-pp   # then: CLIP text features (~2 min)
 ```
 
 Expected end: `done in ... min` and `processed/{train,test_seen,test_unseen}.h5` + `stats.json`.
@@ -56,7 +56,7 @@ python -u src/eval.py ckpt_path=<LOG_DIR>/<EXP>/<RUN>/checkpoints/<BEST>.ckpt   
 ```
 
 `<EXP>`: `grconvnet` (image only) or `grconvnet_clip` (the paper's baseline). `<LOG_DIR>` on Colab:
-`/content/drive/MyDrive/it/fpt/logs`. One epoch on a Colab T4 takes about 5 min, a full run (50 epochs) about 4 h.
+`/content/drive/MyDrive/it/fpt/data/fpt_entrance_test/logs` (Kaggle: `/kaggle/working/data/fpt_entrance_test/logs`). One epoch on a Colab T4 takes about 5 min, a full run (50 epochs) about 4 h.
 `-u` keeps Python from buffering the output, so the log shows the progress bar.
 
 ## 2. Kaggle
@@ -76,11 +76,13 @@ python scripts/kaggle_shell.py                       # line-by-line shell (cd is
 Then, inside the shell:
 
 ```bash
-git clone -q https://github.com/hoangducanh1865/fpt_entrance_test.git /tmp/fpt_entrance_test   # new code: git -C /tmp/fpt_entrance_test pull
-cd /tmp/fpt_entrance_test && pip install -q -r requirements.txt
+mkdir -p /kaggle/working/code /kaggle/working/data/datasets/processed /kaggle/working/data/fpt_entrance_test/logs
+git clone -q https://github.com/hoangducanh1865/fpt_entrance_test.git /kaggle/working/code/fpt_entrance_test   # new code: git pull there
+ln -sfn /kaggle/input/grasp-anything-pp/Grasp-Anything-pp /kaggle/working/data/datasets/processed/Grasp-Anything-pp   # the Kaggle Dataset
+cd /kaggle/working/code/fpt_entrance_test && pip install -q -r requirements.txt
 python src/train.py experiment=<EXP>                 # short runs
-tmux new -d -s <EXP> "python src/train.py experiment=<EXP> 2>&1 | tee /kaggle/working/<EXP>.log"   # long runs
-tail -n 20 /kaggle/working/<EXP>.log
+tmux new -d -s <EXP> "python src/train.py experiment=<EXP> 2>&1 | tee /kaggle/working/data/fpt_entrance_test/logs/<EXP>.log"   # long runs
+tail -n 20 /kaggle/working/data/fpt_entrance_test/logs/<EXP>.log
 ```
 
 The line-by-line shell has no full-screen programs (`vim`, `htop`, `tmux attach`): follow a run with `tail`, stop it
@@ -103,17 +105,18 @@ Add `--dry-run` to only write the kernel folder. The kernel also shows on kaggle
 
 ## 3. Colab
 
-Everything Colab produces stays on Drive, under `/content/drive/MyDrive/it/fpt/`:
+Code and data are separate; on Colab everything stays on Drive, under `<BASE>` = `/content/drive/MyDrive/it/fpt/` (Kaggle: the same
+layout under `/kaggle/working/`):
 
 | Folder | Content |
 |---|---|
-| `fpt_entrance_test/` | the code: updated with `git pull` only, nothing is ever written into it |
-| `datasets/raw/` | the Hugging Face downloads (`Grasp-Anything/`, `Grasp-Anything-pp/`) |
-| `datasets/processed/Grasp-Anything-pp/` | packed splits `*.h5`, text caches `*_text_*.npz`, `stats.json`; `test/` = 20 samples drawn for inspection |
-| `logs/<EXP>/<DATE>_<TIME>/` | one training run: `.hydra/config.yaml`, `metrics.csv`, `checkpoints/` |
-| `logs/eval/<DATE>_<TIME>/` | one evaluation: `results.json`, `predictions_<split>.npz` |
-| `logs/scripts/` | logs of the data scripts |
-| `analysis/` | figures and tables of the checks and the error analysis |
+| `code/fpt_entrance_test/` | the code: updated with `git pull` only, nothing is ever written into it |
+| `data/datasets/raw/` | the Hugging Face downloads (`Grasp-Anything/`, `Grasp-Anything-pp/`) |
+| `data/datasets/processed/Grasp-Anything-pp/` | packed splits `*.h5`, text caches `*_text_*.npz`, `stats.json`; `test/` = 20 samples drawn for inspection |
+| `data/fpt_entrance_test/logs/<EXP>/<DATE>_<TIME>/` | one training run: `.hydra/config.yaml`, `metrics.csv`, `checkpoints/` |
+| `data/fpt_entrance_test/logs/eval/<DATE>_<TIME>/` | one evaluation: `results.json`, `predictions_<split>.npz` |
+| `data/fpt_entrance_test/logs/scripts/` | logs of the data scripts |
+| `data/fpt_entrance_test/analysis/` | figures and tables of the checks and the error analysis |
 
 The notebook `notebooks/colab.ipynb` is local only (gitignored, it holds `HF_TOKEN`). Open it in VS Code with the Google
 Colab extension (Select Kernel > Colab > New Colab Server > GPU T4, or CPU for downloads).
@@ -153,7 +156,7 @@ nvidia-smi
 python src/train.py experiment=<EXP>
 ```
 
-Code: `/content/drive/MyDrive/it/fpt/fpt_entrance_test`, kept between sessions. Update it only by: edit on the Mac,
+Code: `/content/drive/MyDrive/it/fpt/code/fpt_entrance_test`, kept between sessions. Update it only by: edit on the Mac,
 `git push`, then `git pull` there (cell 2 does it). Never edit code on Colab. Data and logs: Drive.
 Changing the runtime type (GPU to CPU or back) gives a new machine: run cells 1, 2, 4 again and use the new host.
 

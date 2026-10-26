@@ -12,8 +12,7 @@ Usage (on the Mac or the PC, from any folder):
     e.g. python scripts/kaggle_shell.py "nvidia-smi"
 
 Ctrl-C stops the running command. Quitting deletes the kernel and whatever still runs in it: start a long run detached
-with tmux ("tmux new -d -s <NAME> '<COMMAND> 2>&1 | tee /kaggle/working/<NAME>.log'"), or use scripts/kaggle_run.py
-(batch mode, which does not need the browser).
+with tmux (terminal_commands.md, section Kaggle), or use scripts/kaggle_run.py (batch mode, no browser needed).
 
 Author: Duc Anh Hoang
 """

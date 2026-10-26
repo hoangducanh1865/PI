@@ -3,8 +3,8 @@ Pack the Grasp-Anything++ samples of the authors' Seen / Unseen split into three
 
 Usage (on Colab, CPU runtime is enough; about 30-40 min, most of it one sequential pass over the 65 GB image zip):
     python scripts/prepare_data.py --raw <RAW_DIR> --out <OUT_DIR> [--splits <DIR_WITH_SEEN_UNSEEN_OBJ>]
-    e.g. python scripts/prepare_data.py --raw /content/drive/MyDrive/it/fpt/datasets/raw \\
-             --out /content/drive/MyDrive/it/fpt/datasets/processed
+    e.g. python scripts/prepare_data.py --raw /content/drive/MyDrive/it/fpt/data/datasets/raw \\
+             --out /content/drive/MyDrive/it/fpt/data/datasets/processed/Grasp-Anything-pp
 
 <RAW_DIR> holds Grasp-Anything/image_part_{aa,ab} and Grasp-Anything-pp/*.zip as downloaded from Hugging Face.
 Protocol (as in the authors' code, github.com/Fsoft-AIC/Grasp-Anything): the objects of seen.obj are the Base pool,

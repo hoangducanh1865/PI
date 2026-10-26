@@ -3,7 +3,8 @@ Cache the CLIP text features of every prompt once; the text encoder stays frozen
 
 Usage (Colab or Kaggle; a CPU runtime is enough, a GPU is faster):
     python scripts/cache_text_emb.py --processed <DIR> [--model openai/clip-vit-base-patch32] [--batch 256]
-    e.g. python scripts/cache_text_emb.py --processed /content/drive/MyDrive/it/fpt/datasets/processed
+    e.g. python scripts/cache_text_emb.py \
+             --processed /content/drive/MyDrive/it/fpt/data/datasets/processed/Grasp-Anything-pp
 
 For every <split>.h5 in <DIR> it writes <split>_text_<tag>.npz (<tag> = the model name after the "/"), in the
 order of <split>.h5:
