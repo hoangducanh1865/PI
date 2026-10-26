@@ -243,3 +243,4 @@ __marimo__/
 /paper/*.pdf
 # notebooks hold local settings such as HF_TOKEN
 /notebooks/
+slide
