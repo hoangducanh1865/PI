@@ -15,9 +15,9 @@ splits, since an image of one split can hold objects of another):
 Writes into <OUT_DIR>: summary.json (shares per split, also for part-distinct objects), failures.csv (one row per
 failed prompt) and failures_<type>.png (--draw random failures per type: prompt, target mask in green, other objects
 in blue, ground truth in red, prediction in yellow). --export "background=100,wrong_object=50" also writes random
-failures of those types to export/: one 448 x 448 image each with only the predicted rectangle and its centre in
-yellow (no mask, no ground truth, so a judge is not biased) and export/manifest.csv, the input of
-scripts/judge_failures.py.
+failures of those types to <OUT_DIR>/<--export-name>/ (default export): one 448 x 448 image each with only the
+predicted rectangle and its centre in yellow (no mask, no ground truth, so a judge is not biased) and manifest.csv,
+the input of scripts/judge_failures.py. --exclude <manifest.csv> skips the prompts of an earlier export.
 
 Author: Duc Anh Hoang
 """
@@ -98,6 +98,8 @@ def main(argv=None):
     parser.add_argument(
         "--export", default="", help='failures to export per type, e.g. "background=100,wrong_object=50"'
     )
+    parser.add_argument("--export-name", default="export", help="folder of the export, inside --out")
+    parser.add_argument("--exclude", help="manifest.csv of an earlier export: do not export those prompts again")
     args = parser.parse_args(argv)
     os.makedirs(args.out, exist_ok=True)
     rng = np.random.default_rng(0)
@@ -112,7 +114,7 @@ def main(argv=None):
             raise ValueError(f"predictions_{split}.npz does not match {split}.h5")
         failed = np.flatnonzero(~pred["success"])
         masks = object_masks(args.data, {keys[i].split("_")[0] for i in failed})
-        loaded[split] = (pred["grasps"], masks)
+        loaded[split] = (pred["grasps"], masks, keys)
         counts = collections.Counter()
         distinct_counts = collections.Counter()
         for i in failed:
@@ -145,7 +147,7 @@ def main(argv=None):
         panels = []
         for j in rng.choice(len(items), min(args.draw, len(items)), replace=False):
             split, i = items[j]
-            pred_grasps, split_masks = loaded[split]
+            pred_grasps, split_masks, _ = loaded[split]
             with h5py.File(os.path.join(args.data, f"{split}.h5")) as f:
                 key, prompt = f["keys"][i].decode(), f["prompts"][i].decode()
                 image = f["images"][f["image_index"][i]]
@@ -160,12 +162,16 @@ def main(argv=None):
         sheet.save(os.path.join(args.out, f"failures_{kind}.png"))
 
     if args.export:  # clean images for an outside judge: the prediction only
-        export = os.path.join(args.out, "export")
+        export = os.path.join(args.out, args.export_name)
         os.makedirs(export, exist_ok=True)
         manifest = [["file", "split", "key", "prompt", "type"]]
+        done = set()
+        if args.exclude:
+            with open(args.exclude) as f:
+                done = {(r["split"], r["key"]) for r in csv.DictReader(f)}
         for item in args.export.split(","):
             kind, n = item.split("=")
-            items = to_draw[kind]
+            items = [(split, i) for split, i in to_draw[kind] if (split, loaded[split][2][i]) not in done]
             for j in rng.choice(len(items), min(int(n), len(items)), replace=False):
                 split, i = items[j]
                 with h5py.File(os.path.join(args.data, f"{split}.h5")) as f:
