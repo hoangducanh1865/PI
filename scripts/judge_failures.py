@@ -52,6 +52,7 @@ def ask(base_url, key, model, image_path, prompt):
     body = {
         "model": model,
         "temperature": 0,
+        "stream": False,  # some proxies stream by default
         "messages": [
             {
                 "role": "user",
