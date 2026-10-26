@@ -3,5 +3,5 @@
 # they survive the end of the session.
 root_dir: ${oc.env:PROJECT_ROOT}   # set by src/train.py and src/eval.py
 drive_dir: /content/drive/MyDrive/it/fpt
-data_dir: ${paths.drive_dir}/datasets/processed   # the output of scripts/prepare_data.py
+data_dir: ${paths.drive_dir}/datasets/processed/Grasp-Anything-pp   # the output of scripts/prepare_data.py
 log_dir: ${paths.drive_dir}/logs

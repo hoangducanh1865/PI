@@ -38,9 +38,9 @@ enough; about 40 min (one sequential pass over the 65 GB image zip). Run it insi
 
 ```bash
 mkdir -p /content/drive/MyDrive/it/fpt/logs/scripts
-tmux new -d -s prep "python scripts/prepare_data.py --raw /content/drive/MyDrive/it/fpt/datasets/raw --out /content/drive/MyDrive/it/fpt/datasets/processed 2>&1 | tee /content/drive/MyDrive/it/fpt/logs/scripts/prepare_data.log"
+tmux new -d -s prep "python scripts/prepare_data.py --raw /content/drive/MyDrive/it/fpt/datasets/raw --out /content/drive/MyDrive/it/fpt/datasets/processed/Grasp-Anything-pp 2>&1 | tee /content/drive/MyDrive/it/fpt/logs/scripts/prepare_data.log"
 tail -n 5 /content/drive/MyDrive/it/fpt/logs/scripts/prepare_data.log
-python scripts/cache_text_emb.py --processed /content/drive/MyDrive/it/fpt/datasets/processed   # then: CLIP text features (~2 min)
+python scripts/cache_text_emb.py --processed /content/drive/MyDrive/it/fpt/datasets/processed/Grasp-Anything-pp   # then: CLIP text features (~2 min)
 ```
 
 Expected end: `done in ... min` and `processed/{train,test_seen,test_unseen}.h5` + `stats.json`.
@@ -109,7 +109,7 @@ Everything Colab produces stays on Drive, under `/content/drive/MyDrive/it/fpt/`
 |---|---|
 | `fpt_entrance_test/` | the code: updated with `git pull` only, nothing is ever written into it |
 | `datasets/raw/` | the Hugging Face downloads (`Grasp-Anything/`, `Grasp-Anything-pp/`) |
-| `datasets/processed/` | packed splits `*.h5`, text caches `*_text_*.npz`, `stats.json`; `test/` = 20 samples drawn for inspection |
+| `datasets/processed/Grasp-Anything-pp/` | packed splits `*.h5`, text caches `*_text_*.npz`, `stats.json`; `test/` = 20 samples drawn for inspection |
 | `logs/<EXP>/<DATE>_<TIME>/` | one training run: `.hydra/config.yaml`, `metrics.csv`, `checkpoints/` |
 | `logs/eval/<DATE>_<TIME>/` | one evaluation: `results.json`, `predictions_<split>.npz` |
 | `logs/scripts/` | logs of the data scripts |
