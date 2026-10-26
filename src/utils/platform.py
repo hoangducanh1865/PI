@@ -1,9 +1,10 @@
 """
 Find the platform the code runs on (local, colab or kaggle), to pick configs/paths/<platform>.yaml.
 
-"local" is the Mac or the PC. The PLATFORM environment variable overrides the detection. The checks look at the
-installed packages and the file system, not at environment variables, so they also work in an SSH shell. Colab is
-checked first: its runtimes also have /kaggle/input and /kaggle/working (seen on 2026-10-25).
+"local" is the Mac or the PC. The PLATFORM environment variable overrides the detection. Kaggle's image is built on
+Colab's (it also has /content, google.colab and COLAB_* variables, and Colab has /kaggle/input), so the one reliable
+sign of Kaggle is its own KAGGLE_KERNEL_RUN_TYPE variable (set in every Kaggle kernel and its subprocesses, never on
+Colab); Colab is then recognised by its google.colab package, which also works in an SSH shell (seen on 2026-10-26).
 
 Author: Duc Anh Hoang
 """
@@ -20,13 +21,13 @@ def detect_platform() -> str:
         if platform not in PLATFORMS:
             raise ValueError(f"PLATFORM={platform!r}, expected one of {PLATFORMS}")
         return platform
+    if "KAGGLE_KERNEL_RUN_TYPE" in os.environ:
+        return "kaggle"
     try:
         if importlib.util.find_spec("google.colab") is not None:
             return "colab"
     except ModuleNotFoundError:  # no "google" package at all
         pass
-    if os.path.isdir("/kaggle/input"):
-        return "kaggle"
     return "local"
 
 

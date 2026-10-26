@@ -31,13 +31,14 @@ def test_paths_override_kept(monkeypatch):
     assert argv == ["train.py", "paths=local"]
 
 
-def test_colab_wins_over_its_kaggle_folders(monkeypatch):
+def test_kaggle_and_colab_markers(monkeypatch):
     import importlib.util
-    import os
 
     monkeypatch.delenv("PLATFORM", raising=False)
     monkeypatch.setattr(importlib.util, "find_spec", lambda name: object() if name == "google.colab" else None)
-    monkeypatch.setattr(os.path, "isdir", lambda path: path == "/kaggle/input")  # Colab also has /kaggle/input
+    monkeypatch.setenv("KAGGLE_KERNEL_RUN_TYPE", "Interactive")  # Kaggle also has google.colab
+    assert detect_platform() == "kaggle"
+    monkeypatch.delenv("KAGGLE_KERNEL_RUN_TYPE")
     assert detect_platform() == "colab"
     monkeypatch.setattr(importlib.util, "find_spec", lambda name: None)
-    assert detect_platform() == "kaggle"
+    assert detect_platform() == "local"
