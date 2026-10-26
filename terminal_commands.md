@@ -78,7 +78,7 @@ Then, inside the shell:
 ```bash
 mkdir -p /kaggle/working/code /kaggle/working/data/datasets/processed /kaggle/working/data/fpt_entrance_test/logs
 git clone -q https://github.com/hoangducanh1865/fpt_entrance_test.git /kaggle/working/code/fpt_entrance_test   # new code: git pull there
-ln -sfn /kaggle/input/grasp-anything-pp/Grasp-Anything-pp /kaggle/working/data/datasets/processed/Grasp-Anything-pp   # the Kaggle Dataset
+ln -sfn /kaggle/input/grasp-anything-pp /kaggle/working/data/datasets/processed/Grasp-Anything-pp   # the Kaggle Dataset
 cd /kaggle/working/code/fpt_entrance_test && pip install -q -r requirements.txt
 python src/train.py experiment=<EXP>                 # short runs
 tmux new -d -s <EXP> "python src/train.py experiment=<EXP> 2>&1 | tee /kaggle/working/data/fpt_entrance_test/logs/<EXP>.log"   # long runs

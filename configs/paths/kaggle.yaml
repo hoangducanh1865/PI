@@ -1,6 +1,7 @@
 # Paths on Kaggle, the same layout as Colab under /kaggle/working (the session's output folder): code/fpt_entrance_test
 # is this repo, data/ the datasets and everything the repo writes. The packed data is the Kaggle Dataset
-# grasp-anything-pp, mounted read-only under /kaggle/input/; data/datasets/processed/Grasp-Anything-pp is a link to it
+# hoangducanh1865/grasp-anything-pp (private), mounted read-only at /kaggle/input/grasp-anything-pp/ (files at its root);
+# data/datasets/processed/Grasp-Anything-pp is a link to that mount
 # (terminal_commands.md, section Kaggle).
 root_dir: ${oc.env:PROJECT_ROOT}   # set by src/train.py and src/eval.py
 base_dir: /kaggle/working
