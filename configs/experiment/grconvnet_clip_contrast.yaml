@@ -1,0 +1,13 @@
+# @package _global_
+# Proposed: the grconvnet_clip baseline plus the region-text contrastive grounding loss (src/models/region_text_contrast.py)
+# during training only. Same network at inference, same training settings as the baseline.
+name: grconvnet_clip_contrast
+
+data:
+  text_model: clip-vit-base-patch32
+  regions: true                # masks of the scene's objects, for the contrastive loss
+
+model:
+  fusion: albef
+  contrast_weight: 0.1         # assumption, not tuned: the loss starts near log(regions) ~ 1, the grasp loss near 0.03
+  contrast_temperature: 0.07   # CLIP's initial value

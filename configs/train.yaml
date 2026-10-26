@@ -19,12 +19,15 @@ data:
   text_model: null         # clip-vit-base-patch32: read the cached CLIP text features
   batch_size: 8            # authors
   num_workers: 2
+  regions: false           # true: scene region masks for the proposed contrastive loss
 
 model:
   fusion: null             # albef: the image features attend to the CLIP text tokens (src/models/grconvnet.py)
   channel_size: 32         # authors
   dropout: 0.1             # authors (--use-dropout 1 --dropout-prob 0.1)
   lr: 1.0e-3               # authors (Adam, PyTorch default learning rate)
+  contrast_weight: 0.0     # > 0: add the proposed region-text contrastive loss (training only)
+  contrast_temperature: 0.07
 
 trainer:
   max_epochs: 50               # authors

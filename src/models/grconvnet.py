@@ -81,14 +81,16 @@ class GenerativeResnet(nn.Module):
             if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d)):
                 nn.init.xavier_uniform_(m.weight, gain=1)
 
-    def forward(self, image, text_tokens=None, text_mask=None):
+    def forward(self, image, text_tokens=None, text_mask=None, return_features=False):
         x = F.relu(self.bn1(self.conv1(image)))
         x = F.relu(self.bn2(self.conv2(x)))
         x = F.relu(self.bn3(self.conv3(x)))
         x = self.res(x)
+        features = x  # image-only encoder features (B, 4C, H / 4, W / 4), before the text fusion
         if self.fusion is not None:
             x = self.fusion(x, text_tokens, text_mask)
         x = F.relu(self.bn4(self.conv4(x)))
         x = F.relu(self.bn5(self.conv5(x)))
         x = self.conv6(x)
-        return torch.cat([head(self.dropout(x)) for head in self.heads], dim=1)  # (B, 4, H, W)
+        maps = torch.cat([head(self.dropout(x)) for head in self.heads], dim=1)  # (B, 4, H, W)
+        return (maps, features) if return_features else maps

@@ -107,3 +107,13 @@ def test_prepare_data(tmp_path):
     with h5py.File(out / "test_unseen.h5") as f:
         assert not f["part_distinct"][:].any()
         assert list(f["grasp_offsets"]) == [0, 1, 2]
+
+    from src.data.grasp_anything import GraspAnything
+
+    regions = GraspAnything(str(out), "test_unseen", regions=True)  # one object (B_0) with two parts
+    sample = regions[0]
+    assert sample["regions"].shape == (2, 56, 56)  # the object + the rest of the scene
+    assert sample["region_valid"].tolist() == [True, False]  # the full-image mask leaves no "rest"
+    train = GraspAnything(str(out), "train", regions=True)  # object A_0 alone in train: parts in 3 rows
+    assert train.slots == 2 and train[1]["region_valid"].tolist() == [True, True]
+    assert torch.allclose(train[0]["regions"][0], train[2]["regions"][0])  # the same object for every part
