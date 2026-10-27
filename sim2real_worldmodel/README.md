@@ -19,6 +19,9 @@ per second):
 |---|---|---|
 | MacBook Air M1, state only / + 128 x 128 camera | 379 / 96 | **1,096** / **158** |
 | Colab CPU (2 vCPU, software Vulkan), state only / + camera | not run (OSMesa segfault) | 240 / 17 |
+| Kaggle (4 vCPU, Tesla T4), CPU simulation, state only / + camera | 106 / 102 | 295 / 214 |
+| Kaggle Tesla T4, GPU simulation, 256 environments, state only / + camera | not available | 6,901 / 3,500 |
+| Kaggle Tesla T4, GPU simulation, 1,024 environments, state only | not available | **17,830** |
 
 Setup notes measured on the way: robosuite 1.5.2 breaks on MuJoCo 3.17; ManiSkill on macOS always renders, so it
 needs Vulkan (MoltenVK) even without a camera; mani_skill 3.0.1 pins mplib 0.1.1, which has no Python 3.13 wheel.
