@@ -184,6 +184,7 @@ Mac (once: Vulkan for ManiSkill, which always renders on macOS; a venv of 2.3 GB
 ```bash
 brew install molten-vk vulkan-loader
 python3.12 -m venv tmp/venv_sim2real && tmp/venv_sim2real/bin/pip install -r sim2real_worldmodel/requirements.txt
+tmp/venv_sim2real/bin/pip install --no-deps mani_skill==3.0.1
 ```
 
 Mac, every shell (or put the export line in `~/.zshrc`):
