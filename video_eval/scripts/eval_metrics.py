@@ -51,10 +51,11 @@ def main() -> None:
             to_tensor = lambda v: torch.from_numpy(v).permute(0, 3, 1, 2).float() / 127.5 - 1  # noqa: E731
             with torch.no_grad():
                 distance = perceptual(to_tensor(fake), to_tensor(real)).mean().item()
+            pairs = list(zip(real, fake, strict=True))
             rows.append({
                 "model": model, "clip": clip,
-                "psnr": np.mean([peak_signal_noise_ratio(r, f, data_range=255) for r, f in zip(real, fake)]),
-                "ssim": np.mean([structural_similarity(r, f, channel_axis=2, data_range=255) for r, f in zip(real, fake)]),
+                "psnr": np.mean([peak_signal_noise_ratio(r, f, data_range=255) for r, f in pairs]),
+                "ssim": np.mean([structural_similarity(r, f, channel_axis=2, data_range=255) for r, f in pairs]),
                 "lpips": distance,
             })  # fmt: skip
 
@@ -72,7 +73,8 @@ def main() -> None:
     for model in args.models:
         values = {m: np.array([r[m] for r in rows if r["model"] == model]) for m in METRICS}
         summary.append([model, len(values["psnr"])] + [f"{v.mean():.3f} +- {v.std():.3f}" for v in values.values()])
-        print(f"{model:24s} clips {summary[-1][1]:3d}  " + "  ".join(f"{m} {s}" for m, s in zip(METRICS, summary[-1][2:])))
+        scores = "  ".join(f"{m} {s}" for m, s in zip(METRICS, summary[-1][2:], strict=True))
+        print(f"{model:24s} clips {summary[-1][1]:3d}  {scores}")
     if args.wandb:
         import wandb
 
