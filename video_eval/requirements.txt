@@ -1,0 +1,2 @@
+# Our scripts only; IRASim's own pinned packages are installed apart by scripts/setup_irasim.sh.
+omegaconf
