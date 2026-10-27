@@ -5,5 +5,5 @@ about 47\% of them are grasps on another object than the one in the prompt, so t
 We also find that the dataset's grasp labels are object-level: different part prompts of one object mostly share the same ground truth.
 We therefore add a region-text contrastive loss that asks the encoder features of the prompted object, pooled over its mask, to match the prompt better than the other objects of the same scene.
 The loss is used in training only and leaves the network at inference unchanged.
-Trained under the same conditions, it improves our reproduced baseline by 2.0 points on Seen and 7.5 points on Unseen classes.
+Trained under the same conditions, it improves our reproduced baseline by 2.0 points on Seen and 7.5 points on Unseen classes; the same failure analysis shows that the gain comes mostly from fewer missed predictions, while wrong-object grasps decrease only slightly.
 \end{abstract}
