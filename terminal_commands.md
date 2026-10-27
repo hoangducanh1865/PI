@@ -106,7 +106,7 @@ Add `--dry-run` to only write the kernel folder. The kernel also shows on kaggle
 ## 3. Colab
 
 Code and data are separate; on Colab everything stays on Drive, under `<BASE>` = `/content/drive/MyDrive/it/fpt/` (Kaggle: the same
-layout under `/kaggle/working/`):
+layout under `/kaggle/working/`; local: the folder two levels above the repo, `<BASE>/code/fpt_entrance_test`):
 
 | Folder | Content |
 |---|---|
