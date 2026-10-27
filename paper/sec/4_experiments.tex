@@ -6,7 +6,7 @@ We use the official split files of the Grasp-Anything code: objects of \texttt{s
 One prompt is one sample: 27.0k training, 3.0k Seen and 13.5k Unseen test prompts.
 A prediction succeeds if its IoU with a ground-truth grasp exceeds 25\% and its angle differs by less than $30^{\circ}$~\cite{kumra2020antipodal}; H is the harmonic mean of Seen and Unseen.
 Training follows the authors' code: Adam, learning rate $10^{-3}$, batch 8, 50 epochs of 1,000 batches; we use $\lambda = 0.1$ and $\tau = 0.07$ without tuning.
-Runs on two T4 GPUs use data parallelism (effective batch 16, twice the samples per epoch); we compare our method with the baseline trained in the same way.
+Both models are trained on two T4 GPUs with data parallelism (effective batch 16) under identical settings.
 
 \paragraph{Dataset observations.}
 On 1,000 random test objects with several parts, the part prompts of 70\% (Seen) and 83\% (Unseen) of the objects have near-identical grasp centres (within 5 pixels).
@@ -25,12 +25,11 @@ On 1,000 random test objects with several parts, the part prompts of 70\% (Seen)
     GraspMamba~\cite{nguyen2024graspmamba}$^\dagger$ & 0.63 & 0.41 & 0.52 \\
     \midrule
     GR-ConvNet + CLIP$^\dagger$ & 0.37 & 0.18 & 0.24 \\
-    GR-ConvNet + CLIP, reproduced (1 GPU) & 0.354 & 0.256 & 0.297 \\
-    GR-ConvNet + CLIP, reproduced (2 GPUs) & 0.407 & 0.260 & 0.317 \\
-    + region-text contrastive (ours, 2 GPUs) & \textbf{0.427} & \textbf{0.335} & \textbf{0.375} \\
+    GR-ConvNet + CLIP, reproduced & 0.407 & 0.260 & 0.317 \\
+    + region-text contrastive (ours) & \textbf{0.427} & \textbf{0.335} & \textbf{0.375} \\
     \bottomrule
   \end{tabular}
-  \caption{Success rates on Grasp-Anything++. $^\dagger$ as reported by the authors (other data subsets); only the lower block shares our split; compare rows with the same number of GPUs. MaskGrasp's H is the harmonic mean of its reported Seen and Unseen.}
+  \caption{Success rates on Grasp-Anything++. $^\dagger$ as reported by the authors (other data subsets); only the last two rows share our split and training setup. MaskGrasp's H is the harmonic mean of its reported Seen and Unseen.}
   \label{tab:main}
 \end{table}
 
@@ -40,19 +39,19 @@ On 1,000 random test objects with several parts, the part prompts of 70\% (Seen)
   \begin{tabular}{@{}lcccc@{}}
     \toprule
     & \multicolumn{2}{c}{Baseline} & \multicolumn{2}{c}{Ours} \\
-    Share of failures & Seen & Unseen & Seen & Unseen \\
+    Share of test prompts & Seen & Unseen & Seen & Unseen \\
     \midrule
-    Wrong object & 55\% & 57\% & - & - \\
-    Right object, wrong geometry & 30\% & 28\% & - & - \\
-    No grasp predicted & 12\% & 12\% & - & - \\
+    Success & 40.7\% & 26.0\% & 42.7\% & 33.5\% \\
+    Wrong object & 27.4\% & 35.5\% & 26.8\% & 33.7\% \\
+    Right object, wrong geometry & 20.8\% & 24.0\% & 22.2\% & 23.9\% \\
+    No grasp predicted & 8.9\% & 11.5\% & 5.1\% & 4.9\% \\
     \bottomrule
   \end{tabular}
-  \caption{Failure types, judged by two vision-language models on 1,000 failures of the baseline (84\% agreement; agreed cases only).}
+  \caption{Outcome of each test prompt. Failure types are judged by two vision-language models on 1,000 failures per model (87\% agreement; agreed cases only) and re-weighted to all failures; the small rest lands on the background.}
   \label{tab:errors}
 \end{table}
 
 \paragraph{Results.}
 \Cref{tab:main} compares the methods and \cref{tab:errors} the failure types.
 Trained under identical conditions, the contrastive loss improves the baseline by 2.0 points on Seen, 7.5 points on Unseen and 5.8 points of H.
-The largest gain is on unseen classes, where grounding the prompt in the right object matters most.
-\TODO{share of wrong-object failures of our model.}
+Most of the gain comes from fewer missed predictions (no grasp on 11.5\% to 4.9\% of Unseen prompts), while wrong-object grasps drop only slightly (35.5\% to 33.7\%, \cref{tab:errors}), so grounding remains the main weakness.

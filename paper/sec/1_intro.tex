@@ -7,7 +7,7 @@ Recent methods improve the success rate with diffusion models~\cite{vuong2024lan
 
 Before proposing a method, we ask where a simple baseline fails.
 We reproduce GR-ConvNet + CLIP~\cite{kumra2020antipodal,vuong2024language} and classify 1,000 of its failures with two vision-language models.
-About 56\% of the failures grasp another object than the prompted one (\cref{tab:errors}); a wrong grasp shape on the right object accounts for only about 29\%.
+About 47\% of the failures grasp another object than the prompted one (\cref{tab:errors}); a wrong grasp shape on the right object accounts for about 34\%.
 We also find that the part-level labels of the dataset mostly repeat the object-level ones, so the prompt mainly selects the object.
 The baseline's loss only says where to grasp: nothing tells its encoder, trained from scratch, which object a prompt names.
 

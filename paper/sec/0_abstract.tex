@@ -1,7 +1,7 @@
 \begin{abstract}
 Language-driven grasp detection predicts a grasp for the object named in a text prompt.
 We reproduce the GR-ConvNet + CLIP baseline of Grasp-Anything++ and analyse its failures:
-about 56\% of them are grasps on another object than the one in the prompt, so the main weakness is grounding, not grasp geometry.
+about 47\% of them are grasps on another object than the one in the prompt, so the main weakness is grounding, not grasp geometry.
 We also find that the dataset's grasp labels are object-level: different part prompts of one object mostly share the same ground truth.
 We therefore add a region-text contrastive loss that asks the encoder features of the prompted object, pooled over its mask, to match the prompt better than the other objects of the same scene.
 The loss is used in training only and leaves the network at inference unchanged.
