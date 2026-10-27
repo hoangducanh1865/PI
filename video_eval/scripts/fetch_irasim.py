@@ -9,15 +9,18 @@ Usage (from video_eval/):
 
 <ARCHIVE> is a file name of the release without extension (bridge_checkpoints_data, bridge_evaluation_data, ...).
 Members are written under <DIR> with their path inside the archive (opensource_robotdata/...), the layout IRASim's
-configs expect. Checked on 2026-10-27: the checkpoint archives are plain tar despite their .tar.gz name and the
-server serves byte ranges, so a member is fetched alone by reading the 512-byte tar headers; the train and evaluation
-archives are real gzip, so they are streamed from the start and only matching members are kept (--max-files stops
-the stream early).
+configs expect. Source: the authors' Hugging Face mirror fangqi/IRASim, where each archive is cut into 2 GiB parts
+(on Kaggle 82 MB/s, against 0.5 MB/s from the original server; 2026-10-27). Checked the same day: the checkpoint
+archives are plain tar despite their .tar.gz name, so a member is fetched alone by reading the 512-byte tar headers
+with byte ranges; the train and evaluation archives are real gzip, so they are streamed from the start and only
+matching members are kept (--max-files stops the stream early).
 
 Author: Duc Anh Hoang
 """
 
 import argparse
+import io
+import json
 import os
 import re
 import shutil
@@ -25,25 +28,66 @@ import tarfile
 import time
 import urllib.request
 
-URL = "https://lf-robot-opensource.bytetos.com/obj/lab-robot-public/opensource_IRASim_v1/{}.tar.gz"
+LISTING = "https://huggingface.co/api/datasets/fangqi/IRASim/tree/main"
+FILE = "https://huggingface.co/datasets/fangqi/IRASim/resolve/main/{}"
+PART = 2**31  # every part but the last is 2 GiB: archive byte b is byte b % PART of part b // PART
 BLOCK = 512
 
 
-def open_range(url: str, start: int, length: int | None = None):
-    end = "" if length is None else start + length - 1
-    request = urllib.request.Request(url, headers={"Range": f"bytes={start}-{end}"})
-    return urllib.request.urlopen(request, timeout=60)
+class Archive:
+    """One release archive seen as a single byte sequence over its parts on Hugging Face."""
+
+    def __init__(self, name: str):
+        with urllib.request.urlopen(LISTING, timeout=60) as response:
+            parts = sorted(f["path"] for f in json.load(response) if f["path"].startswith(f"{name}.tar.gz.sfpart_"))
+        assert parts, f"no parts of {name} on the mirror"
+        self.urls = [FILE.format(p) for p in parts]
+
+    def chunks(self, start: int, length: int | None = None):
+        """Bytes [start, start + length) as chunks, crossing part boundaries; to the end if length is None."""
+        end = None if length is None else start + length
+        while end is None or start < end:
+            part, offset = divmod(start, PART)
+            if part >= len(self.urls):
+                return
+            stop = PART if end is None else min(PART, offset + end - start)
+            request = urllib.request.Request(self.urls[part], headers={"Range": f"bytes={offset}-{stop - 1}"})
+            with urllib.request.urlopen(request, timeout=60) as response:
+                while chunk := response.read(16 << 20):
+                    start += len(chunk)
+                    yield chunk
+            if part == len(self.urls) - 1:  # the last part is shorter than PART
+                return
+
+    def read(self, start: int, length: int) -> bytes:
+        return b"".join(self.chunks(start, length))
+
+    def stream(self, start: int = 0, length: int | None = None) -> io.BufferedReader:
+        return io.BufferedReader(Reader(self.chunks(start, length)), buffer_size=16 << 20)
 
 
-def is_gzip(url: str) -> bool:
-    return open_range(url, 0, 2).read() == b"\x1f\x8b"
+class Reader(io.RawIOBase):
+    """A read-only file over a generator of byte chunks (for tarfile and shutil)."""
+
+    def __init__(self, chunks):
+        self.chunks, self.rest = chunks, b""
+
+    def readable(self) -> bool:
+        return True
+
+    def readinto(self, buffer) -> int:
+        if not self.rest:
+            self.rest = next(self.chunks, b"")
+        n = min(len(buffer), len(self.rest))
+        buffer[:n], self.rest = self.rest[:n], self.rest[n:]
+        return n
 
 
-def plain_members(url: str):
-    """(TarInfo, data offset) of every member of an uncompressed remote tar, one header request each."""
+def plain_members(archive: Archive):
+    """(TarInfo, data offset) of every member of an uncompressed tar, one header request each."""
     offset = 0
     while True:
-        header = open_range(url, offset, BLOCK).read()
+        header = archive.read(offset, BLOCK)
         if header == b"\0" * BLOCK:
             return
         info = tarfile.TarInfo.frombuf(header, "utf-8", "surrogateescape")
@@ -69,19 +113,19 @@ def main() -> None:
     parser.add_argument("--max-files", type=int, help="stop after this many matching files (get)")
     parser.add_argument("--max-seconds", type=float, default=120, help="stop listing a gzip archive after this (list)")
     args = parser.parse_args()
-    url = URL.format(args.archive)
+    archive = Archive(args.archive)
     patterns = [re.compile(m) for m in args.match]
     start, kept, last_dir = time.time(), 0, None
 
-    if not is_gzip(url):
-        for info, data_offset in plain_members(url):
+    if archive.read(0, 2) != b"\x1f\x8b":  # not gzip: plain tar
+        for info, data_offset in plain_members(archive):
             if args.action == "list":
                 print(f"{info.name}  {info.size / 1e9:.3f} GB  offset {data_offset}")
             elif info.isfile() and any(p.search(info.name) for p in patterns):
-                write(open_range(url, data_offset, info.size), os.path.join(args.out, info.name), info.size)
+                write(archive.stream(data_offset, info.size), os.path.join(args.out, info.name), info.size)
         return
 
-    with urllib.request.urlopen(url, timeout=60) as response, tarfile.open(fileobj=response, mode="r|gz") as tar:
+    with tarfile.open(fileobj=archive.stream(), mode="r|gz") as tar:
         for info in tar:
             if args.action == "list":
                 folder = os.path.dirname(info.name)
