@@ -27,7 +27,7 @@ IRASim code is cloned and run as is, outside this folder; nothing of it is copie
 
 | Model | Seeds | PSNR (dB) | SSIM | LPIPS |
 |---|---|---|---|---|
-| IRASim-Frame-Ada | 5 (3407 to 3409, 3411, 3412) | **23.95** (per seed 23.77 to 24.13) | <u>0.814</u> (0.813 to 0.817) | **0.081** (0.079 to 0.083) |
+| IRASim-Frame-Ada | 6 (3407 to 3412) | **23.94** (per seed 23.77 to 24.13) | <u>0.814</u> (0.813 to 0.817) | **0.081** (0.079 to 0.083) |
 | IRASim-Video-Ada | 1 (3408) | <u>23.41</u> | 0.811 | <u>0.085</u> |
 | LVDM | 1 (3408) | 23.06 | 0.801 | 0.094 |
 | VDM | 1 (3407) | 17.85 | 0.713 | 0.203 |
