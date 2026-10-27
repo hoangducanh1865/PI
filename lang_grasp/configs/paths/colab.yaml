@@ -1,0 +1,7 @@
+# Paths on Colab, all on Drive so they survive the session. <base_dir>/code/fpt_entrance_test/lang_grasp is this task
+# (updated with git pull only, nothing is written into it); <base_dir>/data/ holds the datasets and everything the task
+# writes.
+root_dir: ${oc.env:PROJECT_ROOT}   # set by src/train.py and src/eval.py
+base_dir: /content/drive/MyDrive/it/fpt
+data_dir: ${paths.base_dir}/data/datasets/processed/Grasp-Anything-pp   # the output of scripts/prepare_data.py
+log_dir: ${paths.base_dir}/data/lang_grasp/logs

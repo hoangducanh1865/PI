@@ -1,4 +1,5 @@
-# Tool settings only; the dependencies are in requirements.txt.
+# Lint settings shared by every task folder; each task keeps its dependencies (requirements.txt) and test settings
+# (its own pyproject.toml) in its folder.
 
 [tool.ruff]
 line-length = 120
@@ -8,7 +9,5 @@ extend-exclude = ["notebooks", "paper"]   # notebooks hold shell commands only
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = ["."]
-addopts = "-q"
+[tool.ruff.lint.isort]
+known-first-party = ["src"]   # every task folder names its package src

@@ -1,0 +1,6 @@
+# Test settings of this task (run pytest from this folder); the lint settings are shared in ../pyproject.toml.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"

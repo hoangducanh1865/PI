@@ -219,18 +219,20 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# ---> fpt_entrance_test
+# ---> fpt_entrance_test (one folder per task: lang_grasp/, ...)
 .DS_Store
 # local only (the repo is public): AI agent guide, notes and chat history; reference material
 /AGENTS.md
 /CLAUDE.md
 /agents/
 /docs/
-# data, runs and scratch (on Colab: Drive; on Kaggle: Datasets and kernel outputs)
+# data, runs and scratch (on Colab: Drive; on Kaggle: Datasets and kernel outputs); src/data/ is code, so data/ is
+# ignored only at the repo root and the top of a task folder
 /data/
-/logs/
-/outputs/
-/multirun/
+/*/data/
+logs/
+outputs/
+multirun/
 /tmp/
 # LaTeX build files and the compiled paper
 *.aux
@@ -240,7 +242,7 @@ __marimo__/
 *.fls
 *.out
 *.synctex.gz
-/paper/*.pdf
+/*/paper/*.pdf
 # notebooks hold local settings such as HF_TOKEN
 /notebooks/
 slide

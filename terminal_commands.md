@@ -1,7 +1,9 @@
 # Terminal commands
 
-One codebase, three platforms. Every command below runs from the repo root and is the same everywhere: the code
-detects the platform (`src/utils/platform.py`) and reads its paths from `configs/paths/<platform>.yaml`.
+One repo, one folder per task (`lang_grasp/`, ...), three platforms. A task's commands run from its folder
+(`cd lang_grasp`) and are the same everywhere: the code detects the platform (`src/utils/platform.py` of the task) and
+reads its paths from the task's `configs/paths/<platform>.yaml`. The platform tools shared by every task
+(`scripts/kaggle_shell.py`, `scripts/kaggle_run.py`, `scripts/colab_ssh.sh`) run from the repo root.
 
 | Platform | GPU | Role | How you reach it |
 |---|---|---|---|
@@ -14,7 +16,7 @@ Use the GPUs, not the TPUs (Kaggle TPU v5e-8, Colab TPU v5e-1): PyTorch on a TPU
 ## 0. One-time setup on your machine
 
 ```bash
-pip install -r requirements.txt
+pip install -r lang_grasp/requirements.txt   # a task's dependencies (one venv per task is fine)
 pip install kaggle                       # Kaggle CLI, for background runs
 cp .env.example .env                     # then paste the Kaggle session URL into .env (gitignored)
 ```
@@ -26,26 +28,27 @@ internet.
 ## 1. Local
 
 ```bash
+cd lang_grasp
 python src/train.py experiment=grconvnet_clip --cfg job    # print the composed config of a run
 pytest                                               # configs compose on every platform
 ```
 
-## Data: pack Grasp-Anything++ (once, on Colab)
+## lang_grasp data: pack Grasp-Anything++ (once, on Colab, from `lang_grasp/`)
 
 Raw files (downloaded from Hugging Face) in `<BASE>/data/datasets/raw/`; output in `.../processed/Grasp-Anything-pp/`. CPU runtime is
 enough; about 40 min (one sequential pass over the 65 GB image zip). Run it inside tmux; the log goes to Drive
 (`logs/scripts/`), never into the code folder:
 
 ```bash
-mkdir -p /content/drive/MyDrive/it/fpt/data/fpt_entrance_test/logs/scripts
-tmux new -d -s prep "python scripts/prepare_data.py --raw /content/drive/MyDrive/it/fpt/data/datasets/raw --out /content/drive/MyDrive/it/fpt/data/datasets/processed/Grasp-Anything-pp 2>&1 | tee /content/drive/MyDrive/it/fpt/data/fpt_entrance_test/logs/scripts/prepare_data.log"
-tail -n 5 /content/drive/MyDrive/it/fpt/data/fpt_entrance_test/logs/scripts/prepare_data.log
+mkdir -p /content/drive/MyDrive/it/fpt/data/lang_grasp/logs/scripts
+tmux new -d -s prep "python scripts/prepare_data.py --raw /content/drive/MyDrive/it/fpt/data/datasets/raw --out /content/drive/MyDrive/it/fpt/data/datasets/processed/Grasp-Anything-pp 2>&1 | tee /content/drive/MyDrive/it/fpt/data/lang_grasp/logs/scripts/prepare_data.log"
+tail -n 5 /content/drive/MyDrive/it/fpt/data/lang_grasp/logs/scripts/prepare_data.log
 python scripts/cache_text_emb.py --processed /content/drive/MyDrive/it/fpt/data/datasets/processed/Grasp-Anything-pp   # then: CLIP text features (~2 min)
 ```
 
 Expected end: `done in ... min` and `processed/{train,test_seen,test_unseen}.h5` + `stats.json`.
 
-## Train and evaluate (any platform; on Colab inside tmux, over SSH)
+## lang_grasp: train and evaluate (any platform, from `lang_grasp/`; on Colab inside tmux, over SSH)
 
 ```bash
 python -u src/train.py experiment=<EXP> +trainer.fast_dev_run=true      # smoke test: 1 train + 1 val batch
@@ -56,7 +59,7 @@ python -u src/eval.py ckpt_path=<LOG_DIR>/<EXP>/<RUN>/checkpoints/<BEST>.ckpt   
 ```
 
 `<EXP>`: `grconvnet` (image only) or `grconvnet_clip` (the paper's baseline). `<LOG_DIR>` on Colab:
-`/content/drive/MyDrive/it/fpt/data/fpt_entrance_test/logs` (Kaggle: `/kaggle/working/data/fpt_entrance_test/logs`). One epoch on a Colab T4 takes about 5 min, a full run (50 epochs) about 4 h.
+`/content/drive/MyDrive/it/fpt/data/lang_grasp/logs` (Kaggle: `/kaggle/working/data/lang_grasp/logs`). One epoch on a Colab T4 takes about 5 min, a full run (50 epochs) about 4 h.
 `-u` keeps Python from buffering the output, so the log shows the progress bar.
 
 ## 2. Kaggle
@@ -76,13 +79,13 @@ python scripts/kaggle_shell.py                       # line-by-line shell (cd is
 Then, inside the shell:
 
 ```bash
-mkdir -p /kaggle/working/code /kaggle/working/data/datasets/processed /kaggle/working/data/fpt_entrance_test/logs
+mkdir -p /kaggle/working/code /kaggle/working/data/datasets/processed /kaggle/working/data/lang_grasp/logs
 git clone -q https://github.com/hoangducanh1865/fpt_entrance_test.git /kaggle/working/code/fpt_entrance_test   # new code: git pull there
 ln -sfn /kaggle/input/grasp-anything-pp /kaggle/working/data/datasets/processed/Grasp-Anything-pp   # the Kaggle Dataset
-cd /kaggle/working/code/fpt_entrance_test && pip install -q -r requirements.txt
+cd /kaggle/working/code/fpt_entrance_test/lang_grasp && pip install -q -r requirements.txt
 python src/train.py experiment=<EXP>                 # short runs
-tmux new -d -s <EXP> "python src/train.py experiment=<EXP> 2>&1 | tee /kaggle/working/data/fpt_entrance_test/logs/<EXP>.log"   # long runs
-tail -n 20 /kaggle/working/data/fpt_entrance_test/logs/<EXP>.log
+tmux new -d -s <EXP> "python src/train.py experiment=<EXP> 2>&1 | tee /kaggle/working/data/lang_grasp/logs/<EXP>.log"   # long runs
+tail -n 20 /kaggle/working/data/lang_grasp/logs/<EXP>.log
 ```
 
 The line-by-line shell has no full-screen programs (`vim`, `htop`, `tmux attach`): follow a run with `tail`, stop it
@@ -92,15 +95,18 @@ into `.env`.
 
 ### Background run (batch mode: no browser, up to 12 h)
 
-Push the code to GitHub first (Kaggle clones the pushed commit), then:
+Push the code to GitHub first (Kaggle clones the pushed commit), then, from the repo root (`--task` is the folder
+whose `requirements.txt` is installed and where the command runs):
 
 ```bash
-python scripts/kaggle_run.py "python src/train.py experiment=<EXP>" --kernel <SLUG> [--dataset <OWNER>/<DATASET>]
+python scripts/kaggle_run.py "python src/train.py experiment=<EXP>" --task lang_grasp --kernel <SLUG> [--dataset <OWNER>/<DATASET>]
 kaggle kernels status <USER>/<SLUG>                  # queued, running, complete or error
 kaggle kernels output <USER>/<SLUG> -p logs/kaggle/<SLUG>    # the log and /kaggle/working (logs/, checkpoints)
 ```
 
-Example: `python scripts/kaggle_run.py "python src/train.py experiment=grconvnet_clip" --kernel baseline`.
+Example: `python scripts/kaggle_run.py "python src/train.py experiment=grconvnet_clip" --task lang_grasp --kernel baseline`.
+Kernels pushed before the task folders existed (commit `a6c62fb` and older) write under `data/fpt_entrance_test/logs/`
+in their output, later ones under `data/<task>/logs/`.
 Add `--dry-run` to only write the kernel folder. The kernel also shows on kaggle.com (Your Work > Code).
 
 ## 3. Colab
@@ -110,13 +116,13 @@ layout under `/kaggle/working/`; local: the folder two levels above the repo, `<
 
 | Folder | Content |
 |---|---|
-| `code/fpt_entrance_test/` | the code: updated with `git pull` only, nothing is ever written into it |
+| `code/fpt_entrance_test/` | the code, one folder per task: updated with `git pull` only, nothing is ever written into it |
 | `data/datasets/raw/` | the Hugging Face downloads (`Grasp-Anything/`, `Grasp-Anything-pp/`) |
 | `data/datasets/processed/Grasp-Anything-pp/` | packed splits `*.h5`, text caches `*_text_*.npz`, `stats.json`; `test/` = 20 samples drawn for inspection |
-| `data/fpt_entrance_test/logs/<EXP>/<DATE>_<TIME>/` | one training run: `.hydra/config.yaml`, `metrics.csv`, `checkpoints/` |
-| `data/fpt_entrance_test/logs/eval/<DATE>_<TIME>/` | one evaluation: `results.json`, `predictions_<split>.npz` |
-| `data/fpt_entrance_test/logs/scripts/` | logs of the data scripts |
-| `data/fpt_entrance_test/analysis/` | figures and tables of the checks and the error analysis |
+| `data/lang_grasp/logs/<EXP>/<DATE>_<TIME>/` | one training run: `.hydra/config.yaml`, `metrics.csv`, `checkpoints/` |
+| `data/lang_grasp/logs/eval/<DATE>_<TIME>/` | one evaluation: `results.json`, `predictions_<split>.npz` |
+| `data/lang_grasp/logs/scripts/` | logs of the data scripts |
+| `data/lang_grasp/analysis/` | figures and tables of the checks and the error analysis |
 
 The notebook `notebooks/colab.ipynb` is local only (gitignored, it holds `HF_TOKEN`). Open it in VS Code with the Google
 Colab extension (Select Kernel > Colab > New Colab Server > GPU T4, or CPU for downloads).
@@ -149,11 +155,11 @@ Host *.trycloudflare.com
 2. **Wait about 30 seconds** (the new host name needs time to appear in DNS), then in your terminal:
 
 ```bash
-ssh <HOST>.trycloudflare.com                         # lands in the code folder on Drive
+ssh <HOST>.trycloudflare.com                         # lands in the repo root on Drive
 tmux new -s main                                     # anything long runs inside tmux: detach Ctrl-b d
 tmux attach -t main                                  # back to it after an SSH drop
 nvidia-smi
-python src/train.py experiment=<EXP>
+cd lang_grasp && python src/train.py experiment=<EXP>
 ```
 
 Code: `/content/drive/MyDrive/it/fpt/code/fpt_entrance_test`, kept between sessions. Update it only by: edit on the Mac,

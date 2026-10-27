@@ -33,7 +33,7 @@ import h5py
 import numpy as np
 from PIL import Image, ImageDraw
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # repo root, for src.*
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # task root, for src.*
 sys.dont_write_bytecode = True
 from src.utils.grasp import corners, iou  # noqa: E402
 

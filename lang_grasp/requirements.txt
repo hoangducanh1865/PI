@@ -7,7 +7,7 @@ pillow
 scikit-image   # grasp maps, decoding and IoU (src/utils/grasp.py)
 transformers   # CLIP text encoder (scripts/cache_text_emb.py)
 
-# scripts/kaggle_shell.py
+# ../scripts/kaggle_shell.py (platform tools at the repo root)
 websocket-client
 
 # tests and lint

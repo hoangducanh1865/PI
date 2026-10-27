@@ -1,0 +1,6 @@
+# Paths on the Mac or the PC, the same layout as Colab and Kaggle: this task sits at
+# <base_dir>/code/fpt_entrance_test/lang_grasp and <base_dir>/data/ holds the datasets and everything the task writes.
+root_dir: ${oc.env:PROJECT_ROOT}   # set by src/train.py and src/eval.py
+base_dir: ${paths.root_dir}/../../..
+data_dir: ${paths.base_dir}/data/datasets/processed/Grasp-Anything-pp   # the output of scripts/prepare_data.py
+log_dir: ${paths.base_dir}/data/lang_grasp/logs

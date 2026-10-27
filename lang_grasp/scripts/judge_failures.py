@@ -25,7 +25,7 @@ import re
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # repo root
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # repo root, holds .env
 QUESTION = """The image shows a scene and ONE predicted robot grasp: a yellow rectangle with a yellow dot at its centre.
 The robot was told: "{prompt}"
 Look at what lies under the yellow dot. Answer with JSON only, no other text:
