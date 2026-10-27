@@ -7,6 +7,7 @@ and the experiments that use them.
 
 | Path | Content |
 |---|---|
+| `scripts/extract_mimicgen.py` | MimicGen human source demos and generated demos reduced to end-effector, gripper and action trajectories (no images) |
 | `scripts/bench_sim.py` | the same Panda pick-a-cube task in robosuite (MuJoCo) and ManiSkill3: start-up time, steps per second with and without a camera, a short video |
 
 Every command runs from this folder (`cd sim2real_worldmodel`); per platform: `../terminal_commands.md`.
