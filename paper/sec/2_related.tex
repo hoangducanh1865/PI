@@ -1,12 +1,8 @@
 \section{Related work}
 \label{sec:related}
 
-\paragraph{Language-driven grasp detection.}
-Grasp-Anything~\cite{vuong2023grasp} and its language extension Grasp-Anything++~\cite{vuong2024language} provide about one million synthetic scenes with grasp rectangles, part masks and prompts.
-LGD~\cite{vuong2024language} and LLGD~\cite{nguyen2024lightweight} generate grasps with diffusion and consistency models; GraspMamba~\cite{nguyen2024graspmamba} fuses text and image features at several levels.
+Grasp-Anything~\cite{vuong2023grasp} and Grasp-Anything++~\cite{vuong2024language} are large synthetic grasp datasets with part masks and prompts.
+LGD~\cite{vuong2024language} and LLGD~\cite{nguyen2024lightweight} generate grasps with diffusion and consistency models; GraspMamba~\cite{nguyen2024graspmamba} fuses text and image at several levels with state-space models.
 Closest to us, MaskGrasp~\cite{vo2024maskgrasp} feeds segmentation features into attention at inference and adds a triplet loss between grasp-region and mask features.
-Our loss differs in three ways: it contrasts image regions with the \emph{prompt}, its negatives are the \emph{other objects of the same scene}, and masks are needed only during training.
-
-\paragraph{Contrastive vision-language learning.}
-CLIP~\cite{radford2021clip} aligns whole images and texts with the InfoNCE loss~\cite{oord2018cpc}; ALBEF~\cite{li2021albef} aligns them before fusing them with cross-attention.
-We apply the same principle at the level of object regions inside one scene, where the negatives are the hardest ones: objects the robot could grasp by mistake.
+Our loss instead contrasts image regions with the \emph{prompt}, takes the \emph{other objects of the same scene} as negatives, and needs masks only in training.
+It applies the image-text InfoNCE loss~\cite{oord2018cpc} of CLIP~\cite{radford2021clip} and ALBEF~\cite{li2021albef} to object regions of one scene.

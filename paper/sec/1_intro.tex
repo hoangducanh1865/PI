@@ -1,17 +1,10 @@
 \section{Introduction}
 \label{sec:intro}
 
-A robot that follows instructions such as ``pick up the pear by its stem'' must find the named object and predict a grasp on it.
-Grasp-Anything++~\cite{vuong2024language} frames this as language-driven grasp detection: given an RGB image and a prompt, predict a 2D grasp rectangle $g = (x, y, w, h, \theta)$ for a two-finger gripper.
-Recent methods improve the success rate with diffusion models~\cite{vuong2024language,nguyen2024lightweight}, mask-guided attention~\cite{vo2024maskgrasp} or state-space models~\cite{nguyen2024graspmamba}.
+Grasp-Anything++~\cite{vuong2024language} defines language-driven grasp detection: given an RGB image and a prompt such as ``pick up the pear by its stem'', predict a 2D grasp rectangle $g = (x, y, w, h, \theta)$ for a two-finger gripper.
 
 Before proposing a method, we ask where a simple baseline fails.
-We reproduce GR-ConvNet + CLIP~\cite{kumra2020antipodal,vuong2024language} and classify 1,000 of its failures with two vision-language models.
-About 47\% of the failures grasp another object than the prompted one (\cref{tab:errors}); a wrong grasp shape on the right object accounts for about 34\%.
-We also find that the part-level labels of the dataset mostly repeat the object-level ones, so the prompt mainly selects the object.
-The baseline's loss only says where to grasp: nothing tells its encoder, trained from scratch, which object a prompt names.
+We reproduce GR-ConvNet + CLIP~\cite{kumra2020antipodal,vuong2024language} and classify 1,000 of its failures with two vision-language models: about 47\% grasp another object than the prompted one, and about 34\% have a wrong grasp shape on the right object.
+The baseline's loss only says where to grasp; nothing tells its encoder, trained from scratch, which object a prompt names.
 
-Our contributions are:
-(1) a failure analysis of a reproduced baseline on Grasp-Anything++ that identifies grounding as the main error;
-(2) a region-text contrastive grounding loss with hard negatives taken from the other objects of the same scene, used in training only;
-(3) a gain of 7.5 points on unseen classes over the same baseline trained under identical conditions, with an analysis showing that it comes mostly from fewer missed predictions rather than from fewer wrong-object grasps.
+We contribute this failure analysis, a training-only region-text contrastive loss whose negatives are the other objects of the same scene, and a 7.5-point gain on unseen classes that, as the same analysis shows, comes mostly from fewer missed predictions.
