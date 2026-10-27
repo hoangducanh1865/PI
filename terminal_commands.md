@@ -26,7 +26,7 @@ internet.
 ## 1. Local
 
 ```bash
-python src/train.py experiment=baseline --cfg job    # print the composed config of a run
+python src/train.py experiment=grconvnet_clip --cfg job    # print the composed config of a run
 pytest                                               # configs compose on every platform
 ```
 
@@ -100,7 +100,7 @@ kaggle kernels status <USER>/<SLUG>                  # queued, running, complete
 kaggle kernels output <USER>/<SLUG> -p logs/kaggle/<SLUG>    # the log and /kaggle/working (logs/, checkpoints)
 ```
 
-Example: `python scripts/kaggle_run.py "python src/train.py experiment=baseline" --kernel baseline`.
+Example: `python scripts/kaggle_run.py "python src/train.py experiment=grconvnet_clip" --kernel baseline`.
 Add `--dry-run` to only write the kernel folder. The kernel also shows on kaggle.com (Your Work > Code).
 
 ## 3. Colab
