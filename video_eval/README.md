@@ -11,6 +11,7 @@ task completion and robot motion.
 | `scripts/setup_irasim.sh` | official IRASim code at a pinned commit, its pinned packages apart from the platform's, the SDXL VAE |
 | `scripts/select_episodes.py` | the Bridge test episodes generated: the first two per instruction verb |
 | `scripts/make_references.py` | the same clips as real video (ceiling) and as the still first frame (floor), with IRASim's preprocessing, plus the robot state |
+| `scripts/eval_metrics.py` | PSNR, SSIM, LPIPS of generated clips against the real clips (frames 1 to 15) |
 | `scripts/kaggle_batch.sh` | the whole chain on a fresh Kaggle machine (fetch, setup, choose, generate), one job queue per GPU |
 | `scripts/run_irasim.py` | generate the chosen clips with one released model (Frame-Ada, Video-Ada, LVDM, VDM) and seed |
 
