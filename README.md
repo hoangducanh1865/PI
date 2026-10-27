@@ -6,6 +6,7 @@ self-contained (its own code, configs, tests and `requirements.txt`) and its com
 | Folder | Task |
 |---|---|
 | [`lang_grasp/`](lang_grasp/) | Entrance test: region-text contrastive grounding for language-driven grasp detection on Grasp-Anything++ (code and paper) |
+| [`sim2real_worldmodel/`](sim2real_worldmodel/) | Work in progress: does synthetic robot data (simulator or world model) move like human demonstrations? |
 
 Shared by every task: `scripts/` (run commands on Kaggle and Colab from a local terminal), `terminal_commands.md`
 (every command, per platform) and `pyproject.toml` (lint settings). Data never goes into the repo: each platform has

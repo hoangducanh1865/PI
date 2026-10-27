@@ -1,0 +1,7 @@
+# Versions measured on 2026-10-27. robosuite 1.5.2 fails on MuJoCo 3.17 (a joint-type check in its MuJoCo bindings
+# no longer matches), so MuJoCo stays on 3.3. mani_skill pins numpy below 2.
+mujoco==3.3.7
+robosuite==1.5.2
+mani_skill==3.0.1
+torch   # Colab and Kaggle ship it: keep it unpinned so pip keeps their CUDA build
+imageio

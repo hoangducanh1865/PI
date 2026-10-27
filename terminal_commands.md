@@ -174,3 +174,42 @@ Changing the runtime type (GPU to CPU or back) gives a new machine: run cells 1,
 | `websocket: bad handshake` | the tunnel is down (cell 4 stopped, runtime restarted) | run cell 4 again, use the new host |
 | cell 4 prints `sshd is not listening on 127.0.0.1:2022` and a log | the SSH server did not start | paste the log to Claude |
 | Colab Secrets error about `HF_TOKEN` | Secrets only work in the Colab web UI, not in VS Code | define `HF_TOKEN = "..."` in the local notebook |
+
+## 4. sim2real_worldmodel
+
+### Simulator benchmark (`scripts/bench_sim.py`)
+
+Mac (once: Vulkan for ManiSkill, which always renders on macOS; a venv of 2.3 GB):
+
+```bash
+brew install molten-vk vulkan-loader
+python3.12 -m venv tmp/venv_sim2real && tmp/venv_sim2real/bin/pip install -r sim2real_worldmodel/requirements.txt
+```
+
+Mac, every shell (or put the export line in `~/.zshrc`):
+
+```bash
+export VK_ICD_FILENAMES=/opt/homebrew/etc/vulkan/icd.d/MoltenVK_icd.json DYLD_LIBRARY_PATH=/opt/homebrew/lib
+cd sim2real_worldmodel
+../tmp/venv_sim2real/bin/python scripts/bench_sim.py --sim robosuite --out /Users/hoangducanh/Documents/tmp_it/fpt/data/sim2real_worldmodel/bench            # then again with --camera
+../tmp/venv_sim2real/bin/python scripts/bench_sim.py --sim maniskill --out /Users/hoangducanh/Documents/tmp_it/fpt/data/sim2real_worldmodel/bench            # then again with --camera
+```
+
+Expected: one JSON line per run in `bench_sim.jsonl` (about 400 / 100 steps per second for robosuite, 1,100 / 160 for
+ManiSkill on the M1, without / with camera) and one GIF per simulator.
+
+Colab (T4 runtime; in `notebooks/colab.ipynb` set `TASK = "sim2real_worldmodel"` in cell 2 and run cells 1-2), then
+in a new cell (the Vulkan lines come from ManiSkill's Colab quickstart):
+
+```python
+!mkdir -p /usr/share/vulkan/icd.d && wget -q -P /usr/share/vulkan/icd.d https://raw.githubusercontent.com/haosulab/ManiSkill/main/docker/nvidia_icd.json && wget -q -P /usr/share/glvnd/egl_vendor.d https://raw.githubusercontent.com/haosulab/ManiSkill/main/docker/10_nvidia.json && apt-get install -qq -y --no-install-recommends libvulkan-dev > /dev/null
+OUT = "/content/drive/MyDrive/it/fpt/data/sim2real_worldmodel/bench"
+for args in ["--sim robosuite", "--sim robosuite --camera", "--sim maniskill", "--sim maniskill --camera",
+             "--sim maniskill --gpu --num-envs 256", "--sim maniskill --gpu --num-envs 256 --camera",
+             "--sim maniskill --gpu --num-envs 1024"]:
+    !MUJOCO_GL=egl python scripts/bench_sim.py {args} --out {OUT} > /dev/null 2>&1 || echo "FAILED: {args}"
+!cat {OUT}/bench_sim.jsonl
+```
+
+Expected: 7 more JSON lines with `"machine": "Tesla_T4"` and GIFs in `OUT`. A CPU runtime works the same without the
+`--gpu` runs (set `MUJOCO_GL=osmesa` after `apt-get install -y libosmesa6`).
