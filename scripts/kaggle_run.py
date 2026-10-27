@@ -88,7 +88,10 @@ def main() -> None:
     if args.dry_run:
         print(folder)
         return
-    subprocess.run(["kaggle", "kernels", "push", "-p", folder], check=True)
+    pushed = subprocess.run(["kaggle", "kernels", "push", "-p", folder], check=True, capture_output=True, text=True)
+    print(pushed.stdout.strip())
+    if "error" in pushed.stdout.lower():  # the CLI exits 0 on refusals such as "Maximum weekly GPU quota ... reached"
+        raise SystemExit("Kaggle refused the push (above).")
     print(f"Pushed commit {commit[:7]}. Follow it with:  kaggle kernels status {user}/{args.kernel}")
 
 
