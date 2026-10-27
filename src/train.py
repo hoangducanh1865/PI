@@ -40,6 +40,9 @@ def main(cfg: DictConfig) -> None:
     from src.models.grasp_module import GraspModule
 
     run_dir = HydraConfig.get().runtime.output_dir
+    if os.environ.get("KAGGLE_KERNEL_RUN_TYPE") == "Batch":
+        # A batch kernel has no terminal: the bar's lines flood the saved notebook and Kaggle's save step hangs.
+        cfg.trainer.enable_progress_bar = False
     print(OmegaConf.to_yaml(cfg, resolve=True))
     print(f"Run folder: {run_dir}", flush=True)
     L.seed_everything(cfg.seed, workers=True)

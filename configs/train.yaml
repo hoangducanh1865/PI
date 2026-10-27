@@ -35,4 +35,5 @@ trainer:
   accelerator: auto
   devices: auto                # every GPU of the machine (Kaggle 2 x T4: DDP, effective batch 16); devices=1 for one
   log_every_n_steps: 50
+  enable_progress_bar: true    # src/train.py turns it off in Kaggle batch kernels
   deterministic: false
