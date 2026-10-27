@@ -30,12 +30,14 @@ IRASim code is cloned and run as is, outside this folder; nothing of it is copie
 | IRASim-Frame-Ada | 5 (3407 to 3409, 3411, 3412) | **23.95** (per seed 23.77 to 24.13) | <u>0.814</u> (0.813 to 0.817) | **0.081** (0.079 to 0.083) |
 | IRASim-Video-Ada | 1 (3408) | <u>23.41</u> | 0.811 | <u>0.085</u> |
 | LVDM | 1 (3408) | 23.06 | 0.801 | 0.094 |
+| VDM | 1 (3407) | 17.85 | 0.713 | 0.203 |
 | still (floor) | - | 20.35 | **0.816** | 0.134 |
 
 Per-clip standard deviations are about 2.5 dB (PSNR), 0.05 (SSIM) and 0.035 (LPIPS), larger than the gaps between the
 three models, so their order needs the paired, per-clip comparison (to come). SSIM does not separate the models from a
 video in which nothing moves, and in 2 of 24 clips the still frame has a lower LPIPS than Frame-Ada: pixel metrics
-alone cannot say whether the robot follows the given actions. VDM, more seeds and the motion metrics (end-effector
+alone cannot say whether the robot follows the given actions. VDM scores below the still floor on all three (blurred, broken arm and a colour shift; whether the shift comes
+from the model or from our run is being checked against the paper). More seeds and the motion metrics (end-effector
 track against the real clip) are being added.
 
 ## Layout
