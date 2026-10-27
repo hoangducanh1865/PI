@@ -23,17 +23,20 @@ open, close, flip, fold, wipe). Generation uses the authors' code at commit `c72
 with only the episode subset, the seed and the batch size overridden (`scripts/run_irasim.py` lists them). The
 IRASim code is cloned and run as is, outside this folder; nothing of it is copied here.
 
-## Results so far (frames 1 to 15 against the real clip; mean +- std over 24 clips)
+## Results so far (frames 1 to 15 against the real clip; mean over 24 clips)
 
-| Model | PSNR (dB) | SSIM | LPIPS |
-|---|---|---|---|
-| IRASim-Frame-Ada, seed 3407 | **23.97** +- 2.49 | <u>0.814</u> +- 0.050 | **0.081** +- 0.032 |
-| IRASim-Frame-Ada, seed 3408 | <u>23.84</u> +- 2.71 | 0.813 +- 0.053 | <u>0.082</u> +- 0.037 |
-| still (floor) | 20.35 +- 3.31 | **0.816** +- 0.082 | 0.134 +- 0.078 |
+| Model | Seeds | PSNR (dB) | SSIM | LPIPS |
+|---|---|---|---|---|
+| IRASim-Frame-Ada | 5 (3407 to 3409, 3411, 3412) | **23.95** (per seed 23.77 to 24.13) | <u>0.814</u> (0.813 to 0.817) | **0.081** (0.079 to 0.083) |
+| IRASim-Video-Ada | 1 (3408) | <u>23.41</u> | 0.811 | <u>0.085</u> |
+| LVDM | 1 (3408) | 23.06 | 0.801 | 0.094 |
+| still (floor) | - | 20.35 | **0.816** | 0.134 |
 
-SSIM does not separate the model from a video in which nothing moves, and in 2 of 24 clips the still frame has the
-lower LPIPS: pixel metrics alone cannot say whether the robot follows the given actions. The other models and the
-motion metrics (end-effector track against the real clip) are being added.
+Per-clip standard deviations are about 2.5 dB (PSNR), 0.05 (SSIM) and 0.035 (LPIPS), larger than the gaps between the
+three models, so their order needs the paired, per-clip comparison (to come). SSIM does not separate the models from a
+video in which nothing moves, and in 2 of 24 clips the still frame has a lower LPIPS than Frame-Ada: pixel metrics
+alone cannot say whether the robot follows the given actions. VDM, more seeds and the motion metrics (end-effector
+track against the real clip) are being added.
 
 ## Layout
 
