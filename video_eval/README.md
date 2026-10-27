@@ -1,21 +1,67 @@
 # Evaluating generated videos for robot trajectories
 
-Work in progress (2026-10-27 to 2026-11-02). Reproduces IRASim (Zhu et al., 2024, [bytedance/IRASim](https://github.com/bytedance/IRASim),
-Apache-2.0), an action-conditioned video generator for real robots, with its official Bridge checkpoints, and compares
-it with the baselines released alongside it (LVDM, VDM) on visual quality, temporal consistency, physical plausibility,
-task completion and robot motion.
+Assignment 2 of the FPT Frontier Innovators 2026 programme (Dr. Ngan Le), in progress. Question: when a video model
+generates a robot executing a given action trajectory, does a realistic-looking video also show the right, physically
+plausible motion? Approach: reproduce [IRASim](https://github.com/bytedance/IRASim) (Zhu et al., 2024, Apache-2.0), an
+action-conditioned video generator for real robots, with its official Bridge checkpoints, run the baselines released
+with it on the same clips, and score every model against two references: the real video of the same actions (ceiling)
+and the first frame held still (floor).
+
+## Models (all from the IRASim release, Bridge, 256 x 320, 16 frames, PNDM 50 steps)
+
+| Model | Conditioning on the 15 actions (7-D end-effector deltas + gripper) | Notes |
+|---|---|---|
+| IRASim-Frame-Ada | per-frame: each action modulates its own frame (adaptive scale and shift) | main model; 4 seeds for best-of-N |
+| IRASim-Video-Ada | video-level: the action sequence modulates the whole clip | |
+| LVDM | latent video diffusion baseline (UNet) | |
+| VDM | pixel-space video diffusion baseline | no VAE; one clip at a time on a T4 |
+| real | the recorded video of the same actions | ceiling |
+| still | first frame repeated 16 times | floor: "nothing moves" |
+
+Clips: 24 clips of 16 frames from 16 Bridge test episodes, the first two episodes per instruction verb (put, move, take,
+open, close, flip, fold, wipe). Generation uses the authors' code at commit `c72b6da` and their evaluation configs,
+with only the episode subset, the seed and the batch size overridden (`scripts/run_irasim.py` lists them). The
+IRASim code is cloned and run as is, outside this folder; nothing of it is copied here.
+
+## Results so far (frames 1 to 15 against the real clip; mean +- std over 24 clips)
+
+| Model | PSNR (dB) | SSIM | LPIPS |
+|---|---|---|---|
+| IRASim-Frame-Ada, seed 3407 | **23.97** +- 2.49 | <u>0.814</u> +- 0.050 | **0.081** +- 0.032 |
+| IRASim-Frame-Ada, seed 3408 | <u>23.84</u> +- 2.71 | 0.813 +- 0.053 | <u>0.082</u> +- 0.037 |
+| still (floor) | 20.35 +- 3.31 | **0.816** +- 0.082 | 0.134 +- 0.078 |
+
+SSIM does not separate the model from a video in which nothing moves, and in 2 of 24 clips the still frame has the
+lower LPIPS: pixel metrics alone cannot say whether the robot follows the given actions. The other models and the
+motion metrics (end-effector track against the real clip) are being added.
+
+## Layout
 
 | Path | Content |
 |---|---|
 | `scripts/fetch_irasim.py` | fetch only the needed checkpoints and samples from the IRASim release (tens of GB per archive) |
 | `scripts/setup_irasim.sh` | official IRASim code at a pinned commit, its pinned packages apart from the platform's, the SDXL VAE |
 | `scripts/select_episodes.py` | the Bridge test episodes generated: the first two per instruction verb |
-| `scripts/make_references.py` | the same clips as real video (ceiling) and as the still first frame (floor), with IRASim's preprocessing, plus the robot state |
-| `scripts/eval_metrics.py` | PSNR, SSIM, LPIPS of generated clips against the real clips (frames 1 to 15) |
+| `scripts/make_references.py` | the same clips as real video and as the still first frame, with IRASim's preprocessing, plus the robot state |
+| `scripts/run_irasim.py` | generate the chosen clips with one released model and seed |
 | `scripts/kaggle_batch.sh` | the whole chain on a fresh Kaggle machine (fetch, setup, choose, generate), one job queue per GPU |
-| `scripts/run_irasim.py` | generate the chosen clips with one released model (Frame-Ada, Video-Ada, LVDM, VDM) and seed |
+| `scripts/eval_metrics.py` | PSNR, SSIM, LPIPS against the real clips |
 
-Every command runs from this folder (`cd video_eval`); per platform: `../terminal_commands.md`.
+## Usage
+
+From this folder, on a machine with an NVIDIA GPU (tested on a Kaggle T4; about 1.5 min per clip for IRASim-XL):
+
+```bash
+python scripts/fetch_irasim.py get bridge_checkpoints_data --out /tmp/irasim --match 'frame_ada/.*[.]pt$'
+python scripts/fetch_irasim.py get bridge_train_data --out /tmp/irasim --match '/test/'     # Bridge test inputs
+bash scripts/setup_irasim.sh /tmp/IRASim /tmp/irasim
+python scripts/select_episodes.py --data /tmp/irasim --out <OUT>
+PYTHONPATH=/tmp/IRASim/pkgs python scripts/make_references.py --data /tmp/irasim --out <OUT>
+python scripts/run_irasim.py --irasim /tmp/IRASim --model frame_ada --seed 3407 --out <OUT>
+pip install -r requirements.txt && python scripts/eval_metrics.py --gen <OUT> --models frame_ada/seed3407 still
+```
+
+Per platform (Kaggle interactive or batch, Colab): `../terminal_commands.md`, section video_eval.
 
 ## Author
 

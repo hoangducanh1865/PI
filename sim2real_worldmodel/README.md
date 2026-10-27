@@ -10,6 +10,19 @@ and the experiments that use them.
 | `scripts/extract_mimicgen.py` | MimicGen human source demos and generated demos reduced to end-effector, gripper and action trajectories (no images) |
 | `scripts/bench_sim.py` | the same Panda pick-a-cube task in robosuite (MuJoCo) and ManiSkill3: start-up time, steps per second with and without a camera, a short video |
 
+## Results so far
+
+Simulator benchmark (`scripts/bench_sim.py`, 1 environment, random joint-position deltas at 20 Hz, environment steps
+per second):
+
+| Machine | robosuite 1.5.2 Lift (MuJoCo 3.3.7) | ManiSkill 3.0.1 PickCube (SAPIEN 3.0.3) |
+|---|---|---|
+| MacBook Air M1, state only / + 128 x 128 camera | 379 / 96 | **1,096** / **158** |
+| Colab CPU (2 vCPU, software Vulkan), state only / + camera | not run (OSMesa segfault) | 240 / 17 |
+
+Setup notes measured on the way: robosuite 1.5.2 breaks on MuJoCo 3.17; ManiSkill on macOS always renders, so it
+needs Vulkan (MoltenVK) even without a camera; mani_skill 3.0.1 pins mplib 0.1.1, which has no Python 3.13 wheel.
+
 Every command runs from this folder (`cd sim2real_worldmodel`); per platform: `../terminal_commands.md`.
 
 ## Author
