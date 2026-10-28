@@ -40,22 +40,27 @@ alone cannot say whether the robot follows the given actions. VDM scores below t
 from the model or from our run is being checked against the paper). More seeds and the motion metrics (end-effector
 track against the real clip) are being added.
 
-### Motion (`scripts/eval_motion.py`; points tracked from frame 0 in the generated and the real clip)
+### Motion (`scripts/eval_motion.py --tracker cotracker`; points tracked from frame 0 in the generated and real clip)
 
-| Model | moving_ndtw | path_ratio (real = 1) | ee_ndtw (provisional) | ee_err_px (provisional) |
-|---|---|---|---|---|
-| IRASim-Frame-Ada (6 seeds) | **0.806** | **0.66** | **0.617** | **15.9** |
-| IRASim-Video-Ada (2 seeds) | <u>0.794</u> | 0.58 | 0.551 | 19.7 |
-| LVDM (2 seeds) | 0.769 | <u>0.59</u> | <u>0.573</u> | <u>18.7</u> |
-| VDM (1 seed) | 0.648 | 0.27 | 0.391 | 31.6 |
-| still (floor) | 0.649 | 0.00 | 0.371 | 35.6 |
+End-effector track (the tracked point best explained by the recorded end-effector position), on the 13 clips where two
+VLM judges (`scripts/check_ee_points.py`, gemini-3.8-flash and gpt-6.1-sol) agreed, in two separate runs, that the point
+lies on the gripper:
 
-moving_ndtw averages, over every point that moves in the real clip, the NDTW between its generated and real tracks
-(d_th = 20 px). Unlike SSIM, it ranks every model above the still floor except VDM, whose robot barely moves (path
-ratio 0.27). All models move less than the real robot (path ratio below 1); part of this may be the tracker losing
-points in blurred generated frames. The ee_* columns follow one end-effector point chosen by an affine fit to the
-recorded end-effector position; with the current tracker (Lucas-Kanade) that point sometimes lands on the cable or the
-held object instead of the gripper, so they are provisional until a stronger point tracker is used.
+| Model | ee_ndtw | mean error (px) | final error (px) | path_ratio (real = 1) | moving_ndtw |
+|---|---|---|---|---|---|
+| IRASim-Frame-Ada (6 seeds) | **0.767** | **6.3** | **10.7** | 1.00 | **0.792** |
+| IRASim-Video-Ada (2 seeds) | <u>0.725</u> | <u>7.6</u> | <u>12.0</u> | 0.98 | <u>0.758</u> |
+| LVDM (2 seeds) | 0.609 | 12.6 | 22.4 | 0.98 | 0.693 |
+| VDM (1 seed) | 0.169 | 55.1 | 96.0 | 0.37 | 0.367 |
+| still (floor) | 0.135 | 58.5 | 101.5 | 0.00 | 0.342 |
+
+NDTW = exp(-DTW / (16 * 20 px)); moving_ndtw averages it over every point that moves in the real clip. The ranking is
+the same on all 22 clips with an end-effector point (Frame-Ada 0.709, Video-Ada 0.656, LVDM 0.568, VDM 0.173, still
+0.152). Unlike SSIM, the motion scores put every model far from the still floor except VDM, whose robot barely moves.
+Two lessons on the measurement itself: (1) with a weaker tracker (Lucas-Kanade) the blurred gripper is lost, the chosen
+point lands on the cable or the held object, and the models seem to move a third less than the real robot (path ratio
+0.66); CoTracker3 removes that artefact (1.00); (2) the VLM judges are not stable at temperature 0: run to run, 2 of 15
+verified clips changed, so only clips verified in both runs are kept.
 
 ## Layout
 
@@ -69,6 +74,7 @@ held object instead of the gripper, so they are provisional until a stronger poi
 | `scripts/kaggle_batch.sh` | the whole chain on a fresh Kaggle machine (fetch, setup, choose, generate), one job queue per GPU |
 | `scripts/eval_metrics.py` | PSNR, SSIM, LPIPS against the real clips |
 | `scripts/eval_motion.py` | motion against the real clips: tracked points, end-effector track, NDTW, path ratio |
+| `scripts/check_ee_points.py` | VLM judges check that the chosen end-effector point lies on the gripper |
 
 ## Usage
 
