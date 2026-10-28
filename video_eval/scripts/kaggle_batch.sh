@@ -8,7 +8,9 @@
 #   e.g. bash scripts/kaggle_batch.sh /kaggle/working/data/video_eval/gen video_ada:3407:0 lvdm:3407:1
 #        bash scripts/kaggle_batch.sh /kaggle/working/data/video_eval/gen frame_ada:3407:0:noise_s frame_ada:3407:1:freeze
 # <PERTURBATION> (noise_s, noise_l, mirror, freeze; scripts/make_perturbed_annotations.py) generates from corrupted
-# actions into <OUT_DIR>/<MODEL>_<PERTURBATION>/. Large files go to /tmp (/kaggle/working keeps only 20 GB).
+# actions into <OUT_DIR>/<MODEL>_<PERTURBATION>/. The clip set is scripts/select_episodes.py with PER_VERB episodes per
+# verb (default 2) among VERBS (default: put move take open close flip fold wipe), e.g. PER_VERB=6 VERBS="..." bash ...
+# Large files go to /tmp (/kaggle/working keeps only 20 GB).
 #
 # Author: Duc Anh Hoang
 set -euo pipefail
@@ -22,7 +24,8 @@ models=$(printf '%s\n' "$@" | cut -d: -f1 | sort -u | paste -sd'|')
 python -u scripts/fetch_irasim.py get bridge_checkpoints_data --out $DATA --match "($models)/.*[.]pt$"
 python -u scripts/fetch_irasim.py get bridge_train_data --out $DATA --match '/test/' > /dev/null
 bash scripts/setup_irasim.sh $IRASIM $DATA
-python scripts/select_episodes.py --data $DATA --out "$OUT" --verbs put move take open close flip fold wipe
+python scripts/select_episodes.py --data $DATA --out "$OUT" --per-verb "${PER_VERB:-2}" \
+    --verbs ${VERBS:-put move take open close flip fold wipe}
 PYTHONPATH=$IRASIM/pkgs python scripts/make_references.py --data $DATA --out "$OUT"
 python scripts/make_perturbed_annotations.py --data $DATA
 
