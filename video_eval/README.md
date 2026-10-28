@@ -62,6 +62,52 @@ point lands on the cable or the held object, and the models seem to move a third
 0.66); CoTracker3 removes that artefact (1.00); (2) the VLM judges are not stable at temperature 0: run to run, 2 of 15
 verified clips changed, so only clips verified in both runs are kept.
 
+### Perturbation test (does a metric notice wrong actions?)
+
+IRASim-Frame-Ada, seed 3407, the same 24 clips, generated from corrupted actions and scored against the real clips of
+the original actions (`scripts/make_perturbed_annotations.py`): random-walk noise of 0.5 and 1.5 cm per frame on the
+end-effector position, mirrored motion, frozen (all actions zero). ee_* on the 13 verified clips.
+
+| Actions given | PSNR | SSIM | LPIPS | ee_ndtw | ee error (px) | path_ratio |
+|---|---|---|---|---|---|---|
+| original | **23.97** | <u>0.814</u> | **0.081** | **0.759** | **6.2** | 0.98 |
+| noise 0.5 cm | <u>21.87</u> | 0.788 | <u>0.103</u> | <u>0.550</u> | <u>15.2</u> | 1.09 |
+| noise 1.5 cm | 19.45 | 0.752 | 0.149 | 0.270 | 39.0 | 1.50 |
+| frozen | 19.31 | 0.753 | 0.158 | 0.133 | 59.1 | 0.21 |
+| mirrored | 18.59 | 0.737 | 0.178 | 0.036 | 99.3 | 0.92 |
+| still frame (floor) | 20.35 | **0.816** | 0.134 | 0.135 | 58.5 | 0.00 |
+
+ee_ndtw falls with the corruption and puts frozen actions exactly at the still floor (0.133 vs 0.135) and mirrored
+motion below it; PSNR and SSIM rank the still frame above the corrupted generations (SSIM even above the original).
+Regenerating seed 3407 on another machine gave identical videos (PSNR difference 0.0): generation is deterministic.
+
+### Temporal consistency (`scripts/eval_temporal.py`, 24 clips)
+
+| Model | DINOv2 adjacent | DINOv2 to frame 0 | warp error (0-255) |
+|---|---|---|---|
+| real | 0.953 | 0.854 | 3.35 |
+| IRASim-Frame-Ada | 0.933 | 0.842 | **4.42** |
+| IRASim-Video-Ada | 0.938 | 0.842 | <u>4.52</u> |
+| LVDM | 0.924 | 0.829 | 4.73 |
+| VDM | 0.931 | 0.789 | 5.00 |
+| still | 1.000 | 1.000 | 0.01 |
+
+The still clip scores perfectly: these measure stability, not correct motion.
+
+### Physical plausibility and outcome, two VLM judges (`scripts/eval_vlm.py`, 24 clips; gemini-3.8-flash / gpt-6.1-sol)
+
+| Model | judged plausible | same outcome as the real clip | most frequent violation |
+|---|---|---|---|
+| real (control) | 0.79 / 0.96 | 1.00 / 1.00 | |
+| IRASim-Frame-Ada | 0.33 / 0.83 | 0.50 / 0.75 | object changes or vanishes (0.46 / 0.17) |
+| IRASim-Video-Ada | 0.42 / 0.88 | **0.62 / 0.75** | object changes or vanishes (0.42 / 0.08) |
+| LVDM | 0.42 / 0.75 | 0.29 / 0.67 | object changes or vanishes (0.42 / 0.25) |
+| VDM | 0.04 / 0.25 | 0.04 / 0.08 | robot deforms or vanishes (0.96 / 0.71) |
+| still (control) | 1.00 / 1.00 | 0.00 / 0.04 | |
+
+The judges differ in strictness (gemini flags 21% of real clips, gpt 4%; they agree on 46 to 58% of IRASim clips) but
+rank the models alike; the still clip is "plausible" every time, and only the outcome question catches it.
+
 ## Layout
 
 | Path | Content |
@@ -74,6 +120,8 @@ verified clips changed, so only clips verified in both runs are kept.
 | `scripts/make_perturbed_annotations.py` | corrupted action inputs (position noise, mirrored motion, frozen) for the perturbation test |
 | `scripts/kaggle_batch.sh` | the whole chain on a fresh Kaggle machine (fetch, setup, choose, references, generate, score), one job queue per GPU, optional corrupted actions |
 | `scripts/eval_metrics.py` | PSNR, SSIM, LPIPS against the real clips |
+| `scripts/eval_temporal.py` | temporal consistency: DINOv2 frame similarity, optical-flow warp error |
+| `scripts/eval_vlm.py` | physical plausibility and task outcome by VLM judges (`scripts/vlm.py`: shared client) |
 | `scripts/eval_motion.py` | motion against the real clips: tracked points, end-effector track, NDTW, path ratio |
 | `scripts/check_ee_points.py` | VLM judges check that the chosen end-effector point lies on the gripper |
 

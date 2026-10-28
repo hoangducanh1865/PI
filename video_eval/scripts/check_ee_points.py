@@ -16,56 +16,21 @@ Author: Duc Anh Hoang
 """
 
 import argparse
-import base64
 import glob
 import json
 import os
-import re
-import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
-REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # repo root, holds .env
+import numpy as np
+from PIL import Image
+from vlm import api_key, ask, png
+
 QUESTION = (
     "The image shows two frames of a robot video side by side (first frame left, last frame right). A red dot marks "
     "one tracked point in each frame and a red line its path. Is the red dot on the robot's gripper or wrist (end "
     'effector) in BOTH frames? Answer JSON only: {"left": "<what the dot is on in the left frame>", '
     '"right": "<the same for the right frame>", "on_gripper_both": true or false}'
 )
-
-
-def api_key(name: str) -> str:
-    if os.environ.get(name):
-        return os.environ[name]
-    with open(os.path.join(REPO, ".env")) as f:
-        for line in f:
-            key, _, value = line.strip().partition("=")
-            if key == name:
-                return value.strip("\"'")
-    raise SystemExit(f"{name} is not set (environment or .env)")
-
-
-def ask(base_url: str, key: str, model: str, path: str) -> dict:
-    with open(path, "rb") as f:
-        image = base64.b64encode(f.read()).decode()
-    picture = {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image}"}}
-    content = [{"type": "text", "text": QUESTION}, picture]
-    body = {"model": model, "messages": [{"role": "user", "content": content}], "temperature": 0, "stream": False}
-    headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-    request = urllib.request.Request(f"{base_url}/chat/completions", data=json.dumps(body).encode(), headers=headers)
-    error = ""
-    for _ in range(3):
-        try:
-            raw = urllib.request.urlopen(request, timeout=180).read().decode()
-            if raw.startswith("data:"):  # some providers stream (SSE) regardless: join the content deltas
-                lines = [line[5:] for line in raw.splitlines() if line.startswith("data:") and "[DONE]" not in line]
-                chunks = [json.loads(line) for line in lines]
-                text = "".join(c["choices"][0]["delta"].get("content") or "" for c in chunks if c.get("choices"))
-            else:
-                text = json.loads(raw)["choices"][0]["message"]["content"]
-            return json.loads(re.search(r"\{.*\}", text, re.S).group(0))
-        except Exception as e:  # network errors and unparsable answers: retry, then record
-            error = str(e)
-    return {"error": error}
 
 
 def main() -> None:
@@ -81,7 +46,9 @@ def main() -> None:
     paths = sorted(glob.glob(os.path.join(args.dir, "*.png")))
     answers = {}
     with ThreadPoolExecutor(args.workers) as pool:
-        jobs = {(m, p): pool.submit(ask, args.base_url, key, m, p) for m in args.models for p in paths}
+        images = {p: png(np.array(Image.open(p).convert("RGB"))) for p in paths}
+        jobs = {(m, p): pool.submit(ask, args.base_url, key, m, QUESTION, images[p]) for m in args.models
+                for p in paths}  # fmt: skip
         for (model, path), job in jobs.items():
             answers.setdefault(os.path.basename(path)[:-4], {})[model] = job.result()
     verified = sorted(c for c, a in answers.items() if all(v.get("on_gripper_both") is True for v in a.values()))
