@@ -2,8 +2,8 @@
 Generate the chosen Bridge clips with NVIDIA Cosmos-Predict2.5-2B, through the official repo's own entry points, and
 store them like the IRASim clips (16 frames, 256 x 320, 4 fps) so every metric script applies unchanged.
 
-Usage (from video_eval/, on an Ampere-or-newer GPU with the repo installed: github.com/nvidia-cosmos/cosmos-predict2.5,
-`uv sync --extra=cu128`, its .venv active, HF_TOKEN set):
+Usage (from video_eval/, any Python with imageio and Pillow, on an Ampere-or-newer GPU with the repo installed by
+scripts/setup_cosmos.sh, HF_TOKEN set; the repo's own entry points run with the repo's .venv):
     python scripts/run_cosmos.py --cosmos <REPO> --data <DATA_DIR> --gen <GEN_DIR> --variant action
         [--annotation annotation_<NAME> --name cosmos_action_<NAME>]
     python scripts/run_cosmos.py --cosmos <REPO> --data <DATA_DIR> --gen <GEN_DIR> --variant base
@@ -77,7 +77,7 @@ def action_variant(args, clips: list[str], bridge: str, out: str) -> None:
         }  # fmt: skip
         with open(os.path.join(root, "params.json"), "w") as f:
             json.dump(params, f, indent=1)
-        command = ["python", "examples/action_conditioned.py", "-i", os.path.join(root, "params.json"),
+        command = [args.python, "examples/action_conditioned.py", "-i", os.path.join(root, "params.json"),
                    "--output-dir", os.path.join(root, "setup")]  # fmt: skip
         run(command, args.cosmos, os.path.join(root, "run.log"))
         for clip in group:
@@ -102,7 +102,7 @@ def base_variant(args, clips: list[str], bridge: str, out: str) -> None:
         with open(os.path.join(args.work, f"{clip}.json"), "w") as f:
             json.dump(params, f, indent=1)
         result = os.path.join(args.work, clip)
-        command = ["python", "examples/inference.py", "-i", os.path.join(args.work, f"{clip}.json"),
+        command = [args.python, "examples/inference.py", "-i", os.path.join(args.work, f"{clip}.json"),
                    "--output-dir", result, "--model", "base/post-trained", "--disable-guardrails"]  # fmt: skip
         run(command, args.cosmos, os.path.join(args.work, f"{clip}.log"))
         generated = sorted(glob.glob(os.path.join(result, "**", "*.mp4"), recursive=True), key=os.path.getmtime)[-1]
@@ -121,6 +121,7 @@ def main() -> None:
     parser.add_argument("--name", help="output folder name (default cosmos_<variant>)")
     parser.add_argument("--work", default="/tmp/cosmos_work")
     args = parser.parse_args()
+    args.python = os.path.join(args.cosmos, ".venv", "bin", "python")
     bridge = os.path.join(args.data, "opensource_robotdata", "bridge")
     clips = sorted(os.path.basename(p)[:-4] for p in glob.glob(os.path.join(args.gen, "real", "*.mp4")))
     out = os.path.join(args.gen, args.name or f"cosmos_{args.variant}", "seed0")
