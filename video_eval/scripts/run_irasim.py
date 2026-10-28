@@ -1,16 +1,18 @@
 """
-Generate the videos of the chosen Bridge test clips with one IRASim release model (IRASim-Frame-Ada, IRASim-Video-Ada,
-LVDM or VDM), using the authors' own evaluation config with only the overrides below, and copy them out.
+Generate the videos of the chosen test clips (Bridge or Language-Table) with one IRASim release model (IRASim-Frame-Ada,
+IRASim-Video-Ada, LVDM or VDM), using the authors' own evaluation config with only the overrides below, and copy them
+out.
 
 Usage (from video_eval/, after scripts/setup_irasim.sh and scripts/select_episodes.py):
     python scripts/run_irasim.py --irasim <IRASIM_DIR> --model <MODEL> --out <OUT_DIR> [--seed 3407] [--gpu 0]
+        [--dataset languagetable]
         [--annotation annotation_<NAME> --name <MODEL>_<NAME>]   # perturbed actions, make_perturbed_annotations.py
 
-Overrides of configs/evaluation/bridge/<MODEL>.yaml: annotation_name = annotation_subset (our clips; or --annotation),
-global_seed (the initial noise; 3407 is the authors' value), anno (one result folder per model and seed),
+Overrides of configs/evaluation/<dataset>/<MODEL>.yaml: annotation_name = annotation_subset (our clips; or
+--annotation), global_seed (the initial noise; 3407 is the authors' value), anno (one result folder per model and seed),
 local_val_batch_size (4, VDM keeps 1: one T4) and num_workers (2: 4 CPUs on Kaggle). Writes
 <OUT_DIR>/<NAME>/seed<SEED>/<clip>.mp4 (<NAME> = --name, default <MODEL>) with <clip> = <episode>_<camera>_<start
-frame>, 16 frames at 256 x 320, and the run log next to them.
+frame>, 16 frames at 256 x 320 (Bridge) or 288 x 512 (Language-Table), and the run log next to them.
 
 Author: Duc Anh Hoang
 """
@@ -35,13 +37,14 @@ def main() -> None:
     parser.add_argument("--out", required=True)
     parser.add_argument("--seed", type=int, default=3407)
     parser.add_argument("--gpu", type=int, default=0)
+    parser.add_argument("--dataset", choices=("bridge", "languagetable"), default="bridge")
     parser.add_argument("--annotation", default="annotation_subset", help="annotation folder of the clips' actions")
     parser.add_argument("--name", help="output folder name (default: the model name)")
     args = parser.parse_args()
 
-    config = OmegaConf.load(os.path.join(args.irasim, "configs", "evaluation", "bridge", f"{args.model}.yaml"))
+    config = OmegaConf.load(os.path.join(args.irasim, "configs", "evaluation", args.dataset, f"{args.model}.yaml"))
     name = args.name or args.model
-    anno = f"bridge_{name}_seed{args.seed}"
+    anno = f"{args.dataset}_{name}_seed{args.seed}"
     overrides = {
         "annotation_name": args.annotation,
         "global_seed": args.seed,

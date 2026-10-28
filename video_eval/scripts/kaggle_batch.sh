@@ -10,6 +10,7 @@
 # <PERTURBATION> (noise_s, noise_l, mirror, freeze; scripts/make_perturbed_annotations.py) generates from corrupted
 # actions into <OUT_DIR>/<MODEL>_<PERTURBATION>/. The clip set is scripts/select_episodes.py with PER_VERB episodes per
 # verb (default 2) among VERBS (default: put move take open close flip fold wipe), e.g. PER_VERB=6 VERBS="..." bash ...
+# DATASET=languagetable (default bridge) switches the dataset; its clip set is the first COUNT episodes (default 48).
 # Large files go to /tmp (/kaggle/working keeps only 20 GB).
 #
 # Author: Duc Anh Hoang
@@ -21,13 +22,14 @@ IRASIM=/tmp/IRASim
 mkdir -p "$OUT"
 
 models=$(printf '%s\n' "$@" | cut -d: -f1 | sort -u | paste -sd'|')
-python -u scripts/fetch_irasim.py get bridge_checkpoints_data --out $DATA --match "($models)/.*[.]pt$"
-python -u scripts/fetch_irasim.py get bridge_train_data --out $DATA --match '/test/' > /dev/null
+DATASET=${DATASET:-bridge}
+python -u scripts/fetch_irasim.py get "${DATASET}_checkpoints_data" --out $DATA --match "($models)/.*[.]pt$"
+python -u scripts/fetch_irasim.py get "${DATASET}_train_data" --out $DATA --match '/test/' > /dev/null
 bash scripts/setup_irasim.sh $IRASIM $DATA
-python scripts/select_episodes.py --data $DATA --out "$OUT" --per-verb "${PER_VERB:-2}" \
-    --verbs ${VERBS:-put move take open close flip fold wipe}
-PYTHONPATH=$IRASIM/pkgs python scripts/make_references.py --data $DATA --out "$OUT"
-python scripts/make_perturbed_annotations.py --data $DATA
+python scripts/select_episodes.py --data $DATA --out "$OUT" --dataset "$DATASET" --per-verb "${PER_VERB:-2}" \
+    --verbs ${VERBS:-put move take open close flip fold wipe} --count "${COUNT:-48}"
+PYTHONPATH=$IRASIM/pkgs python scripts/make_references.py --data $DATA --out "$OUT" --dataset "$DATASET"
+python scripts/make_perturbed_annotations.py --data $DATA --dataset "$DATASET"
 
 for gpu in $(printf '%s\n' "$@" | cut -d: -f3 | sort -u); do
     (
@@ -38,7 +40,7 @@ for gpu in $(printf '%s\n' "$@" | cut -d: -f3 | sort -u); do
             extra=()
             [ -n "${perturbation:-}" ] && extra=(--annotation "annotation_$perturbation" --name "${model}_$perturbation")
             python -u scripts/run_irasim.py --irasim $IRASIM --model "$model" --seed "$seed" --gpu "$gpu" --out "$OUT" \
-                "${extra[@]}" || true
+                --dataset "$DATASET" "${extra[@]}" || true
         done
     ) &
 done

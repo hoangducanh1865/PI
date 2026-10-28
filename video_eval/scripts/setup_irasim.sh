@@ -34,5 +34,9 @@ PY
 hf download stabilityai/stable-diffusion-xl-base-1.0 vae/config.json vae/diffusion_pytorch_model.safetensors \
     --local-dir "$IRASIM/IRASim/pretrained_models/stabilityai/stable-diffusion-xl-base-1.0" > /dev/null
 
-ln -sfn "$DATA/opensource_robotdata/bridge" "$IRASIM/robotdata/opensource_robotdata/bridge"
+for dataset in "$DATA"/opensource_robotdata/*/; do  # the clone ships example data for Language-Table: replace it
+    name=$(basename "$dataset")
+    rm -rf "$IRASIM/robotdata/opensource_robotdata/$name"
+    ln -s "${dataset%/}" "$IRASIM/robotdata/opensource_robotdata/$name"
+done
 echo "IRASim ready at $IRASIM"
