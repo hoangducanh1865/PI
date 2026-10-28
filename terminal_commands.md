@@ -260,3 +260,18 @@ python scripts/eval_metrics.py --gen <BASE>/data/video_eval/gen --models frame_a
 
 Expected: one line per model (`clips 24  psnr ...  ssim ...  lpips ...`); rows go to `gen/metrics_pixel.csv`, and
 rerunning with other models keeps the earlier rows.
+
+## 6. Move the data to another machine or account
+
+Code moves through GitHub; the working data (`<BASE>/data/<task>/` and `data/datasets/processed/`, about 2.6 GB)
+moves through the private Hugging Face dataset repo `hoangducanh1865/fpt-data` (`scripts/data_sync.py`). The raw
+downloads (`data/datasets/raw/`, 76 GB) are not synced: fetch them again from their public source when needed.
+
+```bash
+python scripts/data_sync.py push --message "<what changed>"   # before leaving a machine (HF_WRITE_TOKEN)
+python scripts/data_sync.py pull                               # on the new machine (HF_TOKEN); --only 'video_eval/*' for one task
+```
+
+On a new account: clone the code (`git clone https://github.com/hoangducanh1865/PI.git <BASE>/code/fpt_entrance_test`),
+put `HF_TOKEN` in the environment (Colab Secrets or `export`), then pull. Expected: `pulled hoangducanh1865/fpt-data ->
+<BASE>/data`. Push and pull only move changed files.
