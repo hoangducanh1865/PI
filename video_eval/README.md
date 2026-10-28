@@ -71,6 +71,7 @@ verified clips changed, so only clips verified in both runs are kept.
 | `scripts/select_episodes.py` | the Bridge test episodes generated: the first two per instruction verb |
 | `scripts/make_references.py` | the same clips as real video and as the still first frame, with IRASim's preprocessing, plus the robot state |
 | `scripts/run_irasim.py` | generate the chosen clips with one released model and seed |
+| `scripts/make_perturbed_annotations.py` | corrupted action inputs (position noise, mirrored motion, frozen) for the perturbation test |
 | `scripts/kaggle_batch.sh` | the whole chain on a fresh Kaggle machine (fetch, setup, choose, generate), one job queue per GPU |
 | `scripts/eval_metrics.py` | PSNR, SSIM, LPIPS against the real clips |
 | `scripts/eval_motion.py` | motion against the real clips: tracked points, end-effector track, NDTW, path ratio |
