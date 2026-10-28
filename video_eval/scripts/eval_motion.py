@@ -3,13 +3,18 @@ Does the robot in a generated clip move like the robot in the real clip of the s
 both videos, find the point that rides on the end effector, and compare its two image trajectories.
 
 Usage (from video_eval/):
-    python scripts/eval_motion.py --gen <GEN_DIR> --models <MODEL_DIR> [<MODEL_DIR> ...] [--wandb <PROJECT>]
-    e.g. python scripts/eval_motion.py --gen <GEN_DIR> --models real still frame_ada/seed3407
+    python scripts/eval_motion.py --gen <GEN_DIR> --models <MODEL_DIR> [<MODEL_DIR> ...] [--tracker cotracker]
+        [--wandb <PROJECT>]
+    e.g. python scripts/eval_motion.py --gen <GEN_DIR> --models real still frame_ada/seed3407 --tracker cotracker
 
 Steps, per clip (all clips of a model share frame 0, the given frame, so the same points can be followed in both):
-1. Track a 20 x 20 grid of points from frame 0 through the 16 frames of the real and of the generated video
-   (pyramidal Lucas-Kanade optical flow, OpenCV, frame to frame; a point is lost when the forward-backward check fails
-   by more than 2 px, and its track then stays at its last position).
+1. Track a 20 x 20 grid of points from frame 0 through the 16 frames of the real and of the generated video, with
+   --tracker cotracker: CoTracker3 offline (Karaev et al., 2024; code github.com/facebookresearch/co-tracker at commit
+   82e02e8, weights facebook/cotracker3 scaled_offline.pth), which follows points through motion blur and occlusion;
+   a point counts as kept when visible in at least 80% of the frames. With --tracker lk (default, no extra package):
+   pyramidal Lucas-Kanade optical flow (OpenCV), frame to frame; a point is lost when the forward-backward check fails
+   by more than 2 px, and its track then stays at its last position. Lucas-Kanade loses the blurred gripper, so its
+   end-effector point can land on the cable or the held object (seen on 3 of 4 clips checked by eye, 2026-10-28).
 2. End-effector point: among the points that move more than 15 px in the real video and are never lost, the one whose
    real track is best explained by the recorded end-effector position through an affine camera (least squares from
    [x, y, z, 1] to the 2-D track over the 16 frames), by R^2 = the share of the track's variance the fit explains
@@ -18,9 +23,9 @@ Steps, per clip (all clips of a model share frame 0, the given frame, so the sam
    5% of the image diagonal; Ilharco et al., 2019, use the success radius), the mean and the final pixel error, and the
    path-length ratio (generated / real: 0 for a video in which nothing moves). moving_ndtw averages NDTW over every
    moving point (robot and moved objects).
-Writes <GEN_DIR>/metrics_motion.csv (one row per model and clip; rows of the given models are replaced) and prints
-the mean per model. What it cannot establish: whether the motion is physically executable, or right for points that
-the tracker loses (blur, occlusion); the end-effector point is an image point, not the gripper's true pose.
+Writes <GEN_DIR>/metrics_motion_<tracker>.csv (one row per model and clip; rows of the given models are replaced)
+and prints the mean per model. What it cannot establish: whether the motion is physically executable, or right for
+points that the tracker loses (blur, occlusion); the end-effector point is an image point, not the gripper's pose.
 
 Author: Duc Anh Hoang
 """
@@ -39,6 +44,7 @@ MOVE_PX = 5.0  # a point moves: largest displacement from frame 0
 EE_MOVE_PX = 15.0  # an end-effector candidate moves at least this much
 D_TH = 20.0
 LK = {"winSize": (21, 21), "maxLevel": 3, "criteria": (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01)}
+COTRACKER = None  # loaded on first use
 FIELDS = ("ee_ndtw", "ee_err_px", "ee_final_px", "path_ratio", "moving_ndtw", "ee_fit_r2", "ee_real_path_px")
 
 
@@ -48,8 +54,29 @@ def grid_points(height: int, width: int) -> np.ndarray:
     return np.array([[x, y] for y in ys for x in xs], dtype=np.float32)
 
 
+def track_cotracker(video: np.ndarray, points: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Tracks [T, N, 2] and a kept mask [N] (visible in at least 80% of the frames), with CoTracker3 offline."""
+    import torch
+
+    global COTRACKER
+    if COTRACKER is None:
+        from cotracker.predictor import CoTrackerPredictor
+        from huggingface_hub import hf_hub_download
+
+        COTRACKER = CoTrackerPredictor(checkpoint=None, window_len=60, v2=False)
+        weights = hf_hub_download("facebook/cotracker3", "scaled_offline.pth")
+        COTRACKER.model.load_state_dict(torch.load(weights, map_location="cpu", weights_only=True))
+        COTRACKER = COTRACKER.eval().to("cuda" if torch.cuda.is_available() else "cpu")
+    device = next(COTRACKER.parameters()).device
+    frames = torch.from_numpy(video).permute(0, 3, 1, 2)[None].float().to(device)
+    queries = torch.from_numpy(np.c_[np.zeros(len(points)), points])[None].float().to(device)
+    with torch.no_grad():
+        tracks, visible = COTRACKER(frames, queries=queries)
+    return tracks[0].cpu().numpy(), visible[0].float().mean(dim=0).cpu().numpy() >= 0.8
+
+
 def track(video: np.ndarray, points: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Tracks [T, N, 2] and a kept mask [N] (never lost) of the points through the video."""
+    """Tracks [T, N, 2] and a kept mask [N] (never lost) of the points through the video, Lucas-Kanade."""
     gray = [cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY) for frame in video]
     tracks, kept = [points.copy()], np.ones(len(points), bool)
     for prev, nxt in zip(gray[:-1], gray[1:], strict=True):
@@ -95,15 +122,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--gen", required=True)
     parser.add_argument("--models", nargs="+", required=True)
+    parser.add_argument("--tracker", choices=("lk", "cotracker"), default="lk")
     parser.add_argument("--wandb", help="W&B project to log the tables to")
     args = parser.parse_args()
+    track_points = track_cotracker if args.tracker == "cotracker" else track
 
     reference = {}  # clip -> (real tracks, end-effector index, fit residual, moving mask, points)
     for path in sorted(glob.glob(os.path.join(args.gen, "real", "*.mp4"))):
         clip = os.path.basename(path)[:-4]
         video = np.stack(imageio.mimread(path))
         points = grid_points(*video.shape[1:3])
-        tracks, kept = track(video, points)
+        tracks, kept = track_points(video, points)
         state = np.load(os.path.join(args.gen, "states", f"{clip}.npz"))["state"]
         reference[clip] = (tracks, *end_effector_point(tracks, kept, state), points)
         print(f"{clip}: end-effector point {reference[clip][1]}, R^2 {reference[clip][2]:.3f}")
@@ -114,7 +143,7 @@ def main() -> None:
             path = os.path.join(args.gen, model, f"{clip}.mp4")
             if ee < 0 or not os.path.exists(path):
                 continue
-            fake, _ = track(np.stack(imageio.mimread(path)), points)
+            fake, _ = track_points(np.stack(imageio.mimread(path)), points)
             errors = np.linalg.norm(fake[:, ee] - real[:, ee], axis=1)
             rows.append({
                 "model": model, "clip": clip,
@@ -127,7 +156,7 @@ def main() -> None:
                 "ee_real_path_px": path_length(real[:, ee]),
             })  # fmt: skip
 
-    out = os.path.join(args.gen, "metrics_motion.csv")
+    out = os.path.join(args.gen, f"metrics_motion_{args.tracker}.csv")
     kept_rows = []
     if os.path.exists(out):
         with open(out) as f:
@@ -147,7 +176,8 @@ def main() -> None:
         import wandb
 
         per_clip = [[r["model"], r["clip"], *(r[k] for k in FIELDS)] for r in rows]
-        run = wandb.init(project=args.wandb, job_type="eval_motion", config={"models": args.models, "d_th": D_TH})
+        config = {"models": args.models, "d_th": D_TH, "tracker": args.tracker}
+        run = wandb.init(project=args.wandb, job_type="eval_motion", config=config)
         run.log({
             "motion_metrics_per_clip": wandb.Table(columns=["model", "clip", *FIELDS], data=per_clip),
             "motion_metrics_summary": wandb.Table(columns=["model", "clips", *FIELDS], data=summary),
