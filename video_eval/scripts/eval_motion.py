@@ -118,12 +118,26 @@ def end_effector_point(real_tracks: np.ndarray, kept: np.ndarray, state: np.ndar
     return best, best_r2, moving
 
 
+def draw(video: np.ndarray, ee_track: np.ndarray, path: str) -> None:
+    """Frames 0 and 15 side by side, the end-effector track in red and the point as a red dot."""
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    panels = []
+    for t in (0, len(video) - 1):
+        image = np.ascontiguousarray(video[t])
+        for a, b in zip(ee_track[:-1], ee_track[1:], strict=True):
+            cv2.line(image, tuple(map(int, a)), tuple(map(int, b)), (255, 0, 0), 2)
+        cv2.circle(image, tuple(map(int, ee_track[t])), 6, (255, 0, 0), -1)
+        panels.append(image)
+    imageio.imwrite(path, np.concatenate(panels, axis=1))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--gen", required=True)
     parser.add_argument("--models", nargs="+", required=True)
     parser.add_argument("--tracker", choices=("lk", "cotracker"), default="lk")
     parser.add_argument("--wandb", help="W&B project to log the tables to")
+    parser.add_argument("--draw", help="folder for one check image per clip: the end-effector track on frames 0 and 15")
     args = parser.parse_args()
     track_points = track_cotracker if args.tracker == "cotracker" else track
 
@@ -135,6 +149,8 @@ def main() -> None:
         tracks, kept = track_points(video, points)
         state = np.load(os.path.join(args.gen, "states", f"{clip}.npz"))["state"]
         reference[clip] = (tracks, *end_effector_point(tracks, kept, state), points)
+        if args.draw and reference[clip][1] >= 0:
+            draw(video, tracks[:, reference[clip][1]], os.path.join(args.draw, f"{clip}.png"))
         print(f"{clip}: end-effector point {reference[clip][1]}, R^2 {reference[clip][2]:.3f}")
 
     rows = []
