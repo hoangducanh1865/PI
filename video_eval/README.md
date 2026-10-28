@@ -40,6 +40,23 @@ alone cannot say whether the robot follows the given actions. VDM scores below t
 from the model or from our run is being checked against the paper). More seeds and the motion metrics (end-effector
 track against the real clip) are being added.
 
+### Motion (`scripts/eval_motion.py`; points tracked from frame 0 in the generated and the real clip)
+
+| Model | moving_ndtw | path_ratio (real = 1) | ee_ndtw (provisional) | ee_err_px (provisional) |
+|---|---|---|---|---|
+| IRASim-Frame-Ada (6 seeds) | **0.806** | **0.66** | **0.617** | **15.9** |
+| IRASim-Video-Ada (2 seeds) | <u>0.794</u> | 0.58 | 0.551 | 19.7 |
+| LVDM (2 seeds) | 0.769 | <u>0.59</u> | <u>0.573</u> | <u>18.7</u> |
+| VDM (1 seed) | 0.648 | 0.27 | 0.391 | 31.6 |
+| still (floor) | 0.649 | 0.00 | 0.371 | 35.6 |
+
+moving_ndtw averages, over every point that moves in the real clip, the NDTW between its generated and real tracks
+(d_th = 20 px). Unlike SSIM, it ranks every model above the still floor except VDM, whose robot barely moves (path
+ratio 0.27). All models move less than the real robot (path ratio below 1); part of this may be the tracker losing
+points in blurred generated frames. The ee_* columns follow one end-effector point chosen by an affine fit to the
+recorded end-effector position; with the current tracker (Lucas-Kanade) that point sometimes lands on the cable or the
+held object instead of the gripper, so they are provisional until a stronger point tracker is used.
+
 ## Layout
 
 | Path | Content |
@@ -51,6 +68,7 @@ track against the real clip) are being added.
 | `scripts/run_irasim.py` | generate the chosen clips with one released model and seed |
 | `scripts/kaggle_batch.sh` | the whole chain on a fresh Kaggle machine (fetch, setup, choose, generate), one job queue per GPU |
 | `scripts/eval_metrics.py` | PSNR, SSIM, LPIPS against the real clips |
+| `scripts/eval_motion.py` | motion against the real clips: tracked points, end-effector track, NDTW, path ratio |
 
 ## Usage
 
