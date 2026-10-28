@@ -116,6 +116,7 @@ rank the models alike; the still clip is "plausible" every time, and only the ou
 | `scripts/setup_irasim.sh` | official IRASim code at a pinned commit, its pinned packages apart from the platform's, the SDXL VAE |
 | `scripts/select_episodes.py` | the Bridge test episodes generated: the first two per instruction verb |
 | `scripts/make_references.py` | the same clips as real video and as the still first frame, with IRASim's preprocessing, plus the robot state |
+| `scripts/setup_cosmos.sh`, `scripts/run_cosmos.py` | NVIDIA Cosmos-Predict2.5-2B (action-conditioned on Bridge, and image + text) through the official repo, stored like the IRASim clips |
 | `scripts/run_irasim.py` | generate the chosen clips with one released model and seed |
 | `scripts/make_perturbed_annotations.py` | corrupted action inputs (position noise, mirrored motion, frozen) for the perturbation test |
 | `scripts/kaggle_batch.sh` | the whole chain on a fresh Kaggle machine (fetch, setup, choose, references, generate, score), one job queue per GPU, optional corrupted actions |
