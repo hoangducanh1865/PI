@@ -16,8 +16,9 @@ Variants:
   example); chunk 1 gives frames 0 to 12, chunk 2 (3 actions, zero-padded) frames 13 to 24; frames 0 to 15 are kept.
 - base: base/post-trained, image + text (no actions): the clip's first frame (original 480 x 640) and its instruction,
   49 frames at the model's 16 fps (about 3 s, the length of a 16-frame Bridge clip at 5 Hz), 480 x 640, guidance 7,
-  guardrails off; every third frame (0, 3, ..., 45) is kept and resized to 256 x 320. All clips not yet generated go
-  to one call of the repo's inference.py, so the model loads once (about 1.5 min) instead of once per clip.
+  guardrails off; every third frame (0, 3, ..., 45) is kept and resized to 256 x 320. Clips not yet generated go to
+  the repo's inference.py in chunks of 4 (one model load, about 1.5 min, per chunk), each saved before the next, so a
+  dropped runtime loses at most one chunk. Point --work at persistent storage (e.g. Drive) to keep the raw outputs.
 Writes <GEN_DIR>/<NAME>/seed0/<clip>.mp4 (<NAME> default cosmos_action or cosmos_base) and the repo logs under
 --work. The repo fixes the noise seed itself (action: the chunk index; base: seed 0).
 
@@ -37,6 +38,7 @@ from PIL import Image
 FRAMES = 16
 SIZE = (320, 256)  # PIL (width, height)
 FPS = 4
+BASE_CHUNK = 4  # clips per model load: a dropped runtime loses at most one chunk
 
 
 def save(path: str, frames: list[np.ndarray]) -> None:
@@ -105,16 +107,15 @@ def base_variant(args, clips: list[str], bridge: str, out: str) -> None:
         inputs.append(os.path.join(args.work, f"{clip}.json"))
         with open(inputs[-1], "w") as f:
             json.dump(params, f, indent=1)
-    if not todo:
-        return
     result = os.path.join(args.work, "output")
-    command = [args.python, "examples/inference.py", "-i", *inputs, "--output-dir", result,
-               "--model", "2B/post-trained", "--disable-guardrails"]  # fmt: skip
-    run(command, args.cosmos, os.path.join(args.work, "run.log"))  # one model load for all clips
-    for clip in todo:
-        frames = list(imageio.mimread(os.path.join(result, f"{clip}.mp4"), memtest=False))
-        save(os.path.join(out, f"{clip}.mp4"), frames[: 3 * FRAMES : 3])
-    print(f"base: {len(todo)} clips", flush=True)
+    for i in range(0, len(todo), BASE_CHUNK):  # one model load per chunk; each chunk is saved before the next
+        command = [args.python, "examples/inference.py", "-i", *inputs[i : i + BASE_CHUNK], "--output-dir", result,
+                   "--model", "2B/post-trained", "--disable-guardrails"]  # fmt: skip
+        run(command, args.cosmos, os.path.join(args.work, "run.log"))
+        for clip in todo[i : i + BASE_CHUNK]:
+            frames = list(imageio.mimread(os.path.join(result, f"{clip}.mp4"), memtest=False))
+            save(os.path.join(out, f"{clip}.mp4"), frames[: 3 * FRAMES : 3])
+        print(f"base: {min(i + BASE_CHUNK, len(todo))} / {len(todo)} clips", flush=True)
 
 
 def main() -> None:
