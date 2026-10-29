@@ -257,7 +257,7 @@ def main() -> None:
     parser.add_argument("--backbone", choices=("latent", "dinov2"), default="latent")
     parser.add_argument("--epochs", type=int, default=3)
     parser.add_argument("--batch", type=int, default=1024, help="1024 for latent; use 128 for dinov2")
-    parser.add_argument("--episodes", type=int, default=3000, help="dinov2: training episodes decoded into memory")
+    parser.add_argument("--episodes", type=int, default=2000, help="dinov2: episodes held in memory")
     parser.add_argument("--gen", help="score: folder with states/ and the model folders")
     parser.add_argument("--models", nargs="+", help="score: model folders, with real and still as controls")
     args = parser.parse_args()
