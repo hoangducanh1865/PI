@@ -40,6 +40,34 @@ alone cannot say whether the robot follows the given actions. VDM scores below t
 from the model or from our run is being checked against the paper). More seeds and the motion metrics (end-effector
 track against the real clip) are being added.
 
+### Larger set and second dataset (the same scripts, Kaggle batch kernels)
+
+Bridge, 105 clips (6 episodes per verb over 12 verbs; the 24 clips above are included). ee_* on the 96 clips with an
+end-effector point (not yet VLM-checked). Paired Wilcoxon tests over the same clips:
+Frame-Ada > Video-Ada on PSNR (p = 2e-5, 69% of clips) and ee_ndtw (p = 0.02); Frame-Ada > LVDM on PSNR, LPIPS and
+ee_ndtw (p < 1e-8); the two Frame-Ada seeds do not differ (p = 0.15 to 0.4).
+
+| Model | PSNR | SSIM | LPIPS | ee_ndtw | ee error (px) | moving_ndtw |
+|---|---|---|---|---|---|---|
+| IRASim-Frame-Ada, seed 3407 | **23.95** | **0.809** | **0.082** | <u>0.699</u> | 10.6 | **0.780** |
+| IRASim-Frame-Ada, seed 3408 | <u>23.78</u> | <u>0.807</u> | <u>0.084</u> | **0.719** | **9.2** | <u>0.777</u> |
+| IRASim-Video-Ada | 23.52 | 0.804 | 0.087 | 0.682 | <u>10.5</u> | 0.749 |
+| LVDM | 22.62 | 0.788 | 0.103 | 0.593 | 14.9 | 0.669 |
+| still (floor) | 19.80 | 0.805 | 0.141 | 0.156 | 58.7 | 0.324 |
+
+Language-Table, 57 clips of 48 episodes (288 x 512; 2-D pushing; the end-effector point is fitted to the summed 2-D
+actions, R^2 0.87). Video-Ada is being regenerated (its first run ran out of memory beside another run).
+Frame-Ada > LVDM on PSNR (p = 0.015) and ee_ndtw (p = 0.017).
+
+| Model | PSNR | SSIM | LPIPS | ee_ndtw | ee error (px) | moving_ndtw |
+|---|---|---|---|---|---|---|
+| IRASim-Frame-Ada, seed 3407 | <u>27.03</u> | 0.861 | **0.059** | **0.715** | **7.9** | **0.716** |
+| IRASim-Frame-Ada, seed 3408 | **27.27** | 0.862 | **0.059** | <u>0.688</u> | <u>10.6</u> | <u>0.690</u> |
+| LVDM | 26.44 | <u>0.863</u> | 0.066 | 0.646 | 10.9 | 0.642 |
+| still (floor) | 22.35 | **0.879** | 0.103 | 0.131 | 80.7 | 0.228 |
+
+On Language-Table, SSIM ranks the still frame above every model (wide static table); the motion scores do not.
+
 ### Motion (`scripts/eval_motion.py --tracker cotracker`; points tracked from frame 0 in the generated and real clip)
 
 End-effector track (the tracked point best explained by the recorded end-effector position), on the 13 clips where two
