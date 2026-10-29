@@ -56,13 +56,15 @@ ee_ndtw (p < 1e-8); the two Frame-Ada seeds do not differ (p = 0.15 to 0.4).
 | still (floor) | 19.80 | 0.805 | 0.141 | 0.156 | 58.7 | 0.324 |
 
 Language-Table, 57 clips of 48 episodes (288 x 512; 2-D pushing; the end-effector point is fitted to the summed 2-D
-actions, R^2 0.87). Video-Ada is being regenerated (its first run ran out of memory beside another run).
-Frame-Ada > LVDM on PSNR (p = 0.015) and ee_ndtw (p = 0.017).
+actions, R^2 0.87). Frame-Ada > LVDM on PSNR (p = 0.015) and ee_ndtw (p = 0.017). Video-Ada (regenerated alone after
+its first run ran out of memory; checkpoint loaded without errors) is far behind on this dataset: below LVDM on every
+score (p < 0.001) and close to the still floor on motion; whether the paper reports the same gap is still to be checked.
 
 | Model | PSNR | SSIM | LPIPS | ee_ndtw | ee error (px) | moving_ndtw |
 |---|---|---|---|---|---|---|
 | IRASim-Frame-Ada, seed 3407 | <u>27.03</u> | 0.861 | **0.059** | **0.715** | **7.9** | **0.716** |
 | IRASim-Frame-Ada, seed 3408 | **27.27** | 0.862 | **0.059** | <u>0.688</u> | <u>10.6</u> | <u>0.690</u> |
+| IRASim-Video-Ada | 23.04 | 0.833 | 0.104 | 0.304 | 37.2 | 0.355 |
 | LVDM | 26.44 | <u>0.863</u> | 0.066 | 0.646 | 10.9 | 0.642 |
 | still (floor) | 22.35 | **0.879** | 0.103 | 0.131 | 80.7 | 0.228 |
 
