@@ -16,7 +16,8 @@ Variants:
   example); chunk 1 gives frames 0 to 12, chunk 2 (3 actions, zero-padded) frames 13 to 24; frames 0 to 15 are kept.
 - base: base/post-trained, image + text (no actions): the clip's first frame (original 480 x 640) and its instruction,
   49 frames at the model's 16 fps (about 3 s, the length of a 16-frame Bridge clip at 5 Hz), 480 x 640, guidance 7,
-  guardrails off; every third frame (0, 3, ..., 45) is kept and resized to 256 x 320.
+  guardrails off; every third frame (0, 3, ..., 45) is kept and resized to 256 x 320. All clips not yet generated go
+  to one call of the repo's inference.py, so the model loads once (about 1.5 min) instead of once per clip.
 Writes <GEN_DIR>/<NAME>/seed0/<clip>.mp4 (<NAME> default cosmos_action or cosmos_base) and the repo logs under
 --work. The repo fixes the noise seed itself (action: the chunk index; base: seed 0).
 
@@ -88,7 +89,9 @@ def action_variant(args, clips: list[str], bridge: str, out: str) -> None:
 
 def base_variant(args, clips: list[str], bridge: str, out: str) -> None:
     os.makedirs(args.work, exist_ok=True)
-    for clip in clips:
+    todo = [c for c in clips if not os.path.exists(os.path.join(out, f"{c}.mp4"))]
+    inputs = []
+    for clip in todo:
         episode, _, start = clip.split("_")
         video = imageio.get_reader(os.path.join(bridge, "videos", "test", episode, "rgb.mp4"))
         image = os.path.join(args.work, f"{clip}.png")
@@ -99,16 +102,19 @@ def base_variant(args, clips: list[str], bridge: str, out: str) -> None:
             "prompt": f"A robot arm in a toy kitchen performs the task: {instruction}. Realistic, steady camera.",
             "num_output_frames": 49, "resolution": "480,640", "guidance": 7, "seed": 0,
         }  # fmt: skip
-        with open(os.path.join(args.work, f"{clip}.json"), "w") as f:
+        inputs.append(os.path.join(args.work, f"{clip}.json"))
+        with open(inputs[-1], "w") as f:
             json.dump(params, f, indent=1)
-        result = os.path.join(args.work, clip)
-        command = [args.python, "examples/inference.py", "-i", os.path.join(args.work, f"{clip}.json"),
-                   "--output-dir", result, "--model", "2B/post-trained", "--disable-guardrails"]  # fmt: skip
-        run(command, args.cosmos, os.path.join(args.work, f"{clip}.log"))
-        generated = sorted(glob.glob(os.path.join(result, "**", "*.mp4"), recursive=True), key=os.path.getmtime)[-1]
-        frames = list(imageio.mimread(generated, memtest=False))
+    if not todo:
+        return
+    result = os.path.join(args.work, "output")
+    command = [args.python, "examples/inference.py", "-i", *inputs, "--output-dir", result,
+               "--model", "2B/post-trained", "--disable-guardrails"]  # fmt: skip
+    run(command, args.cosmos, os.path.join(args.work, "run.log"))  # one model load for all clips
+    for clip in todo:
+        frames = list(imageio.mimread(os.path.join(result, f"{clip}.mp4"), memtest=False))
         save(os.path.join(out, f"{clip}.mp4"), frames[: 3 * FRAMES : 3])
-        print(f"{clip}: done", flush=True)
+    print(f"base: {len(todo)} clips", flush=True)
 
 
 def main() -> None:
@@ -120,10 +126,11 @@ def main() -> None:
     parser.add_argument("--annotation", default="annotation_subset", help="action: annotation folder of the actions")
     parser.add_argument("--name", help="output folder name (default cosmos_<variant>)")
     parser.add_argument("--work", default="/tmp/cosmos_work")
+    parser.add_argument("--clips", nargs="+", help="only these clips (default: every clip in <GEN_DIR>/real)")
     args = parser.parse_args()
     args.python = os.path.join(args.cosmos, ".venv", "bin", "python")
     bridge = os.path.join(args.data, "opensource_robotdata", "bridge")
-    clips = sorted(os.path.basename(p)[:-4] for p in glob.glob(os.path.join(args.gen, "real", "*.mp4")))
+    clips = args.clips or sorted(os.path.basename(p)[:-4] for p in glob.glob(os.path.join(args.gen, "real", "*.mp4")))
     out = os.path.join(args.gen, args.name or f"cosmos_{args.variant}", "seed0")
     args.work = os.path.join(args.work, args.name or f"cosmos_{args.variant}")
     (action_variant if args.variant == "action" else base_variant)(args, clips, bridge, out)
