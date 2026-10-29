@@ -3,7 +3,7 @@
 # Python 3.12 environment so it does not touch the other packages. Not Docker (unavailable on Colab): vllm and vllm-omni
 # 0.32.0 (2026-10-28; Cosmos3 pipeline with inverse dynamics and the bridge_orig_lerobot domain, checked 2026-10-29).
 # Their PyPI build needs CUDA 13.0 (driver >= 580); with a driver 575 to 579 the CUDA 12.9 builds are used (torch from
-# download.pytorch.org/whl/cu129, vllm from its GitHub release).
+# download.pytorch.org/whl/cu129, vllm from its GitHub release, torchcodec's CPU build).
 #
 # Usage: bash scripts/setup_cosmos3.sh <ENV_DIR> [--install-only]      e.g. /content/work/cosmos3_env
 # Starts the server on port 8000 in the background (log <ENV_DIR>/serve.log) and waits until it answers. Below 80 GB of
@@ -30,6 +30,8 @@ else
     uv pip install -q -p "$ENV/bin/python" --index-strategy unsafe-best-match \
         --extra-index-url https://download.pytorch.org/whl/cu129 \
         torch==2.13.0+cu129 torchvision==0.28.0+cu129 torchaudio==2.11.0+cu129 "vllm @ $wheel" vllm-omni==0.32.0
+    # torchcodec (a vllm dependency) has no CUDA 12.9 build for torch 2.13: its CPU build is enough to decode the clips
+    uv pip install -q -p "$ENV/bin/python" --index-url https://download.pytorch.org/whl/cpu torchcodec==0.17.0+cpu
 fi
 "$ENV/bin/python" -c "import torch, vllm, vllm_omni; print('torch', torch.__version__, 'vllm', vllm.__version__)" 2>/dev/null
 [ "${2:-}" = --install-only ] && exit 0
