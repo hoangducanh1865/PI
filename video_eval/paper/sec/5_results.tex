@@ -46,18 +46,18 @@ PSNR and SSIM rank the still video above every corrupted generation, and SSIM ev
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}lccccc@{}}
 \toprule
-Actions given & PSNR & SSIM & LPIPS & 2-D NDTW & 3-D cm \\
+Actions given & PSNR$\uparrow$ & SSIM$\uparrow$ & LPIPS$\downarrow$ & NDTW$\uparrow$ & 3-D cm$\downarrow$ \\
 \midrule
-original & \textbf{23.97} & \ul{0.814} & \textbf{0.081} & \textbf{0.759} & \textbf{1.93} \\
-noise 0.5\,cm & \ul{21.87} & 0.788 & \ul{0.103} & \ul{0.550} & \ul{2.67} \\
+original & \textbf{23.97} & \textbf{0.814} & \textbf{0.081} & \textbf{0.759} & \textbf{1.93} \\
+noise 0.5\,cm & \ul{21.87} & \ul{0.788} & \ul{0.103} & \ul{0.550} & \ul{2.67} \\
 noise 1.5\,cm & 19.45 & 0.752 & 0.149 & 0.270 & 5.62 \\
 all zero & 19.31 & 0.753 & 0.158 & 0.133 & 9.73 \\
 mirrored & 18.59 & 0.737 & 0.178 & 0.036 & 15.32 \\
 \midrule
-still frame & 20.35 & \textbf{0.816} & 0.134 & 0.135 & 9.52 \\
+still frame & 20.35 & 0.816 & 0.134 & 0.135 & 9.52 \\
 \bottomrule
 \end{tabular}
-\caption{Perturbation test, Frame-Ada seed 3407, 24 clips (2-D NDTW on the 13 clips whose end-effector point both VLM judges confirmed). Scores against the real clip of the original actions.}
+\caption{Perturbation test, Frame-Ada seed 3407, 24 clips (2-D NDTW on the 13 clips whose end-effector point both VLM judges confirmed). Scores against the real clip of the original actions; best in bold, second underlined (still frame excluded: it is the floor reference, and it beats every corrupted generation on PSNR and SSIM).}
 \label{tab:perturb}
 \end{table}
 
