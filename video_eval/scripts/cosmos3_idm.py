@@ -20,6 +20,9 @@ normalizer_stats/bridge_orig_lerobot_stats.json), with nothing fitted:
 - IRASim's Bridge states store the roll of LeRobot's bridge_orig_lerobot (the data NVIDIA trained on) plus pi
   (checked 2026-10-29: roll median 2.47 rad in our 105 clips, 0.00 in 7 LeRobot episodes; pitch, yaw, xyz agree), so
   R_LeRobot = R_IRASim Rx(pi).
+The gripper number is the commanded gripper NVIDIA trains on (LeRobot action[6]: binary, 1 = open; IRASim stores the
+same command as action[:, 6]). It is not comparable with IRASim's continuous_gripper_state, which measures closing
+(0 = open; r = -0.79 with the binary state over the 69 test episodes), and it is not scored here.
 From the real pose at frame 0, the decoded steps give 16 poses, which are mapped back to IRASim's state convention and
 scored by idm.trajectory_scores (via idm.actions_from_states), like our own IDMs.
 Writes <GEN_DIR>/<MODEL>/cosmos3_idm/<clip>.npz (raw answer) and <GEN_DIR>/metrics_idm_cosmos3.csv; the real clips'
