@@ -1,0 +1,22 @@
+\section{Reproducing IRASim}
+\label{sec:reproduce}
+
+\paragraph{Pipeline.}
+IRASim \cite{zhu2024irasim} predicts 16 frames from the first frame and 15 actions.
+An action is the end-effector motion between two frames, expressed in the end-effector frame of the earlier one: position change $R_{t-1}^\top(p_t-p_{t-1})$, rotation change as Euler angles of $R_{t-1}^\top R_t$, and the gripper state, with the arm part scaled by 20.
+Frames are encoded by the SDXL VAE into $4\times32\times40$ latents (for $256\times320$ video); a diffusion transformer (IRASim-XL/2, patch size 2) denoises the latents of frames 1 to 15 while the latent of frame 0 is kept clean as the condition.
+Actions enter through adaptive layer norm (adaLN-Zero): in \emph{Frame-Ada} each frame's tokens are modulated by that frame's action, in \emph{Video-Ada} one embedding of the whole sequence modulates every frame.
+Training minimises the mean squared error between the added and the predicted noise on frames 1 to 15 (linear schedule, 1000 steps, no learned variance; 300k steps, learning rate $10^{-4}$, from the released configs).
+Sampling uses PNDM with 50 steps.
+The release also ships the paper's baselines on Bridge: LVDM (latent video diffusion with a UNet) and VDM (pixel-space diffusion), both conditioned on the action sequence as a whole.
+
+\paragraph{Setup.}
+We use the authors' code at commit \texttt{c72b6da} and their evaluation configs, overriding only the episode list, the seed and the batch size.
+Clips are 16 consecutive frames (5\,Hz, about 3\,s) of Bridge test episodes, chosen by a fixed rule: the first episodes per instruction verb (24 clips over 8 verbs, then 105 clips over 12 verbs), and 57 Language-Table clips ($288\times512$).
+Generation ran on Kaggle T4 GPUs; the Cosmos models and the inverse dynamics model on one A100.
+
+\paragraph{Differences from the original work.}
+(1) We score a subset of the test split, not all of it.
+(2) The initial noise depends on the batch a clip is generated in: the same seed gave identical videos when a run was repeated with the same batches, but only 1 of 24 identical clips when the batch composition changed. We therefore treat seeds as samples and report per-seed spread.
+(3) We do not compute FVD, which needs far more clips than we generated.
+\TODO{compare our PSNR/SSIM/LPIPS with the paper's Bridge table, after checking the paper's protocol (frames, resolution).}

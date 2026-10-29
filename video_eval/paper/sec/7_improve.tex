@@ -1,0 +1,38 @@
+\section{Improvement: a reference-free 3-D action-consistency score}
+\label{sec:improve}
+
+\paragraph{Idea.}
+Every score in Tab.~\ref{tab:metrics} except the VLM judges needs the real video of the same actions, which does not exist when a world model is used as a simulator.
+What always exists is the commanded action sequence.
+We therefore read the actions back from the generated video with an inverse dynamics model (IDM) and compare them with the commanded ones.
+We use NVIDIA Cosmos3-Nano \cite{nvidia2026cosmos3} in its inverse-dynamics mode for Bridge (domain \texttt{bridge\_orig\_lerobot}), with no training of ours.
+
+\paragraph{Decoding the IDM output.}
+The model returns 10 numbers per step.
+Following NVIDIA's own encoder for this domain \cite{nvidia2026framework}, they are the step's relative pose $T_i^{-1}T_{i+1}$ (translation and the first two columns of the rotation matrix) and the commanded gripper, quantile-normalised as $\hat a = 2(a-q_{01})/(q_{99}-q_{01})-1$ with the published statistics, in a fixed frame derived from the Bridge state.
+We invert these steps exactly and integrate them from the true first pose; nothing is fitted.
+One convention differs between data sources: the Bridge states shipped with IRASim store the roll of the LeRobot version used by NVIDIA plus $\pi$ (median 2.47\,rad in our clips against 0.00 in LeRobot), so $R_{\text{LeRobot}}=R_{\text{IRASim}}R_x(\pi)$.
+Encoding our states with NVIDIA's code and decoding them with ours returns them within $2\cdot10^{-4}$\,mm.
+The score of a clip is the mean distance between the recovered and the commanded end-effector positions over frames 1 to 15.
+
+\paragraph{Validation on real clips (105).}
+Recovered relative motion correlates with the recorded one ($r=0.92$, $0.93$, $0.88$ for $x,y,z$; $0.81$ to $0.92$ for the rotation entries); the mean path error is 1.50\,cm (95\% bootstrap interval 1.36 to 1.68) for clips that move 25\,cm.
+The same model on the still video scores 9.06\,cm, as bad as assuming no motion (9.32): it reads the motion from the frames, not from a prior.
+The gripper command is recovered with balanced accuracy 0.87 (0.50 for always predicting ``open'').
+
+\paragraph{Generated videos.}
+Read through the same IDM, Frame-Ada scores 1.81 and 1.84\,cm (two seeds): worse than the real videos ($p<10^{-5}$, paired) but on 27 to 29\% of clips better, because the IDM's own error on a clip is shared by the real and the generated video (Spearman 0.81 between the two).
+Its per-clip score correlates with LPIPS ($\rho=0.52$), but the part that exceeds the real video's score barely does ($\rho=0.21$; 2-D NDTW $0.09$): the 3-D score measures something the pixel and image-track scores do not.
+Known corruptions (Tab.~\ref{tab:perturb}, last column) raise the score monotonically: 1.93\,cm for the original actions, 2.67 and 5.62 for random walks of 0.5 and 1.5\,cm per frame, 9.73 for zero actions (the still video: 9.52) and 15.32 for mirrored motion.
+Across models (24 clips) it gives Frame-Ada 1.86 to 2.12\,cm over six seeds, Video-Ada 2.09 and 2.13, LVDM 2.15 and 2.53, VDM 10.68, the same order as the reference-based scores.
+
+\paragraph{Use 1: best-of-N without a reference.}
+For each of the 24 clips we generate six Frame-Ada videos and keep the one with the lowest 3-D score.
+On the independent, reference-based scores the selection does not help measurably: PSNR 24.02 vs 23.93 for the average seed ($p=0.64$), 2-D NDTW 0.717 vs 0.709 ($p=0.37$), while choosing by PSNR itself (an oracle that needs the real video) would reach 24.86\,dB.
+Seeds of Frame-Ada differ little (Sec.~\ref{sec:results}), so there is little to select from; the selector would matter for models whose samples differ more, which we leave open.
+
+\paragraph{Use 2: executability.}
+\TODO{(a) Inverse kinematics of the recovered poses on a WidowX 250: reach, joint limits, joint speeds. (b) Replay of the recovered actions in ManiSkill3 (SIMPLER Bridge, Bridge controller) and MuJoCo: tracking error, collisions, task outcome where the scene matches.}
+
+\paragraph{How to test it further.}
+A score is useful if it falls when the video is wrong and only then: we test (i) its floor on real videos, (ii) its response to known corruptions, (iii) its agreement with human-like judges, and (iv) whether selecting by it improves reference-based scores.

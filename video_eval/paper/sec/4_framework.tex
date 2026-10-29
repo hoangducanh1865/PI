@@ -1,0 +1,48 @@
+\section{Evaluation framework}
+\label{sec:framework}
+
+\paragraph{Models and references.}
+Tab.~\ref{tab:models} lists what each model receives and produces.
+Two references bound every score: the \emph{real} video of the same actions (ceiling) and the first frame held \emph{still} for 16 frames (floor: perfect image quality, no motion).
+Cosmos videos are resampled to the IRASim format (16 frames, $256\times320$) before scoring; for the base model we keep every third of 49 frames at 16\,fps, which spans the same 3\,s.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\begin{tabular}{@{}llll@{}}
+\toprule
+Model & Conditioning & Native output & Steps \\
+\midrule
+IRASim-Frame-Ada & frame 0 + 15 actions, per frame & $256\times320$, 16 f & 50 \\
+IRASim-Video-Ada & frame 0 + 15 actions, per video & $256\times320$, 16 f & 50 \\
+LVDM & frame 0 + actions, per video & $256\times320$, 16 f & 50 \\
+VDM (pixels) & frame 0 + actions, per video & $256\times320$, 16 f & 50 \\
+Cosmos-P2.5 action & frame 0 + chunks of 12 actions & $256\times320$, 13 f per chunk & 35 \\
+Cosmos-P2.5 base & frame 0 + instruction text & $480\times640$, 49 f, 16 fps & 35 \\
+\bottomrule
+\end{tabular}
+\caption{Models compared on Bridge. Cosmos action: two chunks, frames 0 to 15 kept; guidance 0. Cosmos base: guidance 7, 24 core clips only (3 min per clip on an A100).}
+\label{tab:models}
+\end{table*}
+
+\paragraph{Metric groups.}
+Tab.~\ref{tab:metrics} states for each group what it measures and what it cannot establish.
+All are computed per clip and compared with paired Wilcoxon tests over the same clips.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\begin{tabular}{@{}p{3.1cm}p{5.4cm}p{6.4cm}@{}}
+\toprule
+Group (metrics) & Measures & Cannot establish \\
+\midrule
+Visual quality (PSNR, SSIM, LPIPS vs the real clip) & how close each frame looks to the recorded frame & whether the robot moved as commanded: a still video keeps high SSIM; small spatial shifts are punished like large errors \\
+Temporal consistency (DINOv2 \cite{oquab2023dinov2} similarity of adjacent frames and to frame 0; optical-flow warp error) & smoothness and identity stability across frames & correct motion: the still video scores perfectly \\
+2-D trajectory (CoTracker3 \cite{karaev2024cotracker3} end-effector track vs the real clip; NDTW \cite{ilharco2019ndtw}, error in pixels, path ratio) & whether the gripper moves along the same image path as in the real clip & depth and orientation; needs the real clip; relies on picking the end-effector point (VLM-checked) \\
+Physical plausibility and outcome (two VLM judges) & violations seen by a judge (objects vanish or change, robot deforms) and whether the final state matches the real clip & reliability: judges differ in strictness and change answers between runs \\
+3-D action consistency (Cosmos3-Nano inverse dynamics, ours) & whether the 3-D end-effector motion read from the video matches the commanded actions, in cm; needs no real video & object motion and contact; bounded below by the inverse dynamics model's own error (1.50\,cm on real clips) \\
+\bottomrule
+\end{tabular}
+\caption{Metric groups. Task completion is covered by the outcome judge and, for executability, by replay in simulation (Sec.~\ref{sec:improve}).}
+\label{tab:metrics}
+\end{table*}

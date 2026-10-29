@@ -1,0 +1,22 @@
+\section{Strengths and limitations of IRASim}
+\label{sec:analysis}
+
+\TODO{Each item gets a frame strip of a chosen clip (Fig.~2): one success, one object failure, one contact-heavy failure.}
+
+\paragraph{Strengths.}
+\textbf{(S1) It follows the actions.}
+Frame-Ada's gripper follows the real image path (2-D NDTW 0.77 on verified clips, 6.3\,px mean error) and the 3-D path read back from its videos is within 1.81\,cm of the commanded one, against 1.50\,cm for the real videos themselves.
+\textbf{(S2) Per-frame conditioning matters.}
+With the same backbone and data, modulating each frame by its own action (Frame-Ada) beats one embedding for the whole sequence (Video-Ada) on PSNR and 2-D tracking over 105 paired clips.
+\textbf{(S3) Stable and reproducible.}
+Temporal consistency is close to the real videos, two seeds give statistically equal scores, and a rerun with the same batches reproduces the videos exactly.
+
+\paragraph{Limitations.}
+\textbf{(L1) Objects do not keep their identity.}
+The judges' most frequent violation is an object that changes shape or vanishes, typically once the gripper holds it.
+\textbf{(L2) Correct motion does not imply the correct outcome.}
+Only 50\% / 75\% of Frame-Ada clips end in the same state as the real clip according to the two judges.
+\textbf{(L3) Errors grow with contact and time.}
+The gap between the 3-D score of Frame-Ada and that of the real video is largest for wipe, turn, slide and topple (0.5 to 0.7\,cm) and close to zero for open, flip and fold; within a clip the error grows towards the last frames.
+\textbf{(L4) Short, low-resolution, single-embodiment.}
+Each checkpoint covers one dataset at $256\times320$ and 16 frames (3\,s); longer horizons need autoregressive chaining, which we do not test.

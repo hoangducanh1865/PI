@@ -70,6 +70,34 @@ score (p < 0.001) and close to the still floor on motion; whether the paper repo
 
 On Language-Table, SSIM ranks the still frame above every model (wide static table); the motion scores do not.
 
+### Cosmos-Predict2.5 and the 3-D action score (A100, `scripts/run_cosmos.py`, `scripts/cosmos3_idm.py`)
+
+3-D score: NVIDIA Cosmos3-Nano reads the end-effector motion back from each video (inverse dynamics, no training of
+ours), decoded exactly as NVIDIA's cosmos-framework encodes Bridge actions; the recovered path is compared with the
+commanded one (cm, no real video needed). Its own error on the real videos is 1.50 cm (clips move about 25 cm).
+
+Bridge, 105 clips (Cosmos base: the 24 core clips only):
+
+| Model | PSNR | SSIM | LPIPS | ee_ndtw | ee error (px) | DINOv2 adjacent | 3-D error (cm) | ndtw_3d |
+|---|---|---|---|---|---|---|---|---|
+| real (ceiling) | - | - | - | 1 | 0 | 0.952 | 1.50 | 0.528 |
+| Cosmos-Predict2.5 action | **25.74** | **0.859** | **0.063** | **0.754** | **7.4** | 0.929 | **1.64** | **0.498** |
+| IRASim-Frame-Ada, seed 3407 | <u>23.95</u> | <u>0.809</u> | <u>0.082</u> | 0.699 | 10.6 | 0.934 | <u>1.81</u> | <u>0.476</u> |
+| IRASim-Frame-Ada, seed 3408 | 23.78 | 0.807 | 0.084 | <u>0.719</u> | <u>9.2</u> | 0.935 | 1.84 | <u>0.476</u> |
+| IRASim-Video-Ada | 23.52 | 0.804 | 0.087 | 0.682 | 10.5 | 0.933 | 1.95 | 0.450 |
+| LVDM | 22.62 | 0.788 | 0.103 | 0.593 | 14.9 | 0.925 | 2.54 | 0.377 |
+| Cosmos-Predict2.5 base (no actions, 24 clips) | 13.55 | 0.611 | 0.290 | 0.131 | 64.0 | 0.916 | 10.30 | 0.041 |
+| still (floor) | 19.80 | 0.805 | 0.141 | 0.156 | 58.7 | 1.000 | 9.06 | 0.045 |
+
+Paired Wilcoxon: Cosmos action > Frame-Ada on PSNR (p = 4e-16), ee_ndtw (p = 0.008) and the 3-D error (p = 0.02);
+Frame-Ada > Video-Ada > LVDM on the 3-D error (p <= 0.01 each). Without actions the same backbone is no better than the
+still video on the 3-D error (p = 0.32), although its frames are smooth.
+
+3-D score on the 24 core clips (Frame-Ada seed 3407 unless stated): real 1.68, original actions 1.93, noise 0.5 cm
+2.67, noise 1.5 cm 5.62, frozen actions 9.73, still video 9.52, mirrored 15.32; six Frame-Ada seeds 1.86 to 2.12;
+Video-Ada 2.09 / 2.13, LVDM 2.15 / 2.53, VDM 10.68. Best of six seeds chosen by the 3-D score: PSNR 24.02 vs 23.93
+for the average seed (p = 0.64), ee_ndtw 0.717 vs 0.709 (p = 0.37): no measurable gain, the seeds differ little.
+
 ### Motion (`scripts/eval_motion.py --tracker cotracker`; points tracked from frame 0 in the generated and real clip)
 
 End-effector track (the tracked point best explained by the recorded end-effector position), on the 13 clips where two

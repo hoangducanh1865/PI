@@ -1,0 +1,12 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+On real robot data, the frame metrics used to compare video world models cannot tell whether the robot followed its actions: they rank a frozen video above generations from corrupted actions.
+Trajectory scores can, and an off-the-shelf inverse dynamics model, decoded exactly as its authors encode actions, gives such a score in centimetres without any real video.
+IRASim-Frame-Ada follows Bridge actions to within about 0.3\,cm of what the same reader achieves on real videos, but objects lose their identity and outcomes often differ.
+Removing the action input from the same Cosmos backbone leaves smooth, plausible-looking videos whose robot moves no more correctly than a frozen frame.
+Using the score to pick the best of six samples did not improve independent scores for IRASim, whose samples differ little.
+\TODO{executability.}
+
+\paragraph{Limits of this study.}
+A few hundred clips, one embodiment for the 3-D score (the IDM has no Language-Table domain), VLM judges that are not stable between runs, and an IDM whose own error (1.50\,cm) bounds what the 3-D score can resolve.

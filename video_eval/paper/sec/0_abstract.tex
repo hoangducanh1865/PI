@@ -1,0 +1,9 @@
+\begin{abstract}
+Action-conditioned video models are proposed as simulators for robot manipulation, but they are judged mostly by how real their frames look.
+We reproduce IRASim \cite{zhu2024irasim} with its released Bridge checkpoints and baselines, add NVIDIA Cosmos-Predict2.5 \cite{nvidia2025cosmos} with and without action input, and score 105 Bridge and 57 Language-Table clips with five metric groups: pixel fidelity, temporal consistency, 2-D end-effector tracking, two VLM judges, and a 3-D action score.
+Pixel metrics rank a frozen first frame above generations from corrupted actions, while the tracking score falls with the corruption.
+As an improvement we propose a reference-free 3-D action-consistency score: an off-the-shelf inverse dynamics model (Cosmos3-Nano) reads the end-effector motion back from a generated video, decoded exactly as NVIDIA encodes Bridge actions, and the result is compared with the commanded actions.
+On real clips it recovers the path within 1.50\,cm (clips move 25\,cm on average) and a still video scores 9.06\,cm; it rises monotonically with corrupted actions and ranks the models as reference-based scores do.
+Cosmos-Predict2.5 with actions follows them best (1.64\,cm, IRASim-Frame-Ada 1.81), while without actions it is no better than a still video.
+\TODO{executability}
+\end{abstract}

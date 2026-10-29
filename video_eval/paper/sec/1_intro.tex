@@ -1,0 +1,15 @@
+\section{Introduction}
+\label{sec:intro}
+
+A video world model for manipulation takes the current camera frame and a sequence of robot actions and predicts the video the robot would record.
+If the prediction is right, it can replace a physics simulator for policy evaluation, planning and data generation \cite{zhu2024irasim,nvidia2025cosmos}.
+These models are usually compared with frame metrics (PSNR, SSIM \cite{wang2004ssim}, LPIPS \cite{zhang2018lpips}) or distribution metrics such as FVD.
+Such scores reward a video that looks like the recorded one; they do not ask whether the robot in it executes the given actions, whether objects move only when touched, or whether the task ends as it should.
+
+This report studies that gap on real robot data. Our contributions:
+\begin{itemize}
+\item a reproduction of IRASim and its three released baselines on Bridge \cite{walke2023bridgedata} and Language-Table \cite{lynch2022interactive}, with paired per-clip statistics (Sec.~\ref{sec:reproduce});
+\item an evaluation framework with five metric groups, each stated with what it measures and what it cannot establish, applied to six models and two references (Sec.~\ref{sec:framework}, \ref{sec:results});
+\item a perturbation test showing that pixel metrics prefer a frozen video to a generation from corrupted actions, while trajectory scores do not (Sec.~\ref{sec:results});
+\item a reference-free 3-D action-consistency score built on an off-the-shelf inverse dynamics model, validated on real clips, and its use for best-of-N selection and for an executability check in simulation (Sec.~\ref{sec:improve}).
+\end{itemize}

@@ -1,0 +1,75 @@
+\section{Results}
+\label{sec:results}
+
+\paragraph{Bridge, 105 clips.}
+Tab.~\ref{tab:bridge} gives the main comparison.
+Frame-Ada leads on every group, Video-Ada is second and LVDM third; paired tests confirm Frame-Ada $>$ Video-Ada on PSNR ($p=2\cdot10^{-5}$, better on 69\% of clips) and 2-D NDTW ($p=0.02$), and Frame-Ada $>$ LVDM on PSNR, LPIPS and NDTW ($p<10^{-8}$).
+The two Frame-Ada seeds do not differ ($p=0.15$ to $0.4$).
+SSIM separates no model from the still video.
+Cosmos-Predict2.5 with actions is the best model on every group: +1.78\,dB PSNR ($p=4\cdot10^{-16}$), +0.055 2-D NDTW ($p=0.008$) and 0.16\,cm lower 3-D error ($p=0.02$) than Frame-Ada, within 0.14\,cm of what the inverse dynamics model achieves on the real videos.
+The 3-D score ranks the IRASim family like the other groups (Frame-Ada $<$ Video-Ada $<$ LVDM, $p\le0.01$ for each step).
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+& \multicolumn{3}{c}{Visual} & \multicolumn{2}{c}{2-D track} & 3-D \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-6}\cmidrule(l){7-7}
+Model & PSNR$\uparrow$ & SSIM$\uparrow$ & LPIPS$\downarrow$ & NDTW$\uparrow$ & px$\downarrow$ & cm$\downarrow$ \\
+\midrule
+real (ceiling) & - & - & - & 1 & 0 & 1.50 \\
+\midrule
+Frame-Ada, s3407 & \ul{23.95} & \ul{0.809} & \ul{0.082} & 0.699 & 10.6 & \ul{1.81} \\
+Frame-Ada, s3408 & 23.78 & 0.807 & 0.084 & \ul{0.719} & \ul{9.2} & 1.84 \\
+Video-Ada & 23.52 & 0.804 & 0.087 & 0.682 & 10.5 & 1.95 \\
+LVDM & 22.62 & 0.788 & 0.103 & 0.593 & 14.9 & 2.54 \\
+Cosmos-P2.5 action & \textbf{25.74} & \textbf{0.859} & \textbf{0.063} & \textbf{0.754} & \textbf{7.4} & \textbf{1.64} \\
+\midrule
+still (floor) & 19.80 & 0.805 & 0.141 & 0.156 & 58.7 & 9.06 \\
+\bottomrule
+\end{tabular}}
+\caption{Bridge, 105 clips. Visual metrics over frames 1 to 15; 2-D track on the 96 clips with an end-effector point; 3-D: mean end-effector position error of the path read back by the inverse dynamics model (Sec.~\ref{sec:improve}). Best in bold, second underlined (references excluded).}
+\label{tab:bridge}
+\end{table}
+
+\paragraph{Perturbation test.}
+Does a metric notice wrong actions? We regenerate the 24 core clips with Frame-Ada from corrupted actions (random walks of 0.5 and 1.5\,cm per frame on the position, mirrored motion, all actions zero) and score them against the real clips of the original actions (Tab.~\ref{tab:perturb}).
+2-D NDTW and the 3-D score both degrade with the corruption, put zero actions at the still floor (0.133 vs 0.135; 9.73 vs 9.52\,cm) and mirrored motion below it; the 3-D score does so without the real video.
+PSNR and SSIM rank the still video above every corrupted generation, and SSIM even above the original one.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Actions given & PSNR & SSIM & LPIPS & 2-D NDTW & 3-D cm \\
+\midrule
+original & \textbf{23.97} & \ul{0.814} & \textbf{0.081} & \textbf{0.759} & \textbf{1.93} \\
+noise 0.5\,cm & \ul{21.87} & 0.788 & \ul{0.103} & \ul{0.550} & \ul{2.67} \\
+noise 1.5\,cm & 19.45 & 0.752 & 0.149 & 0.270 & 5.62 \\
+all zero & 19.31 & 0.753 & 0.158 & 0.133 & 9.73 \\
+mirrored & 18.59 & 0.737 & 0.178 & 0.036 & 15.32 \\
+\midrule
+still frame & 20.35 & \textbf{0.816} & 0.134 & 0.135 & 9.52 \\
+\bottomrule
+\end{tabular}
+\caption{Perturbation test, Frame-Ada seed 3407, 24 clips (2-D NDTW on the 13 clips whose end-effector point both VLM judges confirmed). Scores against the real clip of the original actions.}
+\label{tab:perturb}
+\end{table}
+
+\paragraph{Temporal consistency and VLM judges (24 clips).}
+DINOv2 adjacent-frame similarity is 0.953 for real clips and 0.924 to 0.938 for the latent models; the still video scores 1.000, so these metrics measure stability, not correct motion.
+Two VLM judges (gemini-3.8-flash, gpt-6.1-sol) rate physical plausibility and whether the final state matches the real clip: they agree on the ranking but not on strictness (they flag 21\% and 4\% of real clips).
+The most frequent violation for every latent model is an object that changes or vanishes (Frame-Ada: 46\% and 17\% of clips); the still video is "plausible" every time and only the outcome question catches it (0.00 and 0.04).
+
+\paragraph{Action input matters (24 core clips).}
+Cosmos-Predict2.5 base, given the first frame and the instruction but no actions, produces smooth videos (DINOv2 adjacent-frame similarity 0.916 against 0.953 for real clips) whose robot does not follow the recorded motion: 3-D error 10.30\,cm, not different from the still video (9.52\,cm, $p=0.32$), against 1.74\,cm for the same backbone with actions ($p=10^{-7}$).
+Its PSNR (13.5) is also far below every action-conditioned model; part of this gap may come from resampling its 49 frames at 16\,fps to our format.
+
+\paragraph{Language-Table (57 clips).}
+On 2-D table-top pushing, Frame-Ada again beats LVDM on PSNR ($p=0.015$) and 2-D NDTW ($p=0.017$), and SSIM ranks the still frame first (0.879 against 0.861 to 0.863) because most of the image is a static table.
+IRASim-Video-Ada is far behind on this dataset (PSNR 23.04, 2-D NDTW 0.304, below LVDM at $p<0.001$), close to the still floor on motion; \TODO{check the paper's Language-Table numbers}.
