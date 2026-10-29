@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Prepare NVIDIA Cosmos-Predict2.5 (github.com/nvidia-cosmos/cosmos-predict2.5, commit a2c298b0a3df) for
-# scripts/run_cosmos.py, outside the code folder, following the repo's docs/setup.md (virtual environment route).
+# scripts/run_cosmos.py, outside the code folder, following the repo's docs/setup.md (virtual environment route), with
+# Python 3.10 (torch 2.7.0+cu128; install checked on a Colab CPU runtime, 2.5 min, 12 GB).
 #
 # Usage: bash scripts/setup_cosmos.sh <COSMOS_DIR>       e.g. /tmp/cosmos-predict2.5
 # Then: source <COSMOS_DIR>/.venv/bin/activate, export HF_TOKEN (read access; the NVIDIA Open Model License of
@@ -24,6 +25,6 @@ git -C "$COSMOS" lfs pull
 command -v uv > /dev/null || { curl -LsSf https://astral.sh/uv/install.sh | sh; }
 export PATH="$HOME/.local/bin:$PATH"
 cd "$COSMOS"
-uv python install
-uv sync --extra=cu128
+uv python install 3.10
+uv sync --python 3.10 --extra=cu128  # flash-attn in its lockfile has wheels for CPython 3.10 only (checked 2026-10-29)
 echo "Cosmos-Predict2.5 ready at $COSMOS (activate $COSMOS/.venv)"

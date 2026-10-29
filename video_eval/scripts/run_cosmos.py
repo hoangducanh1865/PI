@@ -103,7 +103,7 @@ def base_variant(args, clips: list[str], bridge: str, out: str) -> None:
             json.dump(params, f, indent=1)
         result = os.path.join(args.work, clip)
         command = [args.python, "examples/inference.py", "-i", os.path.join(args.work, f"{clip}.json"),
-                   "--output-dir", result, "--model", "base/post-trained", "--disable-guardrails"]  # fmt: skip
+                   "--output-dir", result, "--model", "2B/post-trained", "--disable-guardrails"]  # fmt: skip
         run(command, args.cosmos, os.path.join(args.work, f"{clip}.log"))
         generated = sorted(glob.glob(os.path.join(result, "**", "*.mp4"), recursive=True), key=os.path.getmtime)[-1]
         frames = list(imageio.mimread(generated, memtest=False))
