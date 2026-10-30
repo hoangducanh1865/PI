@@ -71,5 +71,31 @@ Cosmos-Predict2.5 base, given the first frame and the instruction but no actions
 Its PSNR (13.5) is also far below every action-conditioned model; part of this gap may come from resampling its 49 frames at 16\,fps to our format.
 
 \paragraph{Language-Table (57 clips).}
-On 2-D table-top pushing, Frame-Ada again beats LVDM on PSNR ($p=0.015$) and 2-D NDTW ($p=0.017$), and SSIM ranks the still frame first (0.879 against 0.861 to 0.863) because most of the image is a static table.
-IRASim-Video-Ada is far behind on this dataset (PSNR 23.04, 2-D NDTW 0.304, below LVDM at $p<0.001$), close to the still floor on motion; \TODO{check the paper's Language-Table numbers}.
+On 2-D table-top pushing (Tab.~\ref{tab:lt}), Frame-Ada again beats LVDM on PSNR ($p=0.015$) and 2-D NDTW ($p=0.017$), and SSIM ranks the still frame first (0.879 against 0.861 to 0.863) because most of the image is a static table.
+IRASim-Video-Ada is far behind on this dataset: below LVDM on every score ($p<0.001$) and close to the still floor on motion.
+The IRASim paper shows the same gap (PSNR 23.89 for Video-Ada against 28.25 for LVDM and 28.82 for Frame-Ada, its Tab.~1), so it is a property of the released model, not of our run.
+Our PSNR values are 1.4 to 1.8\,dB lower than the paper's for every model, with the same order; we have not checked whether its protocol (frames scored, resolution) differs from ours.
+The 3-D score is not available here: the inverse dynamics model has no Language-Table domain.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+& \multicolumn{3}{c}{Visual} & \multicolumn{2}{c}{2-D track} & Paper \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-6}\cmidrule(l){7-7}
+Model & PSNR$\uparrow$ & SSIM$\uparrow$ & LPIPS$\downarrow$ & NDTW$\uparrow$ & px$\downarrow$ & PSNR$\uparrow$ \\
+\midrule
+Frame-Ada, s3407 & \ul{27.03} & 0.861 & \textbf{0.059} & \textbf{0.715} & \textbf{7.9} & \multirow{2}{*}{\textbf{28.82}} \\
+Frame-Ada, s3408 & \textbf{27.27} & \ul{0.862} & \textbf{0.059} & \ul{0.688} & \ul{10.6} & \\
+Video-Ada & 23.04 & 0.833 & 0.104 & 0.304 & 37.2 & 23.89 \\
+LVDM & 26.44 & \textbf{0.863} & 0.066 & 0.646 & 10.9 & \ul{28.25} \\
+\midrule
+still (floor) & 22.35 & 0.879 & 0.103 & 0.131 & 80.7 & - \\
+\bottomrule
+\end{tabular}}
+\caption{Language-Table, 57 clips. Columns as in Tab.~\ref{tab:bridge}; last column: PSNR reported in the IRASim paper \cite{zhu2024irasim} (Tab.~1). Best in bold, second underlined (still frame excluded).}
+\label{tab:lt}
+\end{table}
