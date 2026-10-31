@@ -35,7 +35,7 @@ if [ ! -f $DATA/stats.json ]; then
 fi
 
 # 2. detector boxes (shares the GPU with training)
-if [ ! -f $OUT/boxes/boxes_test_unseen_all.npz ]; then
+if [ ! -f $OUT/boxes/boxes_test_unseen_all.npz ] && ! pgrep -f "[d]etect_boxes.py" > /dev/null; then
   python -u scripts/detect_boxes.py --data $DATA --out $OUT/boxes > $LOG/boxes.log 2>&1 &
 fi
 
