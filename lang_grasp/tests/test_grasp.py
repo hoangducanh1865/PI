@@ -30,6 +30,6 @@ def test_success_and_round_trip():
     gts = np.array([[1.0, *G]])
     assert success(G, gts) and not success(None, gts)
     q, angle, width = draw_maps(gts, 224)
-    pred = decode(q, np.cos(2 * angle), np.sin(2 * angle), np.clip(width / WIDTH_SCALE, 0, 1))
+    pred = decode(q, np.cos(2 * angle), np.sin(2 * angle), np.clip(width / WIDTH_SCALE, 0, 1), width_scale=WIDTH_SCALE)
     np.testing.assert_allclose(pred[[0, 1, 2, 4]], G[[0, 1, 2, 4]], atol=1.5)
     assert success(pred, gts)

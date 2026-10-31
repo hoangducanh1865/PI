@@ -45,7 +45,7 @@ for EXP in $EXPS; do for S in $SEEDS; do
   [ -f $RUN/DONE ] && continue
   RESUME=""; [ -f $RUN/checkpoints/last.ckpt ] && RESUME="ckpt_path=$RUN/checkpoints/last.ckpt"
   ( python -u src/train.py experiment=$EXP seed=$S name=${EXP}_s$S paths=colab paths.data_dir=$DATA \
-      paths.log_dir=$OUT/runs hydra.run.dir=$RUN data.batch_size=16 trainer.devices=1 \
+      paths.log_dir=$OUT/runs hydra.run.dir=$RUN trainer.devices=1 \
       trainer.enable_progress_bar=false $RESUME > $LOG/train_${EXP}_s$S.log 2>&1 && touch $RUN/DONE ) &
 done; done
 wait

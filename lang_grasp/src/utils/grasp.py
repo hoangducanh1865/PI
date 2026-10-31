@@ -9,8 +9,9 @@ inference/post_process.py, MIT licence) for (x, y, w, h, theta) arrays, with the
     decode   Gaussian smoothing (sigma 2 for Q and angle, 1 for width), the highest peak of Q above 0.2 at least
              20 px from the border, h = w / 2
     success  IoU > 25% with any ground-truth grasp whose angle differs by less than 30 degrees
-One change: their evaluation multiplies the predicted width by 150 while their dataset divides it by 112
-(output_size / 2); both sides use WIDTH_SCALE here.
+Width scale as in the authors' code: the dataset divides the opening by 112 (output_size / 2, WIDTH_SCALE) and the
+evaluation multiplies the predicted width map by 150 (inference/post_process.py of github.com/Fsoft-AIC/LGD at
+0223d43, EVAL_WIDTH_SCALE); decode uses the latter by default (user, 2026-10-31: follow the official evaluation).
 
 Author: Duc Anh Hoang
 """
@@ -21,6 +22,7 @@ from skimage.feature import peak_local_max
 from skimage.filters import gaussian
 
 WIDTH_SCALE = 112.0  # width map = opening / WIDTH_SCALE, clipped to [0, 1] (224 / 2, as in the authors' dataset)
+EVAL_WIDTH_SCALE = 150.0  # predicted opening = width map x 150 (the authors' inference/post_process.py)
 
 
 def corners(x, y, w, h, theta_deg):
@@ -49,14 +51,14 @@ def draw_maps(grasps, size):
     return q, angle, width
 
 
-def decode(q, cos2, sin2, width, region=None):
+def decode(q, cos2, sin2, width, region=None, width_scale=EVAL_WIDTH_SCALE):
     """The best grasp (x, y, w, h, theta) in network outputs (width map in [0, 1]), or None if Q has no peak.
 
     region: optional bool map; the peak is taken inside it, or anywhere if Q has no peak inside it.
     """
     q = gaussian(q, 2.0, preserve_range=True)
     angle = gaussian(np.arctan2(sin2, cos2) / 2.0, 2.0, preserve_range=True)
-    width = gaussian(width * WIDTH_SCALE, 1.0, preserve_range=True)
+    width = gaussian(width * width_scale, 1.0, preserve_range=True)
     peaks = peak_local_max(q, min_distance=20, threshold_abs=0.2, num_peaks=1)
     if region is not None:
         inside = peak_local_max(np.where(region, q, 0.0), min_distance=20, threshold_abs=0.2, num_peaks=1)
