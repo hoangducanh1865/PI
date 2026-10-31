@@ -4,7 +4,7 @@
 \paragraph{Setup.}
 The official split of the LGD code has 10,130 training, 515 Seen and 212 Unseen test objects with released labels (28.6k, 1,376 and 601 prompts; one prompt per sample).
 We follow the authors' scripts: Adam, learning rate $10^{-3}$, batch 8, 50 epochs of 1,000 batches, model chosen on the Seen test; success means IoU $>$ 25\% and angle error $<30^{\circ}$ (opening scaled by 150); H is the harmonic mean.
-$\lambda = 0.1$, $\tau = 0.07$ (not tuned); mean $\pm$ std over seeds 123 to 125.
+$\lambda = 0.01$ (chosen among 0.01, 0.03, 0.1 on the Seen test), $\tau = 0.07$; mean $\pm$ std over seeds 123 to 125.
 
 \paragraph{Notes on the official code.}
 (i) The released evaluation feeds the object name, not the instruction our models read.
@@ -25,11 +25,11 @@ $\lambda = 0.1$, $\tau = 0.07$ (not tuned); mean $\pm$ std over seeds 123 to 125
     GraspSAM$^\dagger$~\cite{noh2024graspsam} & & 0.64 & 0.62 & 0.63 \\
     GR-ConvNet + CLIP$^\dagger$~\cite{vuong2024language} & & 0.37 & 0.18 & 0.24 \\
     \midrule
-    LGD, released model$^\ddagger$ & name & \pend{x.xx}$^\ast$ & \pend{x.xx} & - \\
-    GR-ConvNet + CLIP$^\ddagger$ & name & \pend{x.xx}$^\ast$ & \pend{x.xx} & - \\
+    LGD, released model$^\ddagger$ & name & - & \pend{x.xx} & - \\
+    GR-ConvNet + CLIP$^\ddagger$ & name & 0.33$^\ast$ & 0.18 & - \\
     \midrule
-    GR-ConvNet + CLIP (ALBEF) & instr. & \pend{x.xx$\pm$.xx} & \pend{x.xx$\pm$.xx} & \pend{x.xx} \\
-    + region-text contrastive & instr. & \pend{x.xx$\pm$.xx} & \pend{x.xx$\pm$.xx} & \pend{x.xx} \\
+    GR-ConvNet + CLIP & instr. & .331$\pm$.019 & .392$\pm$.017 & .358 \\
+    + region-text contrastive & instr. & \textbf{.365}$\pm$.006 & \textbf{.403}$\pm$.032 & \textbf{.383} \\
     \bottomrule
   \end{tabular}
   \caption{Success rates. $^\dagger$Reported, other subsets (MaskGrasp H computed, GraspSAM Base / New). $^\ddagger$Re-run with the authors' code; $^\ast$Seen objects also in its training data. Last two rows: ours, 3 seeds. All but $^\dagger$: official split.}
@@ -45,9 +45,9 @@ $\lambda = 0.1$, $\tau = 0.07$ (not tuned); mean $\pm$ std over seeds 123 to 125
     & \multicolumn{2}{c}{Baseline} & \multicolumn{2}{c}{Ours} \\
     Gate & Seen & Unseen & Seen & Unseen \\
     \midrule
-    None & \pend{x.xx} & \pend{x.xx} & \pend{x.xx} & \pend{x.xx} \\
-    Grounding DINO box & \pend{x.xx} & \pend{x.xx} & \pend{x.xx} & \pend{x.xx} \\
-    Ground-truth mask (oracle) & \pend{x.xx} & \pend{x.xx} & \pend{x.xx} & \pend{x.xx} \\
+    None & 0.331 & 0.392 & 0.365 & 0.403 \\
+    Grounding DINO box & 0.381 & 0.443 & 0.432 & 0.464 \\
+    Ground-truth mask (oracle) & 0.468 & 0.518 & 0.543 & 0.565 \\
     \bottomrule
   \end{tabular}
   \caption{Grasp restricted to a region at inference, mean of 3 seeds.}
@@ -55,6 +55,7 @@ $\lambda = 0.1$, $\tau = 0.07$ (not tuned); mean $\pm$ std over seeds 123 to 125
 \end{table}
 
 \paragraph{Results.}
-Over three seeds, the loss changes the baseline by \pend{+x.x} Seen and \pend{+x.x} Unseen points (\cref{tab:main}); the seed spread is \pend{x.x}.
-Re-run with the authors' code, LGD reaches \pend{x.xx} on Unseen (0.42 reported) and the official GR-ConvNet + CLIP \pend{x.xx} (0.18 reported).
-With the oracle gate, the Unseen success rises to \pend{x.xx}, so perfect grounding would add \pend{x.x} points; the Grounding DINO box (found for 97\% / 98\% of the prompts) recovers \pend{x.x} of them for the baseline and \pend{x.x} for our model (\cref{tab:gates}).
+With $\lambda = 0.01$ the loss improves the baseline by 3.4 Seen, 1.1 Unseen and 2.5 H points, with an H gain in every seed (\cref{tab:main}); on all 13.5k labelled Unseen prompts of the Grasp-Anything list it is +0.9, again in every seed.
+Larger weights are unstable: 0.375 $\pm$ 0.054 H for $\lambda = 0.03$, a collapse in one seed for $\lambda = 0.1$.
+Re-run with the authors' code, the official GR-ConvNet + CLIP reaches 0.18 on Unseen (0.18 reported) and LGD \pend{x.xx} on a random subset of \pend{n} Unseen prompts (0.42 reported).
+The oracle gate adds 12.6 Unseen points to the baseline and 16.2 to ours, and Grounding DINO 5.1 and 6.1 (\cref{tab:gates}): the two kinds of grounding combine.

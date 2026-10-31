@@ -1,7 +1,7 @@
 \section{Introduction}
 \label{sec:intro}
 
-Grasp-Anything++~\cite{vuong2024language} defines language-driven grasp detection: given an RGB image and a prompt such as ``pick up the pear by its stem'', predict a 2D grasp rectangle $g = (x, y, w, h, \theta)$ for a two-finger gripper.
+Grasp-Anything++~\cite{vuong2024language}, built on the synthetic Grasp-Anything~\cite{vuong2023grasp}, defines language-driven grasp detection: given an RGB image and a prompt such as ``pick up the pear by its stem'', predict a 2D grasp rectangle $g = (x, y, w, h, \theta)$ for a two-finger gripper.
 
 Two vision-language models judged 1,000 failures of a reproduced GR-ConvNet + CLIP~\cite{kumra2020antipodal,vuong2024language} on an earlier split: 47\% grasp another object than the prompted one, 34\% have a wrong grasp on the right object.
 Its loss says where to grasp, but nothing tells its encoder, trained from scratch, which object the prompt names.

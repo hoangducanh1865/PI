@@ -1,7 +1,6 @@
 \section{Related work}
 \label{sec:related}
 
-Grasp-Anything~\cite{vuong2023grasp} and Grasp-Anything++~\cite{vuong2024language} are large synthetic datasets with grasps, part masks and prompts.
 LGD~\cite{vuong2024language} and LLGD~\cite{nguyen2024lightweight} use diffusion and consistency models, GraspMamba~\cite{nguyen2024graspmamba} state-space models, and GraspSAM~\cite{noh2024graspsam} finds the object with Grounding DINO~\cite{liu2024grounding} before a SAM-based grasp model.
 Closest to us, MaskGrasp~\cite{vo2024maskgrasp} uses segmentation features at inference and a triplet loss between grasp-region and mask features.
 Our loss instead contrasts image regions with the \emph{prompt} (the InfoNCE loss of CLIP~\cite{radford2021clip} and ALBEF~\cite{li2021albef}, applied to object regions), takes the \emph{other objects of the scene} as negatives, and needs masks only in training.
