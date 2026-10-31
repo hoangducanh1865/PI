@@ -1,9 +1,19 @@
 \section{Introduction}
 \label{sec:intro}
 
-Grasp-Anything++~\cite{vuong2024language}, built on the synthetic Grasp-Anything~\cite{vuong2023grasp}, defines language-driven grasp detection: given an RGB image and a prompt such as ``pick up the pear by its stem'', predict a 2D grasp rectangle $g = (x, y, w, h, \theta)$ for a two-finger gripper.
+Grasp-Anything++~\cite{vuong2024language}, built on the synthetic Grasp-Anything~\cite{vuong2023grasp}, defines language-driven grasp detection: given an RGB image and a prompt, predict a 2D grasp rectangle $g = (x, y, w, h, \theta)$ for a two-finger gripper.
+% "such as ``pick up the pear by its stem''": Remove this
 
-Two vision-language models judged 1,000 failures of a reproduced GR-ConvNet + CLIP~\cite{kumra2020antipodal,vuong2024language} on an earlier split: 47\% grasp another object than the prompted one, 34\% have a wrong grasp on the right object.
-Its loss says where to grasp, but nothing tells its encoder, trained from scratch, which object the prompt names.
+As we reproduce GR-ConvNet + CLIP~\cite{kumra2020antipodal,vuong2024language} results, we then use two VLM models to judge its random 1,000 failures, and we find that 47\% grasp another object than the prompted one, while 34\% have a wrong grasp on the right object, such as a wrong angle $\theta$ or width $w$.
+Its grasp-map regression loss only tells the model where to grasp, but nothing tells the model which object the prompt names.
+% "Two vision-language models judged 1,000 failures of a reproduced GR-ConvNet + CLIP [1, 9] on an earlier split:" -> "As we reproduce GR-ConvNet + CLIP [1, 9] results, we then use two VLM models to judge its random 1000 failures, we found that"
+% "a wrong grasp on the right object": How is wrong grasp? Give me an example
+% "Its loss says where to grasp": Add evidence for this claim, also "says" -> "tells the model"
+% "tells its encoder, trained from scratch," -> "tells the model"
 
-We contribute (1) a training-only region-text contrastive loss with the other objects of the scene as negatives, (2) a three-seed evaluation on the official split, with LGD and the official baseline re-run, and (3) gates that measure how much grounding limits success.
+Our main contributions are: (1) a region-text contrastive loss with the other objects or the background of the scene as negatives, and (2) inference region gates using Grounding DINO boxes and ground-truth masks to measure how much grounding limits success.
+% "We contribute" -> "Our main contributions are: "
+% "training-only": Remove this if it is unnecessary
+% "with the other objects of the scene" -> "with the other objects or the backgroudn of the scene"
+% "(2) a three-seed evaluation on the official split, with LGD and the official baseline re-run, and": Just a results reproducing effort, not a contribution at all, so remove it
+% "3) gates that measure how much grounding limits success.": What does "gates" mean here?

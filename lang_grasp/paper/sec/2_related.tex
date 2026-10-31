@@ -2,5 +2,8 @@
 \label{sec:related}
 
 LGD~\cite{vuong2024language} and LLGD~\cite{nguyen2024lightweight} use diffusion and consistency models, GraspMamba~\cite{nguyen2024graspmamba} state-space models, and GraspSAM~\cite{noh2024graspsam} finds the object with Grounding DINO~\cite{liu2024grounding} before a SAM-based grasp model.
-Closest to us, MaskGrasp~\cite{vo2024maskgrasp} uses segmentation features at inference and a triplet loss between grasp-region and mask features.
-Our loss instead contrasts image regions with the \emph{prompt} (the InfoNCE loss of CLIP~\cite{radford2021clip} and ALBEF~\cite{li2021albef}, applied to object regions), takes the \emph{other objects of the scene} as negatives, and needs masks only in training.
+To resolve wrong-object failures without extra inference modules, our loss contrasts image regions with the \emph{prompt}, takes the \emph{other objects and the background of the scene} as negatives, and needs masks only in training.
+% "Closest to us, MaskGrasp [8] uses segmentation features at inference and a triplet loss between grasp-region and mask features.": Remove this
+% "Our loss instead contrasts image regions with the prompt ": Rewrite, make the motivation more clear
+% "(the InfoNCE loss of CLIP [7] and ALBEF [2], applied to object regions),": Remove this, use (...) in paper is unprofessional
+% "the other objects of the scene as negatives" -> "the other objects and the background of the scene as negatives"

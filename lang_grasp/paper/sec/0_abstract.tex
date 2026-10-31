@@ -1,6 +1,13 @@
 \begin{abstract}
 Most failures of a GR-ConvNet + CLIP baseline for language-driven grasp detection on Grasp-Anything++ grasp the wrong object.
-We add a training-only region-text contrastive loss: features pooled over the prompted object's mask must match the prompt better than the other objects of the scene.
-On the official split, it improves the baseline by 2.5 H points over three seeds, with a gain in every seed.
-We also re-run LGD and the official baseline with the authors' code, and bound the grounding error with gates.
+We add a region-text contrastive loss: features pooled over the prompted object's mask must match the prompt better than the other objects or the background.
+% "the other objects of the scene" -> "the other objects or the background"
+% "training-only": Remove this if it is unnecessary
+Experiments show that this contrastive loss improves the baseline by 2.5 H points on the official split.
+% "On the official split, it" -> "Experiments show that this contrastive loss"
+% "over three seeds": Do we need to keep this? In professional papers do they write like this?
+We also reproduce LGD results and the authors' GR-ConvNet + CLIP code, and restrict inference to Grounding DINO boxes or ground-truth masks to bound the grounding error.
+% "re-run LGD" -> "Reproduce LGD results"
+% "official baseline": What basline?
+% "bound the grounding error with gates": What is this?
 \end{abstract}
