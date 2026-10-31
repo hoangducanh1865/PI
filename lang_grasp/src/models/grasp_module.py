@@ -78,13 +78,17 @@ class GraspModule(L.LightningModule):
 
 
 @torch.no_grad()
-def predict(net, dataset, batch_size=32, num_workers=2):
-    """The decoded grasp (x, y, w, h, theta), or None, of every sample of a dataset."""
+def predict(net, dataset, batch_size=32, num_workers=2, region=None):
+    """The decoded grasp (x, y, w, h, theta), or None, of every sample of a dataset.
+
+    region: optional function sample index -> bool map (or None) restricting where the grasp is taken (decode).
+    """
     device = next(net.parameters()).device
     net.eval()
     grasps = []
     for batch in DataLoader(dataset, batch_size, num_workers=num_workers):
         tokens, mask = (batch[k].to(device) if k in batch else None for k in ("text_tokens", "text_mask"))
         maps = net(batch["image"].to(device), tokens, mask).float().cpu().numpy()
-        grasps.extend(decode(*m) for m in maps)
+        start = len(grasps)
+        grasps.extend(decode(*m, region=region(start + j) if region else None) for j, m in enumerate(maps))
     return grasps

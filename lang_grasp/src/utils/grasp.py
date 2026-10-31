@@ -49,12 +49,18 @@ def draw_maps(grasps, size):
     return q, angle, width
 
 
-def decode(q, cos2, sin2, width):
-    """The best grasp (x, y, w, h, theta) in network outputs (width map in [0, 1]), or None if Q has no peak."""
+def decode(q, cos2, sin2, width, region=None):
+    """The best grasp (x, y, w, h, theta) in network outputs (width map in [0, 1]), or None if Q has no peak.
+
+    region: optional bool map; the peak is taken inside it, or anywhere if Q has no peak inside it.
+    """
     q = gaussian(q, 2.0, preserve_range=True)
     angle = gaussian(np.arctan2(sin2, cos2) / 2.0, 2.0, preserve_range=True)
     width = gaussian(width * WIDTH_SCALE, 1.0, preserve_range=True)
     peaks = peak_local_max(q, min_distance=20, threshold_abs=0.2, num_peaks=1)
+    if region is not None:
+        inside = peak_local_max(np.where(region, q, 0.0), min_distance=20, threshold_abs=0.2, num_peaks=1)
+        peaks = inside if len(inside) else peaks
     if not len(peaks):
         return None
     r, c = peaks[0]

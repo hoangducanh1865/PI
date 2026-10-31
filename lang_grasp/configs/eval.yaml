@@ -8,6 +8,9 @@ defaults:
 
 name: eval
 ckpt_path: ???   # checkpoint to evaluate (its text model is read from it)
+splits: [test_seen, test_unseen]   # H uses these two; add test_unseen_all on the LGD re-split (scripts/resplit_lgd.py)
+gate: null       # null | oracle (ground-truth mask of the prompted object) | detector (needs boxes)
+boxes: null      # folder with boxes_<split>.npz of scripts/detect_boxes.py, for gate=detector
 
 data:
   dir: ${paths.data_dir}
