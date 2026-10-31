@@ -82,9 +82,10 @@ def main(cfg: DictConfig) -> None:
         )
         results[split] = float(hits.mean())
         print(f"{split}: success {results[split]:.4f} on {len(hits)} prompts", flush=True)
-    seen, unseen = results["test_seen"], results["test_unseen"]
-    results["H"] = 2 * seen * unseen / (seen + unseen) if seen + unseen else 0.0
-    print(f"Seen {seen:.2f}  Unseen {unseen:.2f}  H {results['H']:.2f}", flush=True)
+    if "test_seen" in results and "test_unseen" in results:
+        seen, unseen = results["test_seen"], results["test_unseen"]
+        results["H"] = 2 * seen * unseen / (seen + unseen) if seen + unseen else 0.0
+        print(f"Seen {seen:.2f}  Unseen {unseen:.2f}  H {results['H']:.2f}", flush=True)
     with open(os.path.join(run_dir, "results.json"), "w") as f:
         json.dump(results, f, indent=1)
 
