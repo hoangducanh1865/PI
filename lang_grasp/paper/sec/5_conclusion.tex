@@ -1,5 +1,5 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-Grounding is the main error of a reproduced baseline on Grasp-Anything++; our training-only contrastive loss improves unseen classes by 7.5 points, but mainly by reducing missed predictions, so grounding remains open.
-Limitations: one seed per model, masks needed in training, no part-level grounding from the current labels, untuned $\lambda$ and $\tau$.
+A training-only region-text contrastive loss changes a GR-ConvNet + CLIP baseline by \pend{+x.x} H points over three seeds; perfect grounding would add \pend{x.x} Unseen points.
+Limitations: masks are needed in training, $\lambda$ and $\tau$ are not tuned, and the labels do not support part-level grounding.

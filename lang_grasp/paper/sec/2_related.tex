@@ -1,8 +1,7 @@
 \section{Related work}
 \label{sec:related}
 
-Grasp-Anything~\cite{vuong2023grasp} and Grasp-Anything++~\cite{vuong2024language} are large synthetic grasp datasets with part masks and prompts.
-LGD~\cite{vuong2024language} and LLGD~\cite{nguyen2024lightweight} generate grasps with diffusion and consistency models; GraspMamba~\cite{nguyen2024graspmamba} fuses text and image at several levels with state-space models.
-Closest to us, MaskGrasp~\cite{vo2024maskgrasp} feeds segmentation features into attention at inference and adds a triplet loss between grasp-region and mask features.
-Our loss instead contrasts image regions with the \emph{prompt}, takes the \emph{other objects of the same scene} as negatives, and needs masks only in training.
-It applies the image-text InfoNCE loss~\cite{oord2018cpc} of CLIP~\cite{radford2021clip} and ALBEF~\cite{li2021albef} to object regions of one scene.
+Grasp-Anything~\cite{vuong2023grasp} and Grasp-Anything++~\cite{vuong2024language} are large synthetic datasets with grasps, part masks and prompts.
+LGD~\cite{vuong2024language} and LLGD~\cite{nguyen2024lightweight} use diffusion and consistency models, GraspMamba~\cite{nguyen2024graspmamba} state-space models, and GraspSAM~\cite{noh2024graspsam} finds the object with Grounding DINO~\cite{liu2024grounding} before a SAM-based grasp model.
+Closest to us, MaskGrasp~\cite{vo2024maskgrasp} uses segmentation features at inference and a triplet loss between grasp-region and mask features.
+Our loss instead contrasts image regions with the \emph{prompt} (the InfoNCE loss of CLIP~\cite{radford2021clip} and ALBEF~\cite{li2021albef}, applied to object regions), takes the \emph{other objects of the scene} as negatives, and needs masks only in training.

@@ -2,30 +2,37 @@
 \label{sec:experiments}
 
 \paragraph{Setup.}
-We use the official split files of the Grasp-Anything code: objects of \texttt{seen.obj} are cut 90\%/10\% into training and Seen test as in the authors' script, and \texttt{unseen.obj} is the Unseen test; one prompt is one sample (27.0k training, 3.0k Seen and 13.5k Unseen test prompts).
-A prediction succeeds if its IoU with a ground-truth grasp exceeds 25\% and its angle differs by less than $30^{\circ}$~\cite{kumra2020antipodal}; H is the harmonic mean of Seen and Unseen.
-Training follows the authors' code (Adam, learning rate $10^{-3}$, batch 8, 50 epochs of 1,000 batches) on two T4 GPUs with data parallelism for both models; $\lambda = 0.1$ and $\tau = 0.07$ are not tuned.
-For 70\% (Seen) and 83\% (Unseen) of 1,000 random multi-part test objects, all part prompts have near-identical grasp centres (within 5 pixels): the labels are mostly object-level.
+The official split of the LGD code has 10,130 training, 515 Seen and 212 Unseen test objects with released labels (28.6k, 1,376 and 601 prompts; one prompt per sample).
+We follow the authors' scripts: Adam, learning rate $10^{-3}$, batch 8, 50 epochs of 1,000 batches, model chosen on the Seen test; success means IoU $>$ 25\% and angle error $<30^{\circ}$ (opening scaled by 150); H is the harmonic mean.
+$\lambda = 0.1$, $\tau = 0.07$ (not tuned); mean $\pm$ std over seeds 123 to 125.
+
+\paragraph{Notes on the official code.}
+(i) The released evaluation feeds the object name, not the instruction our models read.
+(ii) Its training and Seen evaluation both read \texttt{test/seen.obj}, so models re-run with it are compared on Unseen only.
+(iii) Its GR-ConvNet + CLIP detaches the image features, so its encoder is not trained.
 
 \begin{table}[t]
   \centering
   \small
-  \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{@{}lccc@{}}
+  \setlength{\tabcolsep}{2.5pt}
+  \begin{tabular}{@{}llccc@{}}
     \toprule
-    Method & Seen & Unseen & H \\
+    Method & Text & Seen & Unseen & H \\
     \midrule
-    CLIPORT~\cite{shridhar2021cliport}$^\dagger$ & 0.36 & 0.26 & 0.29 \\
-    LGD~\cite{vuong2024language}$^\dagger$ & 0.48 & 0.42 & 0.45 \\
-    MaskGrasp~\cite{vo2024maskgrasp}$^\dagger$ & 0.50 & 0.46 & 0.48 \\
-    GraspMamba~\cite{nguyen2024graspmamba}$^\dagger$ & 0.63 & 0.41 & 0.52 \\
+    LGD$^\dagger$~\cite{vuong2024language} & & 0.48 & 0.42 & 0.45 \\
+    MaskGrasp$^\dagger$~\cite{vo2024maskgrasp} & & 0.50 & 0.46 & 0.48 \\
+    GraspMamba$^\dagger$~\cite{nguyen2024graspmamba} & & 0.63 & 0.41 & 0.52 \\
+    GraspSAM$^\dagger$~\cite{noh2024graspsam} & & 0.64 & 0.62 & 0.63 \\
+    GR-ConvNet + CLIP$^\dagger$~\cite{vuong2024language} & & 0.37 & 0.18 & 0.24 \\
     \midrule
-    GR-ConvNet + CLIP$^\dagger$ & 0.37 & 0.18 & 0.24 \\
-    GR-ConvNet + CLIP, reproduced & 0.407 & 0.260 & 0.317 \\
-    + region-text contrastive (ours) & \textbf{0.427} & \textbf{0.335} & \textbf{0.375} \\
+    LGD, released model$^\ddagger$ & name & \pend{x.xx}$^\ast$ & \pend{x.xx} & - \\
+    GR-ConvNet + CLIP$^\ddagger$ & name & \pend{x.xx}$^\ast$ & \pend{x.xx} & - \\
+    \midrule
+    GR-ConvNet + CLIP (ALBEF) & instr. & \pend{x.xx$\pm$.xx} & \pend{x.xx$\pm$.xx} & \pend{x.xx} \\
+    + region-text contrastive & instr. & \pend{x.xx$\pm$.xx} & \pend{x.xx$\pm$.xx} & \pend{x.xx} \\
     \bottomrule
   \end{tabular}
-  \caption{Success rates. $^\dagger$ as reported, on other data subsets (MaskGrasp's H computed). The last two rows share our split and training.}
+  \caption{Success rates. $^\dagger$Reported, other subsets (MaskGrasp H computed, GraspSAM Base / New). $^\ddagger$Re-run with the authors' code; $^\ast$Seen objects also in its training data. Last two rows: ours, 3 seeds. All but $^\dagger$: official split.}
   \label{tab:main}
 \end{table}
 
@@ -36,17 +43,18 @@ For 70\% (Seen) and 83\% (Unseen) of 1,000 random multi-part test objects, all p
   \begin{tabular}{@{}lcccc@{}}
     \toprule
     & \multicolumn{2}{c}{Baseline} & \multicolumn{2}{c}{Ours} \\
-    Share of prompts & Seen & Unseen & Seen & Unseen \\
+    Gate & Seen & Unseen & Seen & Unseen \\
     \midrule
-    Wrong object & 27.4\% & 35.5\% & 26.8\% & 33.7\% \\
-    Right obj., wrong geometry & 20.8\% & 24.0\% & 22.2\% & 23.9\% \\
-    No grasp predicted & 8.9\% & 11.5\% & 5.1\% & 4.9\% \\
+    None & \pend{x.xx} & \pend{x.xx} & \pend{x.xx} & \pend{x.xx} \\
+    Grounding DINO box & \pend{x.xx} & \pend{x.xx} & \pend{x.xx} & \pend{x.xx} \\
+    Ground-truth mask (oracle) & \pend{x.xx} & \pend{x.xx} & \pend{x.xx} & \pend{x.xx} \\
     \bottomrule
   \end{tabular}
-  \caption{Failures, as a share of all test prompts, judged by two VLMs on 1,000 failures per model (87\% agreement). The rest lands on the background.}
-  \label{tab:errors}
+  \caption{Grasp restricted to a region at inference, mean of 3 seeds.}
+  \label{tab:gates}
 \end{table}
 
 \paragraph{Results.}
-Under identical training (\cref{tab:main}), the contrastive loss improves the baseline by 2.0 points on Seen, 7.5 points on Unseen and 5.8 points of H.
-Most of the gain comes from fewer missed predictions (no grasp on 11.5\% to 4.9\% of Unseen prompts), while wrong-object grasps drop only slightly (35.5\% to 33.7\%, \cref{tab:errors}), so grounding remains the main weakness.
+Over three seeds, the loss changes the baseline by \pend{+x.x} Seen and \pend{+x.x} Unseen points (\cref{tab:main}); the seed spread is \pend{x.x}.
+Re-run with the authors' code, LGD reaches \pend{x.xx} on Unseen (0.42 reported) and the official GR-ConvNet + CLIP \pend{x.xx} (0.18 reported).
+With the oracle gate, the Unseen success rises to \pend{x.xx}, so perfect grounding would add \pend{x.x} points; the Grounding DINO box (found for 97\% / 98\% of the prompts) recovers \pend{x.x} of them for the baseline and \pend{x.x} for our model (\cref{tab:gates}).

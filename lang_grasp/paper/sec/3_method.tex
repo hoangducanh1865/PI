@@ -3,19 +3,18 @@
 
 \begin{figure*}[t]
   \centering
-  \includegraphics[width=0.66\linewidth]{fig/architecture.pdf}
+  \includegraphics[width=0.54\linewidth]{fig/architecture.pdf}
   \caption{Top: the GR-ConvNet + CLIP baseline. Bottom (red, training only): the proposed loss.}
   \label{fig:arch}
 \end{figure*}
 
 \paragraph{Baseline.}
 GR-ConvNet~\cite{kumra2020antipodal} encodes the $224 \times 224$ image into features $F \in \mathbb{R}^{128 \times 56 \times 56}$ and decodes four maps (quality $Q$, $\cos 2\theta$, $\sin 2\theta$, opening $w$); the grasp is read at the peak of $Q$.
-Following~\cite{vuong2024language}, the prompt is encoded by a frozen CLIP text encoder~\cite{radford2021clip} and fused with the image by an ALBEF-style cross-attention layer~\cite{li2021albef}, where every position of $F$ attends to the text tokens (\cref{fig:arch}).
-We place the fusion after the encoder (the paper does not say where), which gives 2.06M parameters, close to the 2.07M reported; $\mathcal{L}_{\mathrm{grasp}}$ is the sum of the smooth L1 losses of the four maps.
+As in the LGD paper~\cite{vuong2024language}, a frozen CLIP text encoder~\cite{radford2021clip} and an ALBEF-style cross-attention layer~\cite{li2021albef}, where each position of $F$ attends to the text tokens, add the prompt (2.06M parameters, 2.07M reported); $\mathcal{L}_{\mathrm{grasp}}$ sums the smooth L1 losses of the four maps.
 
 \paragraph{Region-text contrastive grounding.}
 For a prompt about object $0$ of a scene, let $m_0$ be its mask, $m_1, \dots, m_K$ the masks of the other annotated objects, and $m_{K+1} = 1 - \max_k m_k$ the rest of the scene.
-We pool the image-only features $F$ (before the fusion) over each region, project the regions and the pooled CLIP embedding $t$ of the prompt with two linear layers $P_r$ and $P_t$, and apply InfoNCE~\cite{oord2018cpc} with object $0$ as the positive:
+We pool the image-only features $F$ (before the fusion) over each region, project the regions and the pooled CLIP embedding $t$ of the prompt with two linear layers $P_r$ and $P_t$, and apply InfoNCE with object $0$ as the positive:
 \begin{equation}
   r_k = \frac{\sum_p m_k(p)\, F(p)}{\sum_p m_k(p)}, \qquad
   s_k = \frac{\cos(P_r r_k,\, P_t t)}{\tau},
@@ -26,6 +25,8 @@ We pool the image-only features $F$ (before the fusion) over each region, projec
   \mathcal{L} = \mathcal{L}_{\mathrm{grasp}} + \lambda\, \mathcal{L}_{\mathrm{con}}.
   \label{eq:loss}
 \end{equation}
-The loss gives the encoder the semantic signal its grasp loss lacks.
-The masks of all parts of an object are merged, since the part labels mostly repeat the object label (\cref{sec:experiments}).
+The part masks of an object are merged, since its part prompts mostly share the same grasps (70\% Seen, 83\% Unseen of 1,000 multi-part objects).
 $P_r$, $P_t$ and the masks are used in training only, so the inference network is unchanged.
+
+\paragraph{Grounding gates (analysis).}
+At inference, the peak of $Q$ is taken inside a region $R$ (anywhere if there is none inside): the box Grounding DINO~\cite{liu2024grounding} finds for the prompt (detector gate) or the ground-truth mask of the prompted object (oracle gate, an upper bound for perfect grounding).

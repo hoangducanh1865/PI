@@ -8,6 +8,7 @@
 \newcommand{\red}[1]{{\color{red}#1}}
 \newcommand{\todo}[1]{{\color{red}#1}}
 \newcommand{\TODO}[1]{\textbf{\color{red}[TODO: #1]}}
+\newcommand{\pend}[1]{{\color{red}#1}}  % number still to come from the runs
 %%
 %% disable for camera ready / submission by uncommenting these lines  
 %%
@@ -53,3 +54,6 @@
 \setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
 \setlength{\dbltextfloatsep}{8pt plus 2pt minus 2pt}
 \setlength{\abovecaptionskip}{4pt}
+\makeatletter  % run-in paragraph headings with less space above
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}{3pt plus 1pt minus 1pt}{-0.5em}{\normalfont\normalsize\bfseries}}
+\makeatother
