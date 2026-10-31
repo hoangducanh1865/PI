@@ -8,7 +8,9 @@ of each diffusion step waiting for GPU-to-CPU copies (_process_attention_mask in
 about 74 s per sample on an A100, so the test set is split over N processes: the sampler it builds keeps only the
 indices i with i % N == K. Everything else (split, seed, sampler, metric) is the script's own; its log line
 "IOU Results: c/n" is summed over the shards. The diffusion sampling is random, so a sharded run draws different
-noise than one process would (the seed is set the same way in every shard).
+noise than one process would (the seed is set the same way in every shard). Each sample's result is also printed as
+"LGD SAMPLE <0|1>" as soon as it is scored (by wrapping evaluation.calculate_iou_match), so a run stopped early still
+gives a random subset of the test set (the script's sampler visits it in random order).
 
 Author: Duc Anh Hoang
 """
@@ -30,5 +32,17 @@ class ShardSampler(_Random):
 
 samplers.SubsetRandomSampler = ShardSampler
 sys.path.insert(0, os.getcwd())  # the LGD repo root
+from utils.dataset_processing import evaluation  # noqa: E402  (the LGD repo's module)
+
+_match = evaluation.calculate_iou_match
+
+
+def logged_match(*args, **kwargs):
+    hit = _match(*args, **kwargs)
+    print(f"LGD SAMPLE {int(bool(hit))}", flush=True)
+    return hit
+
+
+evaluation.calculate_iou_match = logged_match
 sys.argv = ["evaluate_diffusion.py", *sys.argv[3:]]
 runpy.run_module("evaluate_diffusion", run_name="__main__")
