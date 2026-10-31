@@ -4,8 +4,9 @@ Training and validation of the grasp network with Lightning.
 Loss, optimiser and validation follow the Grasp-Anything authors' train_network.py and grasp_model.py: the sum of the
 smooth L1 losses of the four maps, Adam (learning rate 1e-3), and the share of validation samples whose decoded grasp
 succeeds (IoU > 25%, angle < 30 degrees), which also picks the best checkpoint. With contrast_weight > 0 the
-proposed region-text contrastive loss (src/models/region_text_contrast.py) is added, weighted by contrast_weight; its
-projection heads are used in training only.
+proposed region-text contrastive loss (src/models/region_text_contrast.py) is added, weighted by contrast_weight
+(raised linearly from 0 over the first contrast_warmup_epochs epochs, 0 = no warm-up); its projection heads are used in
+training only.
 
 Author: Duc Anh Hoang
 """
@@ -33,6 +34,7 @@ class GraspModule(L.LightningModule):
         text_model=None,
         contrast_weight=0.0,
         contrast_temperature=0.07,
+        contrast_warmup_epochs=0,
     ):
         super().__init__()
         self.save_hyperparameters()  # text_model is kept so that eval.py reads the right text cache
@@ -56,7 +58,9 @@ class GraspModule(L.LightningModule):
             losses["contrast"], accuracy = self.contrast(
                 features, batch["regions"], batch["region_valid"], batch["text_emb"]
             )
-            loss = loss + self.hparams.contrast_weight * losses["contrast"]
+            warmup = self.hparams.contrast_warmup_epochs
+            ramp = min(1.0, (self.current_epoch + 1) / warmup) if warmup else 1.0
+            loss = loss + ramp * self.hparams.contrast_weight * losses["contrast"]
             self.log("train/contrast_acc", accuracy, on_step=False, on_epoch=True)
         self.log_dict({f"train/{name}_loss": v for name, v in losses.items()}, on_step=False, on_epoch=True)
         self.log("train/loss", loss, prog_bar=True, on_step=True, on_epoch=True)

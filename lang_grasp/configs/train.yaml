@@ -28,6 +28,7 @@ model:
   lr: 1.0e-3               # authors (Adam, PyTorch default learning rate)
   contrast_weight: 0.0     # > 0: add the proposed region-text contrastive loss (training only)
   contrast_temperature: 0.07
+  contrast_warmup_epochs: 0  # > 0: contrast_weight rises linearly from 0 over these epochs
 
 trainer:
   max_epochs: 50               # authors
