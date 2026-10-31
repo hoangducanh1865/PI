@@ -42,6 +42,7 @@ from PIL import Image
 
 SIZE = 224  # network input
 RAW_SIZE = 416  # Grasp-Anything images
+SOURCE = "Grasp-Anything++ (airvlab), authors' seen.obj / unseen.obj split"
 SPLIT_URL = "https://raw.githubusercontent.com/Fsoft-AIC/Grasp-Anything/d7755f43c5518bd6590b25021054f862e65bddd5/split/grasp-anything/{}.obj"
 NEAR_PX = 5  # grasps of two parts closer than this (pixels of 416 x 416) count as the same
 
@@ -133,15 +134,17 @@ def part_distinct(grasps, masks):
     return not near and not same_mask and all(inside(g, m) >= 0.5 for g, m in zip(grasps, masks, strict=True))
 
 
-def write_split(path, keys, prompts, grasps, masks, distinct, images):
+def write_split(path, keys, prompts, grasps, masks, distinct, images, raw_pixels=True, source=SOURCE):
+    """grasps[k]: rows quality, x, y, w, h, theta in raw 416 px (rescaled to 224 here), or already at 224 px."""
     image_ids = sorted({k.split("_")[0] for k in keys})
     index = {h: i for i, h in enumerate(image_ids)}
-    scale = np.array([1, SIZE / RAW_SIZE, SIZE / RAW_SIZE, SIZE / RAW_SIZE, SIZE / RAW_SIZE, 1], dtype=np.float32)
+    s = SIZE / RAW_SIZE if raw_pixels else 1.0
+    scale = np.array([1, s, s, s, s, 1], dtype=np.float32)
     counts = [len(grasps[k]) for k in keys]
     text = h5py.string_dtype()
     with h5py.File(path, "w") as f:
         f.attrs["grasp_columns"] = "quality, x, y, w, h, theta_deg; x, y, w, h in pixels of the 224 x 224 image"
-        f.attrs["source"] = "Grasp-Anything++ (airvlab), authors' seen.obj / unseen.obj split"
+        f.attrs["source"] = source
         f.create_dataset("images", data=np.stack([images[h] for h in image_ids]), chunks=(1, SIZE, SIZE, 3))
         f.create_dataset("image_ids", data=image_ids, dtype=text)
         f.create_dataset("keys", data=keys, dtype=text)
