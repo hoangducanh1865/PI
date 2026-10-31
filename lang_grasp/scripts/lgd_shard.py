@@ -12,6 +12,12 @@ noise than one process would (the seed is set the same way in every shard). Each
 "LGD SAMPLE <0|1>" as soon as it is scored (by wrapping evaluation.calculate_iou_match), so a run stopped early still
 gives a random subset of the test set (the script's sampler visits it in random order).
 
+Resuming: with LGD_SKIP=<N_OLD>:<M> the samples already scored by an earlier run with N_OLD shards that stopped after
+M samples per shard are left out. The script seeds torch (--random-seed 123) and its sampler draws its order with
+torch.randperm from the global generator, so the earlier order is recomputed from the generator state at the start of
+the iteration (the same state in every run) and the generator is restored before drawing the new order. Each sample's
+dataset index is printed as "LGD INDEX <i>".
+
 Author: Duc Anh Hoang
 """
 
@@ -19,15 +25,37 @@ import os
 import runpy
 import sys
 
+import torch
 import torch.utils.data.sampler as samplers
 
 K, N = int(sys.argv[1]), int(sys.argv[2])
 _Random = samplers.SubsetRandomSampler
 
 
+SKIP = os.environ.get("LGD_SKIP")
+
+
 class ShardSampler(_Random):
     def __init__(self, indices, generator=None):
-        super().__init__([i for i in indices if i % N == K], generator)
+        self.all_indices = list(indices)
+        super().__init__([i for i in self.all_indices if i % N == K], generator)
+
+    def __iter__(self):
+        if SKIP:
+            n_old, m = map(int, SKIP.split(":"))
+            state = torch.get_rng_state()
+            done = set()
+            for k in range(n_old):
+                old = [i for i in self.all_indices if i % n_old == k]
+                torch.set_rng_state(state)
+                done.update(old[j] for j in torch.randperm(len(old))[:m].tolist())
+            torch.set_rng_state(state)
+            self.indices = [i for i in self.all_indices if i % N == K and i not in done]
+            rng = hash(state.numpy().tobytes())  # the same in every shard if the start state is reproducible
+            print(f"LGD SKIP {len(done)} done, {len(self.indices)} left in shard {K}, rng {rng}", flush=True)
+        for i in super().__iter__():
+            print(f"LGD INDEX {i}", flush=True)
+            yield i
 
 
 samplers.SubsetRandomSampler = ShardSampler
