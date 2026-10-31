@@ -25,14 +25,14 @@ $\lambda = 0.01$ (chosen among 0.01, 0.03, 0.1 on the Seen test), $\tau = 0.07$;
     GraspSAM$^\dagger$~\cite{noh2024graspsam} & & 0.64 & 0.62 & 0.63 \\
     GR-ConvNet + CLIP$^\dagger$~\cite{vuong2024language} & & 0.37 & 0.18 & 0.24 \\
     \midrule
-    LGD, released model$^\ddagger$ & name & - & \pend{x.xx} & - \\
+    LGD, released model$^\ddagger$ & name & - & 0.29$^\S$ & - \\
     GR-ConvNet + CLIP$^\ddagger$ & name & 0.33$^\ast$ & 0.18 & - \\
     \midrule
     GR-ConvNet + CLIP & instr. & .331$\pm$.019 & .392$\pm$.017 & .358 \\
     + region-text contrastive & instr. & \textbf{.365}$\pm$.006 & \textbf{.403}$\pm$.032 & \textbf{.383} \\
     \bottomrule
   \end{tabular}
-  \caption{Success rates. $^\dagger$Reported, other subsets (MaskGrasp H computed, GraspSAM Base / New). $^\ddagger$Re-run with the authors' code; $^\ast$Seen objects also in its training data. Last two rows: ours, 3 seeds. All but $^\dagger$: official split.}
+  \caption{Success rates. $^\dagger$Reported, other subsets (MaskGrasp H computed, GraspSAM Base / New). $^\ddagger$Re-run with the authors' code; $^\ast$Seen objects also in its training data; $^\S$168 random Unseen prompts. Last two rows: ours, 3 seeds. All but $^\dagger$: official split.}
   \label{tab:main}
 \end{table}
 
@@ -57,5 +57,5 @@ $\lambda = 0.01$ (chosen among 0.01, 0.03, 0.1 on the Seen test), $\tau = 0.07$;
 \paragraph{Results.}
 With $\lambda = 0.01$ the loss improves the baseline by 3.4 Seen, 1.1 Unseen and 2.5 H points, with an H gain in every seed (\cref{tab:main}); on all 13.5k labelled Unseen prompts of the Grasp-Anything list it is +0.9, again in every seed.
 Larger weights are unstable: 0.375 $\pm$ 0.054 H for $\lambda = 0.03$, a collapse in one seed for $\lambda = 0.1$.
-Re-run with the authors' code, the official GR-ConvNet + CLIP reaches 0.18 on Unseen (0.18 reported) and LGD \pend{x.xx} on a random subset of \pend{n} Unseen prompts (0.42 reported).
+Re-run with the authors' code, the official GR-ConvNet + CLIP reaches 0.18 on Unseen (0.18 reported) and LGD 0.29 $\pm$ 0.03 on a random subset of 168 Unseen prompts (0.42 reported).
 The oracle gate adds 12.6 Unseen points to the baseline and 16.2 to ours, and Grounding DINO 5.1 and 6.1 (\cref{tab:gates}): the two kinds of grounding combine.
