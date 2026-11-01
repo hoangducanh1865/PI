@@ -65,7 +65,7 @@ Its default training data are drawn from the Seen test objects, so for a fair co
 % This table structure is weird, just present in style Table 1, I think we should swap the columns and the rows
 
 \paragraph{Results.}
-With $\lambda = 0.01$, our loss improves the baseline by 3.4 Seen, 1.1 Unseen, and 2.5 H points, with a positive H gain in every seed in \cref{tab:main}; on all 13.5k Unseen prompts of the Grasp-Anything list, it gains 0.9 points across all seeds.
+With $\lambda = 0.01$, our loss improves the baseline by 3.4 Seen, 1.1 Unseen, and 2.5 H points, with an H gain in every seed (\cref{tab:main}), and by 0.9 points on the full list of 13.5k Unseen prompts.
 Larger weights are less stable: $0.375 \pm 0.054$ H for $\lambda = 0.03$, and one seed collapses for $\lambda = 0.1$.
 Reproduced with the authors' codebase, GR-ConvNet + CLIP reaches 0.18 Unseen, matching the reported value, while LGD reaches $0.29 \pm 0.03$ on 168 random Unseen prompts.
-In \cref{tab:gates}, the oracle mask gate adds 12.6 Unseen points to the baseline and 16.2 to ours, and Grounding DINO adds 5.1 and 6.1, showing that contrastive alignment and spatial localization combine.
+In \cref{tab:gates}, the oracle gate adds 12.6 Unseen points to the baseline and 16.2 to ours, and Grounding DINO adds 5.1 and 6.1, showing that contrastive alignment and spatial localization combine.

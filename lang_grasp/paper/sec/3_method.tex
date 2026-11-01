@@ -45,6 +45,6 @@ Since $P_r$, $P_t$, and the masks $m_k$ are used only in training to compute $\m
 % "r , Pt and the masks are used in training only, so the inference network is unchanged.": Also explain why training only is make sense here, like we do not need mask in inference, if not the reader will not understand why we are repeated the collocation "training only" for what purpose
 
 \paragraph{Inference region filtering.}
-To measure how much localization errors limit grasp accuracy, at inference we restrict the peak of $Q$ to a region $R$, using the global peak if $R$ is empty.
-Taking the Grounding DINO~\cite{liu2024grounding} box predicted from the prompt defines the detector gate, while taking the ground-truth mask $m_0$ of the prompted object defines the oracle gate, preventing grasps outside the target object and giving the upper bound for perfect grounding.
+To measure how much grounding errors limit grasp success, at inference we take the peak of $Q$ inside a region $R$ (the global peak if $R$ is empty).
+The detector gate uses the Grounding DINO~\cite{liu2024grounding} box predicted from the prompt; the oracle gate uses the ground-truth mask $m_0$, which rules out grasps on other objects and so approximates perfect grounding.
 % "(oracle gate, an upper bound for perfect grounding)": What is oracle gate, why is it the upper bound for perfect grounding here?

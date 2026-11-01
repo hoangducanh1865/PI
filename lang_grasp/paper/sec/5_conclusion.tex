@@ -1,5 +1,4 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-Our region-text contrastive loss aligns object regions with prompts in training without masks at inference, improving the GR-ConvNet + CLIP baseline by 2.5 H points on Grasp-Anything++.
-Restricting inference to Grounding DINO boxes or ground-truth masks adds up to 6.1 and 16.2 Unseen points, showing room for stronger grounding.
+A training-time region-text contrastive loss improves GR-ConvNet + CLIP by 2.5 H points on Grasp-Anything++ without masks at inference, while the gains of up to 16.2 Unseen points from region restriction leave clear room for stronger grounding.
