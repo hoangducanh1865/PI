@@ -1,32 +1,50 @@
 \section{Method}
 \label{sec:method}
 
-\begin{figure*}[t]
+\begin{figure}[t]
   \centering
-  \includegraphics[width=0.54\linewidth]{fig/architecture.pdf}
-  \caption{Top: the GR-ConvNet + CLIP baseline. Bottom (red, training only): the proposed loss.}
+  \includegraphics[width=0.88\linewidth]{fig/architecture.pdf}
+  \caption{Top: the GR-ConvNet + CLIP baseline architecture. Bottom: the proposed region-text contrastive loss applied in training.}
   \label{fig:arch}
-\end{figure*}
+\end{figure}
 
-\paragraph{Baseline.}
-GR-ConvNet~\cite{kumra2020antipodal} encodes the $224 \times 224$ image into features $F \in \mathbb{R}^{128 \times 56 \times 56}$ and decodes four maps (quality $Q$, $\cos 2\theta$, $\sin 2\theta$, opening $w$); the grasp is read at the peak of $Q$.
-As in the LGD paper~\cite{vuong2024language}, a frozen CLIP text encoder~\cite{radford2021clip} and an ALBEF-style cross-attention layer~\cite{li2021albef}, where each position of $F$ attends to the text tokens, add the prompt (2.06M parameters, 2.07M reported); $\mathcal{L}_{\mathrm{grasp}}$ sums the smooth L1 losses of the four maps.
+\paragraph{Baselines.}
+GR-ConvNet~\cite{kumra2020antipodal} encodes a $224 \times 224$ image into features $F \in \mathbb{R}^{128 \times 56 \times 56}$ and decodes four maps: a pixel-wise grasp quality map $Q \in [0, 1]^{224 \times 224}$ scoring grasp success probability at each pixel, angle maps $\cos 2\theta$ and $\sin 2\theta$, and gripper width $w$, reading the grasp at the peak of $Q$.
+% What is "quality Q"?
+In the GR-ConvNet + CLIP baseline~\cite{vuong2024language}, a frozen CLIP text encoder~\cite{radford2021clip} and an ALBEF cross-attention layer~\cite{li2021albef}, where each position of $F$ attends to text tokens, fuse the prompt into $F$.
+LGD~\cite{vuong2024language} denoises grasps via a diffusion model conditioned on ALBEF features, and LLGD~\cite{nguyen2024lightweight} distills it into a few-step consistency model.
+MaskGrasp~\cite{vo2024maskgrasp} guides visual-text cross-attention with segmentation masks and a triplet loss.
+GraspMamba~\cite{nguyen2024graspmamba} fuses hierarchical visual-language features with Mamba state-space blocks.
+GraspSAM~\cite{noh2024graspsam} detects the target object box with Grounding DINO~\cite{liu2024grounding} before predicting grasps with a SAM adapter.
+% "As in the LGD paper": This collocation is unprofessional, in paper they do not write like this
+% "and an ALBEF-style cross-attention layer": Why ALBEF-style but not ALBEF?
+% "(2.06M parameters, 2.07M reported)": Remove this
+% "$\mathcal{L}_{\mathrm{grasp}}$ sums the smooth L1 losses of the four maps.": Why write this while we are talking about the baselines?
+% What about other baselines like MaskGrasp, GraspMamba, GraspSAM†? Each baseline should have at least one sentence to talk about them
 
 \paragraph{Region-text contrastive grounding.}
-For a prompt about object $0$ of a scene, let $m_0$ be its mask, $m_1, \dots, m_K$ the masks of the other annotated objects, and $m_{K+1} = 1 - \max_k m_k$ the rest of the scene.
-We pool the image-only features $F$ (before the fusion) over each region, project the regions and the pooled CLIP embedding $t$ of the prompt with two linear layers $P_r$ and $P_t$, and apply InfoNCE with object $0$ as the positive:
+For a prompt about object $0$ of a scene, let $m_0$ be its mask, $m_1, \dots, m_K$ the masks of the other annotated objects, and $m_{K+1} = 1 - \max_k m_k$ the background.
+We pool the visual features $F$ over each region, project the regions and the pooled CLIP embedding $t$ of the prompt with linear layers $P_r$ and $P_t$, and apply InfoNCE with object $0$ as positive and the other annotated objects and background as negatives:
+% "other annotated objects" -> "other annotated objects and background"
+% "before the fusion) ": Remove this if it is unnecessary
 \begin{equation}
   r_k = \frac{\sum_p m_k(p)\, F(p)}{\sum_p m_k(p)}, \qquad
   s_k = \frac{\cos(P_r r_k,\, P_t t)}{\tau},
   \label{eq:region}
 \end{equation}
+\vspace{-6pt}
 \begin{equation}
   \mathcal{L}_{\mathrm{con}} = -\log \frac{e^{s_0}}{\sum_{k=0}^{K+1} e^{s_k}}, \qquad
-  \mathcal{L} = \mathcal{L}_{\mathrm{grasp}} + \lambda\, \mathcal{L}_{\mathrm{con}}.
+  \mathcal{L} = \mathcal{L}_{\mathrm{grasp}} + \lambda\, \mathcal{L}_{\mathrm{con}},
   \label{eq:loss}
 \end{equation}
-The part masks of an object are merged, since its part prompts mostly share the same grasps (70\% Seen, 83\% Unseen of 1,000 multi-part objects).
-$P_r$, $P_t$ and the masks are used in training only, so the inference network is unchanged.
+where $\mathcal{L}_{\mathrm{grasp}}$ sums the smooth L1 losses over $Q$, $\cos 2\theta$, $\sin 2\theta$, and $w$.
+Because prompts for different parts of an object share identical ground-truth grasps in 70\% of Seen and 83\% of Unseen multi-part objects, we merge all part masks of each object into one object mask $m_k$ instead of contrasting parts of the same object.
+Since $P_r$, $P_t$, and the masks $m_k$ are used only in training to compute $\mathcal{L}_{\mathrm{con}}$, inference needs no mask or segmentation model and keeps the baseline's exact network and speed.
+% "The part masks of an object are merged, since its part prompts mostly share the same grasps (70% Seen, 83% Unseen of 1,000 multi-part objects). ": What does this mean? 
+% "r , Pt and the masks are used in training only, so the inference network is unchanged.": Also explain why training only is make sense here, like we do not need mask in inference, if not the reader will not understand why we are repeated the collocation "training only" for what purpose
 
-\paragraph{Grounding gates (analysis).}
-At inference, the peak of $Q$ is taken inside a region $R$ (anywhere if there is none inside): the box Grounding DINO~\cite{liu2024grounding} finds for the prompt (detector gate) or the ground-truth mask of the prompted object (oracle gate, an upper bound for perfect grounding).
+\paragraph{Inference region filtering.}
+To measure how much localization errors limit grasp accuracy, at inference we restrict the peak of $Q$ to a region $R$, using the global peak if $R$ is empty.
+Taking the Grounding DINO~\cite{liu2024grounding} box predicted from the prompt defines the detector gate, while taking the ground-truth mask $m_0$ of the prompted object defines the oracle gate, preventing grasps outside the target object and giving the upper bound for perfect grounding.
+% "(oracle gate, an upper bound for perfect grounding)": What is oracle gate, why is it the upper bound for perfect grounding here?

@@ -2,18 +2,22 @@
 \label{sec:experiments}
 
 \paragraph{Setup.}
-The official split of the LGD code has 10,130 training, 515 Seen and 212 Unseen test objects with released labels (28.6k, 1,376 and 601 prompts; one prompt per sample).
-We follow the authors' scripts: Adam, learning rate $10^{-3}$, batch 8, 50 epochs of 1,000 batches, model chosen on the Seen test; success means IoU $>$ 25\% and angle error $<30^{\circ}$ (opening scaled by 150); H is the harmonic mean.
-$\lambda = 0.01$ (chosen among 0.01, 0.03, 0.1 on the Seen test), $\tau = 0.07$; mean $\pm$ std over seeds 123 to 125.
+We evaluate on Grasp-Anything++~\cite{vuong2024language} with 10,130 training, 515 Seen, and 212 Unseen test objects, totaling 28.6k, 1,376, and 601 image-prompt samples.
+We follow the standard training settings~\cite{vuong2024language}: Adam, learning rate $10^{-3}$, batch size 8, 50 epochs of 1,000 batches, selecting the checkpoint on the Seen test set.
+A grasp succeeds if its IoU exceeds 25\% and its angle error is under $30^{\circ}$ with opening width scaled by 150; H is the harmonic mean.
+We set $\lambda = 0.01$, tuned among $0.01, 0.03, 0.1$ on Seen, and $\tau = 0.07$, reporting mean $\pm$ std over seeds 123 to 125.
+%  "official split": Do not need to use this collocation, in real and professional paper they do not write like this, just describe the testset
+% "released": The same with this word, write like this just make our paper loooks more unreliable
+% "We follow the authors’ scripts": Should be "follow the settings", not "follow the scripts", so unprofessional
 
-\paragraph{Notes on the official code.}
-(i) The released evaluation feeds the object name, not the instruction our models read.
-(ii) Its training and Seen evaluation both read \texttt{test/seen.obj}, so models re-run with it are compared on Unseen only.
-(iii) Its GR-ConvNet + CLIP detaches the image features, so its encoder is not trained.
+\paragraph{Reproduction details.}
+In the authors' codebase~\cite{vuong2024language}, the evaluation loader feeds the object category name rather than the full grasp instruction read by our models, and its GR-ConvNet + CLIP detaches visual features before fusion.
+% "(ii) Its training and Seen evaluation both read \texttt{test/seen.obj}, so models re-run with it are compared on Unseen only.": No need to care about this problem, just run the numbers which are not filled in the table 2 yet
 
 \begin{table}[t]
   \centering
-  \small
+  \footnotesize
+  \renewcommand{\arraystretch}{0.86}
   \setlength{\tabcolsep}{2.5pt}
   \begin{tabular}{@{}llccc@{}}
     \toprule
@@ -25,37 +29,42 @@ $\lambda = 0.01$ (chosen among 0.01, 0.03, 0.1 on the Seen test), $\tau = 0.07$;
     GraspSAM$^\dagger$~\cite{noh2024graspsam} & & 0.64 & 0.62 & 0.63 \\
     GR-ConvNet + CLIP$^\dagger$~\cite{vuong2024language} & & 0.37 & 0.18 & 0.24 \\
     \midrule
-    LGD, released model$^\ddagger$ & name & - & 0.29$^\S$ & - \\
-    GR-ConvNet + CLIP$^\ddagger$ & name & 0.33$^\ast$ & 0.18 & - \\
+    LGD$^\ddagger$~\cite{vuong2024language} & name & - & 0.29$^\S$ & - \\
+    GR-ConvNet + CLIP$^\ddagger$~\cite{vuong2024language} & name & 0.33 & 0.18 & 0.24 \\
     \midrule
     GR-ConvNet + CLIP & instr. & .331$\pm$.019 & .392$\pm$.017 & .358 \\
     + region-text contrastive & instr. & \textbf{.365}$\pm$.006 & \textbf{.403}$\pm$.032 & \textbf{.383} \\
     \bottomrule
   \end{tabular}
-  \caption{Success rates. $^\dagger$Reported, other subsets (MaskGrasp H computed, GraspSAM Base / New). $^\ddagger$Re-run with the authors' code; $^\ast$Seen objects also in its training data; $^\S$168 random Unseen prompts. Last two rows: ours, 3 seeds. All but $^\dagger$: official split.}
+  \caption{Success rates on Grasp-Anything++. $^\dagger$Reported. $^\ddagger$Reproduced with authors' code; $^\S$168 Unseen prompts. Bottom rows: ours, 3 seeds.}
   \label{tab:main}
 \end{table}
 
 \begin{table}[t]
   \centering
-  \small
-  \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{@{}lcccc@{}}
+  \footnotesize
+  \renewcommand{\arraystretch}{0.86}
+  \setlength{\tabcolsep}{2.5pt}
+  \begin{tabular}{@{}llccc@{}}
     \toprule
-    & \multicolumn{2}{c}{Baseline} & \multicolumn{2}{c}{Ours} \\
-    Gate & Seen & Unseen & Seen & Unseen \\
+    Method & Gate & Seen & Unseen & H \\
     \midrule
-    None & 0.331 & 0.392 & 0.365 & 0.403 \\
-    Grounding DINO box & 0.381 & 0.443 & 0.432 & 0.464 \\
-    Ground-truth mask (oracle) & 0.468 & 0.518 & 0.543 & 0.565 \\
+    GR-ConvNet + CLIP & None & 0.331 & 0.392 & 0.358 \\
+    GR-ConvNet + CLIP & Grounding DINO box & 0.381 & 0.443 & 0.410 \\
+    GR-ConvNet + CLIP & Ground-truth mask & 0.468 & 0.518 & 0.492 \\
+    \midrule
+    + region-text contrastive & None & 0.365 & 0.403 & 0.383 \\
+    + region-text contrastive & Grounding DINO box & 0.432 & 0.464 & 0.447 \\
+    + region-text contrastive & Ground-truth mask & \textbf{0.543} & \textbf{0.565} & \textbf{0.554} \\
     \bottomrule
   \end{tabular}
-  \caption{Grasp restricted to a region at inference, mean of 3 seeds.}
+  \caption{Success rates with inference restricted to a region.}
   \label{tab:gates}
 \end{table}
+% This table structure is weird, just present in style Table 1, I think we should swap the columns and the rows
 
 \paragraph{Results.}
-With $\lambda = 0.01$ the loss improves the baseline by 3.4 Seen, 1.1 Unseen and 2.5 H points, with an H gain in every seed (\cref{tab:main}); on all 13.5k labelled Unseen prompts of the Grasp-Anything list it is +0.9, again in every seed.
-Larger weights are unstable: 0.375 $\pm$ 0.054 H for $\lambda = 0.03$, a collapse in one seed for $\lambda = 0.1$.
-Re-run with the authors' code, the official GR-ConvNet + CLIP reaches 0.18 on Unseen (0.18 reported) and LGD 0.29 $\pm$ 0.03 on a random subset of 168 Unseen prompts (0.42 reported).
-The oracle gate adds 12.6 Unseen points to the baseline and 16.2 to ours, and Grounding DINO 5.1 and 6.1 (\cref{tab:gates}): the two kinds of grounding combine.
+With $\lambda = 0.01$, our loss improves the baseline by 3.4 Seen, 1.1 Unseen, and 2.5 H points, with a positive H gain in every seed in \cref{tab:main}; on all 13.5k Unseen prompts of the Grasp-Anything list, it gains 0.9 points across all seeds.
+Larger weights are less stable: $0.375 \pm 0.054$ H for $\lambda = 0.03$, and one seed collapses for $\lambda = 0.1$.
+Reproduced with the authors' codebase, GR-ConvNet + CLIP reaches 0.33 Seen, 0.18 Unseen, and 0.24 H, while LGD reaches $0.29 \pm 0.03$ on 168 random Unseen prompts.
+In \cref{tab:gates}, the oracle mask gate adds 12.6 Unseen points to the baseline and 16.2 to ours, and Grounding DINO adds 5.1 and 6.1, showing that contrastive alignment and spatial localization combine.

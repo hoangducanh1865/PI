@@ -80,7 +80,7 @@ Then, inside the shell:
 
 ```bash
 mkdir -p /kaggle/working/code /kaggle/working/data/datasets/processed /kaggle/working/data/lang_grasp/logs
-git clone -q https://github.com/hoangducanh1865/fpt_entrance_test.git /kaggle/working/code/fpt_entrance_test   # new code: git pull there
+git clone -q https://github.com/hoangducanh1865/PI.git /kaggle/working/code/fpt_entrance_test   # new code: git pull there
 ln -sfn /kaggle/input/grasp-anything-pp /kaggle/working/data/datasets/processed/Grasp-Anything-pp   # the Kaggle Dataset
 cd /kaggle/working/code/fpt_entrance_test/lang_grasp && pip install -q -r requirements.txt
 python src/train.py experiment=<EXP>                 # short runs

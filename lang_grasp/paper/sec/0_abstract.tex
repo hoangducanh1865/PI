@@ -1,13 +1,6 @@
 \begin{abstract}
-Most failures of a GR-ConvNet + CLIP baseline for language-driven grasp detection on Grasp-Anything++ grasp the wrong object.
-We add a region-text contrastive loss: features pooled over the prompted object's mask must match the prompt better than the other objects or the background.
-% "the other objects of the scene" -> "the other objects or the background"
-% "training-only": Remove this if it is unnecessary
-Experiments show that this contrastive loss improves the baseline by 2.5 H points on the official split.
-% "On the official split, it" -> "Experiments show that this contrastive loss"
-% "over three seeds": Do we need to keep this? In professional papers do they write like this?
-We also reproduce LGD results and the authors' GR-ConvNet + CLIP code, and restrict inference to Grounding DINO boxes or ground-truth masks to bound the grounding error.
-% "re-run LGD" -> "Reproduce LGD results"
-% "official baseline": What basline?
-% "bound the grounding error with gates": What is this?
+Language-driven grasp detection predicts a grasp for the object named in a natural-language prompt.
+On Grasp-Anything++, the largest share of failures of a GR-ConvNet + CLIP baseline comes from grasping the wrong object, since its grasp-map regression never ties the prompt to an object.
+We propose a region-text contrastive loss that pools visual features over object masks and trains the prompted object to match the prompt better than the other objects and the background; it is applied only in training, so inference needs no masks and keeps the baseline network unchanged.
+Averaged over three seeds, it improves the harmonic mean of Seen and Unseen success by 2.5 points, and restricting grasps at inference to Grounding DINO boxes or ground-truth masks adds up to 6.1 and 16.2 Unseen points, showing that object grounding remains the main bottleneck.
 \end{abstract}

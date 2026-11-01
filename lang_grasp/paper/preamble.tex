@@ -19,7 +19,7 @@
 %% work harder in optimizing text layout. Typically shrinks text by 1/6 of page, enable
 %% it at the very end of the writing process, when you are just above the page limit
 %%
-% \usepackage{microtype}
+\usepackage{microtype}
 
 %%
 %% fine-tune paragraph spacing
@@ -51,9 +51,21 @@
 % \usepackage{soul}
 % \setuldepth{foobar}
 % Tighter space around floats, to fit the 2-page limit
-\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
-\setlength{\dbltextfloatsep}{8pt plus 2pt minus 2pt}
-\setlength{\abovecaptionskip}{4pt}
+\setlength{\textfloatsep}{4pt plus 1pt minus 1pt}
+\setlength{\floatsep}{4pt plus 1pt minus 1pt}
+\setlength{\dbltextfloatsep}{4pt plus 1pt minus 1pt}
+\setlength{\abovecaptionskip}{2.5pt}
+\setlength{\belowcaptionskip}{0pt}
+\AtBeginDocument{%
+  \setlength{\abovedisplayskip}{3pt plus 1pt minus 1pt}%
+  \setlength{\belowdisplayskip}{3pt plus 1pt minus 1pt}%
+  \setlength{\abovedisplayshortskip}{2pt}%
+  \setlength{\belowdisplayshortskip}{2pt}%
+}
+\captionsetup{skip=2pt}
+\AtBeginEnvironment{thebibliography}{\setlength{\bibsep}{0pt}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \makeatletter  % run-in paragraph headings with less space above
-\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}{3pt plus 1pt minus 1pt}{-0.5em}{\normalfont\normalsize\bfseries}}
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}{1.5pt plus 0.5pt minus 0.5pt}{-0.5em}{\normalfont\normalsize\bfseries}}
+\def\cvprsection{\@startsection{section}{1}{\z@}{-5pt plus -1pt minus -1pt}{2.5pt}{\large\bf}}
+\def\endabstract{\vspace*{4pt}}
 \makeatother

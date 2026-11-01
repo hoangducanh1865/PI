@@ -1,0 +1,121 @@
+<mxfile host="drawio" version="24.7.17">
+  <diagram id="arch" name="architecture">
+    <mxGraphModel dx="1200" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="520" math="1" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- training-only region (drawn first, behind everything) -->
+        <mxCell id="trainbox" value="Training only" style="rounded=1;arcSize=6;dashed=1;dashPattern=6 4;fillColor=#FDF2F2;strokeColor=#B85450;strokeWidth=1.5;verticalAlign=bottom;align=right;spacingRight=10;spacingBottom=4;fontStyle=2;fontSize=13;fontColor=#B85450;" vertex="1" parent="1">
+          <mxGeometry x="300" y="250" width="770" height="200" as="geometry" />
+        </mxCell>
+
+        <!-- inputs -->
+        <mxCell id="img" value="RGB image&lt;br&gt;\(224 \times 224\)" style="shape=mxgraph.basic.layered_rect;dx=8;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="30" y="60" width="130" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="prompt" value="Prompt&lt;br&gt;&lt;i&gt;&quot;grasp the mug&lt;br&gt;by its handle&quot;&lt;/i&gt;" style="shape=mxgraph.basic.layered_rect;dx=8;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="30" y="170" width="130" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="masks" value="Object masks&lt;br&gt;\(m_0, \dots, m_{K+1}\)" style="shape=mxgraph.basic.layered_rect;dx=8;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="30" y="330" width="130" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- baseline network -->
+        <mxCell id="enc" value="GR-ConvNet&lt;br&gt;Encoder" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="210" y="65" width="130" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="clip" value="CLIP Text&lt;br&gt;Encoder (frozen)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="210" y="175" width="130" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="xattn" value="Cross-Attention&lt;br&gt;(ALBEF)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=14;gradientColor=#D5E8D4;gradientDirection=north;" vertex="1" parent="1">
+          <mxGeometry x="420" y="65" width="140" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dec" value="GR-ConvNet&lt;br&gt;Decoder" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="630" y="65" width="130" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="maps" value="\(Q,\ \cos 2\theta,\ \sin 2\theta,\ w\)" style="shape=mxgraph.basic.layered_rect;dx=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="820" y="60" width="150" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="grasp" value="Grasp \(g\) at&lt;br&gt;peak of \(Q\)" style="text;html=1;align=center;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="990" y="10" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="lgrasp" value="\(\mathcal{L}_{\mathrm{grasp}}\)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="845" y="175" width="100" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- training-only branch -->
+        <mxCell id="pool" value="Mask Pooling&lt;br&gt;\(r_k\) + \(P_r\)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="420" y="335" width="140" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="pt" value="\(P_t\)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="420" y="270" width="140" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="sim" value="\(s_k = \cos(P_r r_k, P_t t)/\tau\)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B85450;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="620" y="310" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="lcon" value="\(\mathcal{L}_{\mathrm{con}}\) (InfoNCE)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="845" y="310" width="125" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="total" value="\(\mathcal{L} = \mathcal{L}_{\mathrm{grasp}} + \lambda\,\mathcal{L}_{\mathrm{con}}\)" style="text;html=1;align=center;verticalAlign=middle;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="830" y="385" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- baseline flow: thick soft green / blue arrows -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#82B366;" edge="1" parent="1" source="img" target="enc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="\(F\)" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#82B366;fontSize=14;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="enc" target="xattn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#6C8EBF;" edge="1" parent="1" source="prompt" target="clip">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="tokens" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#6C8EBF;fontSize=12;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="clip" target="xattn">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="490" y="210" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#82B366;" edge="1" parent="1" source="xattn" target="dec">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#82B366;" edge="1" parent="1" source="dec" target="maps">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;" edge="1" parent="1" source="maps" target="grasp">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1040" y="100" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;" edge="1" parent="1" source="maps" target="lgrasp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- training-only flow: thick soft red arrows -->
+        <mxCell id="t1" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#EA9999;" edge="1" parent="1" source="masks" target="pool">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="t2" value="\(F\)" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#EA9999;fontSize=14;labelBackgroundColor=#FDF2F2;" edge="1" parent="1" target="pool">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="380" y="100" as="sourcePoint" />
+            <Array as="points"><mxPoint x="380" y="370" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="t3" value="pooled \(t\)" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#EA9999;fontSize=12;labelBackgroundColor=#FDF2F2;" edge="1" parent="1" source="clip" target="pt">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="275" y="292" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="t4" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#EA9999;" edge="1" parent="1" source="pt" target="sim">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="t5" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#EA9999;" edge="1" parent="1" source="pool" target="sim">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="t6" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;" edge="1" parent="1" source="sim" target="lcon">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
