@@ -26,14 +26,14 @@
     Still first frame & 19.80 & 0.805 & 0.141 & 0.156 & 58.7 & 9.06 & - \\
     \bottomrule
   \end{tabular}}
-  \caption{Bridge, 105 clips. Visual metrics over frames 1 to 15; 2-D track on the 96 clips with an end-effector point; 3-D: IDM-Score. Reported: PSNR in~\cite{zhu2024irasim} on its test set. Best in bold, second underlined, references excluded.}
+  \caption{Bridge, 105 clips. Visual metrics over frames 1 to 15; 2-D track on the 96 clips with an end-effector point; 3-D: cycle error of \ours{}. Reported: PSNR in~\cite{zhu2024irasim} on its test set. Best in bold, second underlined, references excluded.}
   \label{tab:bridge}
 \end{table}
 
 \paragraph{Bridge, 105 clips.}
 Among the IRASim models, Frame-Ada leads, Video-Ada is second, and LVDM third (\cref{tab:bridge}).
 Frame-Ada beats Video-Ada on PSNR with $p=2\cdot10^{-5}$, better on 69\% of clips, and on 2-D NDTW with $p=0.02$, and it beats LVDM on PSNR, LPIPS, and NDTW with $p<10^{-8}$; its two seeds do not differ, with $p$ from 0.15 to 0.4.
-Cosmos-Predict2.5 with actions is the best model on every metric: against Frame-Ada it gains 1.78\,dB PSNR with $p=4\cdot10^{-16}$ and 0.055 NDTW with $p=0.008$, and lowers IDM-Score by 0.16\,cm with $p=0.02$, to within 0.14\,cm of the score of the real videos.
+Cosmos-Predict2.5 with actions is the best model on every metric: against Frame-Ada it gains 1.78\,dB PSNR with $p=4\cdot10^{-16}$ and 0.055 NDTW with $p=0.008$, and lowers the cycle error by 0.16\,cm with $p=0.02$, to within 0.14\,cm of the error on the real videos.
 SSIM separates no model from the still video.
 
 \begin{table}[t]
@@ -64,46 +64,62 @@ SSIM separates no model from the still video.
 \paragraph{Language-Table, 57 clips.}
 On table-top pushing in 2-D (\cref{tab:lt}), Frame-Ada again beats LVDM on PSNR with $p=0.015$ and on NDTW with $p=0.017$, and SSIM ranks the still frame first, 0.879 against 0.861 to 0.863, because most of the image is a static table.
 Video-Ada is far behind on this dataset, below LVDM on every metric with $p<0.001$ and close to the still floor on motion; \cite{zhu2024irasim} reports the same gap, 23.89\,dB for Video-Ada against 28.25 for LVDM and 28.82 for Frame-Ada, so it is a property of the model rather than of our run.
-IDM-Score is not available here, because the inverse dynamics model has no Language-Table domain, and Cosmos-Predict2.5 provides no action-conditioned model for Language-Table.
+\ours{} is not available here, because the inverse dynamics model has no Language-Table domain, and Cosmos-Predict2.5 provides no action-conditioned model for Language-Table.
 
 \begin{table}[t]
   \centering
   \footnotesize
   \setlength{\tabcolsep}{3pt}
-  \begin{tabular}{@{}lccccc@{}}
+  \begin{tabular}{@{}lcccccc@{}}
     \toprule
-    Actions given & PSNR$\uparrow$ & SSIM$\uparrow$ & LPIPS$\downarrow$ & NDTW$\uparrow$ & 3-D cm$\downarrow$ \\
+    & \multicolumn{3}{c}{Visual} & 2-D & \multicolumn{2}{c}{\ours{}} \\
+    \cmidrule(lr){2-4}\cmidrule(lr){5-5}\cmidrule(l){6-7}
+    Actions given & PSNR$\uparrow$ & SSIM$\uparrow$ & LPIPS$\downarrow$ & NDTW$\uparrow$ & cm$\downarrow$ & Exec.$\uparrow$ \\
     \midrule
-    \multicolumn{6}{@{}l}{\textit{IRASim-Frame-Ada, seed 3407}} \\
-    Original & \textbf{23.97} & \textbf{0.814} & \textbf{0.081} & \textbf{0.759} & \textbf{1.93} \\
-    Noise 0.5\,cm & \ul{21.87} & \ul{0.788} & \ul{0.103} & \ul{0.550} & \ul{2.67} \\
-    Noise 1.5\,cm & 19.45 & 0.752 & 0.149 & 0.270 & 5.62 \\
-    All zero & 19.31 & 0.753 & 0.158 & 0.133 & 9.73 \\
-    Mirrored & 18.59 & 0.737 & 0.178 & 0.036 & 15.32 \\
+    \multicolumn{7}{@{}l}{\textit{IRASim-Frame-Ada, seed 3407}} \\
+    Original & \textbf{23.97} & \textbf{0.814} & \textbf{0.081} & \textbf{0.759} & \textbf{1.93} & \textbf{100} \\
+    Noise 0.5\,cm & \ul{21.87} & \ul{0.788} & \ul{0.103} & \ul{0.550} & \ul{2.67} & \textbf{100} \\
+    Noise 1.5\,cm & 19.45 & 0.752 & 0.149 & 0.270 & 5.62 & \textbf{100} \\
+    All zero & 19.31 & 0.753 & 0.158 & 0.133 & 9.73 & \textbf{100} \\
+    Mirrored & 18.59 & 0.737 & 0.178 & 0.036 & 15.32 & \ul{83} \\
     \midrule
-    \multicolumn{6}{@{}l}{\textit{Reference}} \\
-    Still first frame & 20.35 & 0.816 & 0.134 & 0.135 & 9.52 \\
+    \multicolumn{7}{@{}l}{\textit{Reference}} \\
+    Still first frame & 20.35 & 0.816 & 0.134 & 0.135 & 9.52 & 100 \\
     \bottomrule
   \end{tabular}
-  \caption{Perturbation test on the 24 core clips, scored against the real clip of the original actions; NDTW on the 13 clips whose end-effector point both judges confirmed. Best in bold, second underlined, reference excluded.}
+  \caption{Perturbation test on the 24 core clips, scored against the real clip of the original actions; NDTW on the 13 clips whose end-effector point both judges confirmed; Exec.: percentage of clips whose motion read from the video is executable by the WidowX 250. Best in bold, second underlined, reference excluded.}
   \label{tab:perturb}
 \end{table}
 
 \paragraph{Perturbation test.}
 To check whether a metric notices wrong actions, we regenerate the 24 core clips with Frame-Ada from corrupted actions, namely random walks of 0.5 and 1.5\,cm per frame on the position, mirrored motion, and all actions set to zero, and score them against the real clips of the original actions (\cref{tab:perturb}).
-NDTW and IDM-Score both degrade with the corruption, place zero actions at the still floor, 0.133 against 0.135 and 9.73 against 9.52\,cm, and place mirrored motion below it; IDM-Score does so without the real video.
-PSNR and SSIM rank the still video above every corrupted generation, and SSIM ranks it even above the generation from the original actions.
+NDTW and the cycle error of \ours{} both degrade steadily as the corruption grows, place zero actions at the level of the static video, 0.133 against 0.135 and 9.73 against 9.52\,cm, and place mirrored motion beyond it; \ours{} does so without the real video.
+The appearance metrics do not: SSIM rates the static video above every corrupted generation and even above the generation from the original actions, and PSNR and LPIPS rate it above the three strongest corruptions, so a higher appearance score does not mean that the robot followed the actions.
 
-\paragraph{Validating IDM-Score.}
-On the 105 real clips, the relative motion recovered by the inverse dynamics model correlates with the recorded one, with $r$ of 0.92, 0.93, and 0.88 for $x$, $y$, and $z$ and 0.81 to 0.92 for the rotation entries, and IDM-Score is 1.50\,cm, with a 95\% bootstrap interval of 1.36 to 1.68, for clips that move 25\,cm on average.
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig/paths.pdf}
+  \caption{\ours{} on the clip ``take banana out of colander'': end-effector path read back from each video against the commanded path, from above (left) and as height over time (right). Cycle errors: real video 1.63\,cm, Frame-Ada 1.86, Cosmos-Predict2.5 with actions 1.82, without actions 15.53.}
+  \label{fig:paths}
+\end{figure}
+
+\paragraph{Validating the cycle error.}
+On the 105 real clips, the relative motion read by the inverse dynamics model correlates with the recorded one, with $r$ of 0.92, 0.93, and 0.88 for $x$, $y$, and $z$ and 0.81 to 0.92 for the rotation entries, and the cycle error is 1.50\,cm, with a 95\% bootstrap interval of 1.36 to 1.68, for clips that move 25\,cm on average.
 On the still video it is 9.06\,cm, as bad as assuming no motion at 9.32\,cm, so the model reads the motion from the frames rather than from a prior.
-The gripper command is recovered with a balanced accuracy of 0.87, against 0.50 for always predicting an open gripper.
+The gripper command is read with a balanced accuracy of 0.87, against 0.50 for always predicting an open gripper.
 Frame-Ada scores 1.81 and 1.84\,cm over two seeds, worse than the real videos with $p<10^{-5}$, yet better on 27 to 29\% of clips, because the error of the inverse dynamics model on a clip is shared by the real and the generated video, with a Spearman correlation of 0.81 between the two.
-Its per-clip score correlates with LPIPS at $\rho=0.52$, but the part exceeding the score of the real video barely does, at $\rho=0.21$ for LPIPS and 0.09 for NDTW, so IDM-Score measures something the pixel and image-track scores do not.
+Its per-clip score correlates with LPIPS at $\rho=0.52$, but the part exceeding the score of the real video barely does, at $\rho=0.21$ for LPIPS and 0.09 for NDTW, so the cycle error measures something the pixel and image-track scores do not.
 On the 24 core clips it ranks the models in the same order as the reference-based scores: Frame-Ada 1.86 to 2.12\,cm over six seeds, Video-Ada 2.09 and 2.13 over two seeds, LVDM 2.15 and 2.53, and VDM 10.68.
+\Cref{fig:paths} shows one clip: the paths read from the real video and from both action-conditioned models stay within about 2\,cm of the commanded one, while the model without actions moves the arm elsewhere.
+
+\paragraph{Executability.}
+The check passes 104 of the 105 recorded Bridge trajectories; the one rejected brings the forearm roll joint to its limit of $\pm\pi$, so about 1\% of clips are false alarms.
+On the motion read from the videos, 99.0\% of clips are executable for the real videos and for every action-conditioned model, the one failure being the same clip in all of them, where the inverse dynamics model reads poses out of the arm's reach even from the real video; Cosmos-Predict2.5 without actions passes 23 of 24 clips, and the static video passes all of them.
+In the perturbation test only mirrored motion fails, on 17\% of clips (\cref{tab:perturb}).
+The arm motion shown by these models is therefore almost always executable, and the check separates only grossly wrong motion: executability is a necessary condition, while the cycle error is what separates the models.
 
 \paragraph{Action input matters.}
-On the 24 core clips, Cosmos-Predict2.5 base, given the first frame and the instruction but no actions, produces smooth videos, with a DINOv2 adjacent-frame similarity of 0.916 against 0.953 for real clips, whose robot does not follow the recorded motion: its IDM-Score of 10.30\,cm does not differ from the still video at 9.52\,cm ($p=0.32$), against 1.74\,cm for the same backbone with actions ($p=10^{-7}$).
+On the 24 core clips, Cosmos-Predict2.5 base, given the first frame and the instruction but no actions, produces smooth videos, with a DINOv2 adjacent-frame similarity of 0.916 against 0.953 for real clips, whose robot does not follow the recorded motion: its cycle error of 10.30\,cm does not differ from the still video at 9.52\,cm ($p=0.32$), against 1.74\,cm for the same backbone with actions ($p=10^{-7}$).
 Its PSNR of 13.5\,dB is also far below every action-conditioned model, partly because of resampling its 49 frames at 16\,fps to our format.
 
 \paragraph{Temporal consistency and judges.}
@@ -112,6 +128,6 @@ Two vision-language judges, gemini-3.8-flash and gpt-6.1-sol, rate physical plau
 The most frequent violation for every latent model is an object that changes or vanishes, in 46\% and 17\% of Frame-Ada clips, and the still video is judged plausible every time, caught only by the outcome question with 0.00 and 0.04.
 
 \paragraph{Best-of-$N$ selection.}
-For each of the 24 core clips we generate six Frame-Ada videos and keep the one with the lowest IDM-Score.
+For each of the 24 core clips we generate six Frame-Ada videos and keep the one with the lowest cycle error.
 On the independent reference-based scores the selection does not help measurably: PSNR is 24.02 against 23.93\,dB for the average seed ($p=0.64$) and NDTW 0.717 against 0.709 ($p=0.37$), while an oracle choosing by PSNR itself, which needs the real video, would reach 24.86\,dB.
 Seeds of Frame-Ada differ little, so there is little to select from; the selection may matter for models whose samples differ more.

@@ -5,6 +5,7 @@ diffusers
 huggingface_hub
 imageio[ffmpeg]
 lpips
+modern_robotics   # scripts/executability.py
 omegaconf
 opencv-python
 scikit-image

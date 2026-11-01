@@ -176,7 +176,8 @@ rank the models alike; the still clip is "plausible" every time, and only the ou
 | `scripts/make_references.py` | the same clips as real video and as the still first frame, with IRASim's preprocessing, plus the robot state |
 | `scripts/setup_cosmos.sh`, `scripts/run_cosmos.py` | NVIDIA Cosmos-Predict2.5-2B (action-conditioned on Bridge, and image + text) through the official repo, stored like the IRASim clips |
 | `scripts/idm.py` | our inverse dynamics models (from scratch on SDXL latents, or fine-tuned DINOv2): recover a clip's actions, integrated into a 3-D end-effector path and compared with the commanded one |
-| `scripts/setup_cosmos3.sh`, `scripts/cosmos3_idm.py` | the same 3-D scores with NVIDIA Cosmos3-Nano's own inverse dynamics (served by vLLM-Omni; linear calibration with 2-fold cross-fitting on real clips) |
+| `scripts/setup_cosmos3.sh`, `scripts/cosmos3_idm.py` | the same 3-D scores with NVIDIA Cosmos3-Nano's own inverse dynamics (served by vLLM-Omni), decoded exactly as NVIDIA's cosmos-framework encodes Bridge actions, nothing fitted |
+| `scripts/executability.py` | could the WidowX 250 execute the motion read from a video: inverse kinematics, joint and velocity limits, as in the Interbotix driver (CPU) |
 | `scripts/a100_job.sh` | the GPU jobs a T4 cannot do (Cosmos, needs Ampere) and the 3-D scores (Cosmos3-Nano inverse dynamics; our IDMs only as the fallback), on one A100 machine |
 | `scripts/run_irasim.py` | generate the chosen clips with one released model and seed |
 | `scripts/make_perturbed_annotations.py` | corrupted action inputs (position noise, mirrored motion, frozen) for the perturbation test |
