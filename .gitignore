@@ -243,6 +243,4 @@ multirun/
 *.out
 *.synctex.gz
 /*/paper/*.pdf
-# notebooks hold local settings such as HF_TOKEN
-/notebooks/
 slide

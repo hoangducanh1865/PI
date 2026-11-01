@@ -124,7 +124,7 @@ layout under `/kaggle/working/`; local: the folder two levels above the repo, `<
 | `data/lang_grasp/logs/scripts/` | logs of the data scripts |
 | `data/lang_grasp/analysis/` | figures and tables of the checks and the error analysis |
 
-The notebook `notebooks/colab.ipynb` is local only (gitignored, it holds `HF_TOKEN`). Open it in VS Code with the Google
+The notebook `notebooks/colab.ipynb` holds no secret (tokens are sent over SSH). Open it in VS Code with the Google
 Colab extension (Select Kernel > Colab > New Colab Server > GPU T4, or CPU for downloads).
 
 Rules: the Colab FAQ forbids SSH on free runtimes (allowed with a paid plan and compute units left). On the free account
@@ -173,7 +173,7 @@ Changing the runtime type (GPU to CPU or back) gives a new machine: run cells 1,
 | `dial tcp: lookup <HOST>: no such host` | you connected before the host was in DNS, and macOS cached "no such host" | `sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder`, then ssh again (or wait a few minutes) |
 | `websocket: bad handshake` | the tunnel is down (cell 4 stopped, runtime restarted) | run cell 4 again, use the new host |
 | cell 4 prints `sshd is not listening on 127.0.0.1:2022` and a log | the SSH server did not start | paste the log to Claude |
-| Colab Secrets error about `HF_TOKEN` | Secrets only work in the Colab web UI, not in VS Code | define `HF_TOKEN = "..."` in the local notebook |
+| Colab Secrets error about `HF_TOKEN` | Secrets only work in the Colab web UI, not in VS Code | `export HF_TOKEN=...` in the SSH session, never in the notebook (it is in the repo) |
 
 ## 4. sim2real_worldmodel
 
