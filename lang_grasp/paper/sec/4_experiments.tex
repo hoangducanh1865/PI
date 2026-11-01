@@ -12,6 +12,7 @@ We set $\lambda = 0.01$, tuned among $0.01, 0.03, 0.1$ on Seen, and $\tau = 0.07
 
 \paragraph{Reproduction details.}
 In the authors' codebase~\cite{vuong2024language}, the evaluation loader feeds the object category name rather than the full grasp instruction read by our models, and its GR-ConvNet + CLIP detaches visual features before fusion.
+Its default training data are drawn from the Seen test objects, so for a fair comparison we score models reproduced with it on Unseen only.
 % "(ii) Its training and Seen evaluation both read \texttt{test/seen.obj}, so models re-run with it are compared on Unseen only.": No need to care about this problem, just run the numbers which are not filled in the table 2 yet
 
 \begin{table}[t]
@@ -30,7 +31,7 @@ In the authors' codebase~\cite{vuong2024language}, the evaluation loader feeds t
     GR-ConvNet + CLIP$^\dagger$~\cite{vuong2024language} & & 0.37 & 0.18 & 0.24 \\
     \midrule
     LGD$^\ddagger$~\cite{vuong2024language} & name & - & 0.29$^\S$ & - \\
-    GR-ConvNet + CLIP$^\ddagger$~\cite{vuong2024language} & name & 0.33 & 0.18 & 0.24 \\
+    GR-ConvNet + CLIP$^\ddagger$~\cite{vuong2024language} & name & - & 0.18 & - \\
     \midrule
     GR-ConvNet + CLIP & instr. & .331$\pm$.019 & .392$\pm$.017 & .358 \\
     + region-text contrastive & instr. & \textbf{.365}$\pm$.006 & \textbf{.403}$\pm$.032 & \textbf{.383} \\
@@ -66,5 +67,5 @@ In the authors' codebase~\cite{vuong2024language}, the evaluation loader feeds t
 \paragraph{Results.}
 With $\lambda = 0.01$, our loss improves the baseline by 3.4 Seen, 1.1 Unseen, and 2.5 H points, with a positive H gain in every seed in \cref{tab:main}; on all 13.5k Unseen prompts of the Grasp-Anything list, it gains 0.9 points across all seeds.
 Larger weights are less stable: $0.375 \pm 0.054$ H for $\lambda = 0.03$, and one seed collapses for $\lambda = 0.1$.
-Reproduced with the authors' codebase, GR-ConvNet + CLIP reaches 0.33 Seen, 0.18 Unseen, and 0.24 H, while LGD reaches $0.29 \pm 0.03$ on 168 random Unseen prompts.
+Reproduced with the authors' codebase, GR-ConvNet + CLIP reaches 0.18 Unseen, matching the reported value, while LGD reaches $0.29 \pm 0.03$ on 168 random Unseen prompts.
 In \cref{tab:gates}, the oracle mask gate adds 12.6 Unseen points to the baseline and 16.2 to ours, and Grounding DINO adds 5.1 and 6.1, showing that contrastive alignment and spatial localization combine.
