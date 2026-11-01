@@ -24,20 +24,23 @@ Its default training data are drawn from the Seen test objects, so for a fair co
     \toprule
     Method & Text & Seen & Unseen & H \\
     \midrule
-    LGD$^\dagger$~\cite{vuong2024language} & & 0.48 & 0.42 & 0.45 \\
-    MaskGrasp$^\dagger$~\cite{vo2024maskgrasp} & & 0.50 & 0.46 & 0.48 \\
-    GraspMamba$^\dagger$~\cite{nguyen2024graspmamba} & & 0.63 & 0.41 & 0.52 \\
-    GraspSAM$^\dagger$~\cite{noh2024graspsam} & & 0.64 & 0.62 & 0.63 \\
-    GR-ConvNet + CLIP$^\dagger$~\cite{vuong2024language} & & 0.37 & 0.18 & 0.24 \\
+    \multicolumn{5}{@{}l}{\textit{Reported in the original papers}} \\
+    LGD~\cite{vuong2024language} & & 0.48 & 0.42 & 0.45 \\
+    MaskGrasp~\cite{vo2024maskgrasp} & & 0.50 & 0.46 & 0.48 \\
+    GraspMamba~\cite{nguyen2024graspmamba} & & 0.63 & 0.41 & 0.52 \\
+    GraspSAM~\cite{noh2024graspsam} & & 0.64 & 0.62 & 0.63 \\
+    GR-ConvNet + CLIP~\cite{vuong2024language} & & 0.37 & 0.18 & 0.24 \\
     \midrule
-    LGD$^\ddagger$~\cite{vuong2024language} & name & - & 0.29$^\S$ & - \\
-    GR-ConvNet + CLIP$^\ddagger$~\cite{vuong2024language} & name & - & 0.18 & - \\
+    \multicolumn{5}{@{}l}{\textit{Reproduced with the authors' code}} \\
+    LGD~\cite{vuong2024language} & name & - & 0.29$^\S$ & - \\
+    GR-ConvNet + CLIP~\cite{vuong2024language} & name & - & 0.18 & - \\
     \midrule
+    \multicolumn{5}{@{}l}{\textit{Our implementation (mean $\pm$ std over 3 seeds)}} \\
     GR-ConvNet + CLIP & instr. & .331$\pm$.019 & .392$\pm$.017 & .358 \\
     RTC-Grasp (ours) & instr. & \textbf{.365}$\pm$.006 & \textbf{.403}$\pm$.032 & \textbf{.383} \\
     \bottomrule
   \end{tabular}
-  \caption{Success rates on Grasp-Anything++. $^\dagger$Reported. $^\ddagger$Reproduced with authors' code; $^\S$168 Unseen prompts. Bottom rows: ours, 3 seeds.}
+  \caption{Success rates on Grasp-Anything++. $^\S$168 random Unseen prompts.}
   \label{tab:main}
 \end{table}
 
@@ -46,17 +49,19 @@ Its default training data are drawn from the Seen test objects, so for a fair co
   \footnotesize
   \renewcommand{\arraystretch}{0.86}
   \setlength{\tabcolsep}{2.5pt}
-  \begin{tabular}{@{}llccc@{}}
+  \begin{tabular}{@{}lccc@{}}
     \toprule
-    Method & Gate & Seen & Unseen & H \\
+    Gate & Seen & Unseen & H \\
     \midrule
-    GR-ConvNet + CLIP & None & 0.331 & 0.392 & 0.358 \\
-    GR-ConvNet + CLIP & Grounding DINO & 0.381 & 0.443 & 0.410 \\
-    GR-ConvNet + CLIP & Ground-truth mask & 0.468 & 0.518 & 0.492 \\
+    \multicolumn{4}{@{}l}{\textit{GR-ConvNet + CLIP (our implementation)}} \\
+    None & 0.331 & 0.392 & 0.358 \\
+    Grounding DINO & 0.381 & 0.443 & 0.410 \\
+    Ground-truth mask & 0.468 & 0.518 & 0.492 \\
     \midrule
-    RTC-Grasp & None & 0.365 & 0.403 & 0.383 \\
-    RTC-Grasp & Grounding DINO & 0.432 & 0.464 & 0.447 \\
-    RTC-Grasp & Ground-truth mask & \textbf{0.543} & \textbf{0.565} & \textbf{0.554} \\
+    \multicolumn{4}{@{}l}{\textit{RTC-Grasp (ours)}} \\
+    None & 0.365 & 0.403 & 0.383 \\
+    Grounding DINO & 0.432 & 0.464 & 0.447 \\
+    Ground-truth mask & \textbf{0.543} & \textbf{0.565} & \textbf{0.554} \\
     \bottomrule
   \end{tabular}
   \caption{Success rates with inference restricted to a region.}

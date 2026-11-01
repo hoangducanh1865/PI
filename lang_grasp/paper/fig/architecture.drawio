@@ -5,7 +5,7 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="trainbox" parent="1" style="rounded=1;arcSize=6;dashed=1;dashPattern=6 4;fillColor=#FDF2F2;strokeColor=#B85450;strokeWidth=1.5;verticalAlign=bottom;align=right;spacingRight=10;spacingBottom=4;fontStyle=2;fontSize=13;fontColor=#B85450;" value="Training only" vertex="1">
-          <mxGeometry height="200" width="770" x="300" y="250" as="geometry" />
+          <mxGeometry height="160" width="770" x="300" y="260" as="geometry" />
         </mxCell>
         <mxCell id="img" parent="1" style="shape=mxgraph.basic.layered_rect;dx=8;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=14;" value="RGB image&lt;br&gt;\(224 \times 224\)" vertex="1">
           <mxGeometry height="80" width="130" x="30" y="60" as="geometry" />
@@ -50,7 +50,7 @@
           <mxGeometry height="50" width="125" x="845" y="310" as="geometry" />
         </mxCell>
         <mxCell id="total" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=15;" value="\(\mathcal{L} = \mathcal{L}_{\mathrm{grasp}} + \lambda\,\mathcal{L}_{\mathrm{con}}\)" vertex="1">
-          <mxGeometry height="40" width="200" x="830" y="385" as="geometry" />
+          <mxGeometry height="40" width="200" x="830" y="360" as="geometry" />
         </mxCell>
         <mxCell id="e1" edge="1" parent="1" source="img" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#82B366;" target="enc">
           <mxGeometry relative="1" as="geometry" />
