@@ -34,7 +34,7 @@ Its default training data are drawn from the Seen test objects, so for a fair co
     GR-ConvNet + CLIP$^\ddagger$~\cite{vuong2024language} & name & - & 0.18 & - \\
     \midrule
     GR-ConvNet + CLIP & instr. & .331$\pm$.019 & .392$\pm$.017 & .358 \\
-    + region-text contrastive & instr. & \textbf{.365}$\pm$.006 & \textbf{.403}$\pm$.032 & \textbf{.383} \\
+    RTC-Grasp (ours) & instr. & \textbf{.365}$\pm$.006 & \textbf{.403}$\pm$.032 & \textbf{.383} \\
     \bottomrule
   \end{tabular}
   \caption{Success rates on Grasp-Anything++. $^\dagger$Reported. $^\ddagger$Reproduced with authors' code; $^\S$168 Unseen prompts. Bottom rows: ours, 3 seeds.}
@@ -51,12 +51,12 @@ Its default training data are drawn from the Seen test objects, so for a fair co
     Method & Gate & Seen & Unseen & H \\
     \midrule
     GR-ConvNet + CLIP & None & 0.331 & 0.392 & 0.358 \\
-    GR-ConvNet + CLIP & Grounding DINO box & 0.381 & 0.443 & 0.410 \\
+    GR-ConvNet + CLIP & Grounding DINO & 0.381 & 0.443 & 0.410 \\
     GR-ConvNet + CLIP & Ground-truth mask & 0.468 & 0.518 & 0.492 \\
     \midrule
-    + region-text contrastive & None & 0.365 & 0.403 & 0.383 \\
-    + region-text contrastive & Grounding DINO box & 0.432 & 0.464 & 0.447 \\
-    + region-text contrastive & Ground-truth mask & \textbf{0.543} & \textbf{0.565} & \textbf{0.554} \\
+    RTC-Grasp & None & 0.365 & 0.403 & 0.383 \\
+    RTC-Grasp & Grounding DINO & 0.432 & 0.464 & 0.447 \\
+    RTC-Grasp & Ground-truth mask & \textbf{0.543} & \textbf{0.565} & \textbf{0.554} \\
     \bottomrule
   \end{tabular}
   \caption{Success rates with inference restricted to a region.}

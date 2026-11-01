@@ -11,7 +11,7 @@ Its smooth L1 loss supervises only the output grasp maps, so it tells the model 
 % "Its loss says where to grasp": Add evidence for this claim, also "says" -> "tells the model"
 % "tells its encoder, trained from scratch," -> "tells the model"
 
-Our main contributions are: (1) a training-time region-text contrastive loss that aligns object regions with the prompt, using the other objects and the background as negatives, and (2) an inference region-filtering analysis using Grounding DINO~\cite{liu2024grounding} boxes and ground-truth masks to measure how much grounding limits grasp success.
+Our main contributions are: (1) RTC-Grasp, a training-time region-text contrastive loss that aligns object regions with the prompt, using the other objects and the background as negatives, and (2) an inference region-filtering analysis using Grounding DINO~\cite{liu2024grounding} boxes and ground-truth masks to measure how much grounding limits grasp success.
 % "We contribute" -> "Our main contributions are: "
 % "training-only": Remove this if it is unnecessary
 % "with the other objects of the scene" -> "with the other objects or the backgroudn of the scene"
