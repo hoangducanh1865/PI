@@ -5,8 +5,8 @@
 #      evaluate.py --seen 1 and --seen 0 on its best saved model (highest validation IoU in the file name)
 # No line of their code is changed. In that code the training set (90%) and the Seen test are both drawn from
 # split/grasp-anything++/test/seen.obj; the Unseen test (test/unseen.obj) is never trained on, so only Unseen is
-# compared (user, 2026-10-31). Prerequisites in $W (task notes, 2026-10-31): LGD clone, ckpt_download (README link),
-# raw/ (airvlab Hugging Face files), venv (Python 3.9, torch 1.12.1+cu113, packages of their requirements.txt).
+# compared. Prerequisites in $W: scripts/lgd_setup.sh. The LGD evaluation takes about 74 s per sample on an A100;
+# scripts/lgd_shard.py splits it over several processes.
 # Usage: (setsid nohup bash scripts/lgd_official.sh > <log> 2>&1 < /dev/null &)
 # Author: Duc Anh Hoang
 set -x

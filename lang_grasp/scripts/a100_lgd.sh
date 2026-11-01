@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# A100 job (agents/a100_guide.md): official LGD split, 3 seeds of the baseline and of the proposed loss, Grounding DINO
+# Colab A100 job: official LGD split, 3 seeds of the baseline and of the proposed loss, Grounding DINO
 # boxes, then every model evaluated without gate, with the oracle gate and with the detector gate.
 # Run detached on the Colab A100 from the repo's lang_grasp/ folder on Drive:
 #   (setsid nohup bash scripts/a100_lgd.sh > <OUT>/logs/job.log 2>&1 < /dev/null &)
