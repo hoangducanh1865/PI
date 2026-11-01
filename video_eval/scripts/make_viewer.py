@@ -3,10 +3,11 @@ Offline results viewer for the submission: one HTML page that plays the real and
 side by side, in sync, with that clip's scores (appearance, 2-D track, EVID cycle error and executability).
 
 Usage (from video_eval/; after the eval scripts and scripts/executability.py have written their CSV files):
-    python scripts/make_viewer.py --gen <GEN_DIR> --out <OUT_DIR>
+    python scripts/make_viewer.py --gen <GEN_DIR> --out <OUT_DIR> [--paper paper/main.pdf]
 
 Uses the clips that every shown model generated (the 24 core clips). Copies the videos to <OUT_DIR>/videos/ and writes
-<OUT_DIR>/index.html with the scores embedded, so the folder works without a server or a network.
+<OUT_DIR>/index.html with the scores embedded, so the folder works without a server or a network; it is also the
+project page (GitHub Pages, branch gh-pages).
 
 Author: Duc Anh Hoang
 """
@@ -37,12 +38,18 @@ SCORES = [  # file, column, label, digits
 
 PAGE = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EVID results viewer</title>
+<title>EVID</title>
 <style>
 body { margin: 0; padding: 24px 16px; background: #fff; color: #111; font: 15px/1.5 -apple-system, Helvetica, Arial,
   sans-serif; }
 main { max-width: 1680px; margin: 0 auto; }
-h1 { font-size: 22px; margin: 0 0 4px; }
+h1 { font-size: 26px; margin: 0 0 6px; text-align: center; }
+h2 { font-size: 19px; margin: 28px 0 6px; }
+.author { text-align: center; margin: 0 0 12px; font-size: 17px; }
+.links { text-align: center; margin: 0 0 18px; }
+.links a { display: inline-block; margin: 0 6px; padding: 6px 16px; border-radius: 18px; background: #111; color: #fff;
+  text-decoration: none; }
+.abstract { max-width: 900px; margin: 0 auto 8px; }
 p.lead { margin: 0 0 16px; color: #444; }
 .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 12px; }
 select, button { font: inherit; padding: 4px 10px; border: 1px solid #999; border-radius: 4px; background: #fff; }
@@ -58,7 +65,14 @@ th { background: #f2f2f2; }
 .note { color: #555; font-size: 13px; margin-top: 10px; max-width: 900px; }
 .scroll { overflow-x: auto; }
 </style></head><body><main>
-<h1>EVID results viewer</h1>
+<h1>EVID: Reference-free Evaluation of Action Fidelity in Videos from Robot World Models via Inverse Dynamics</h1>
+<p class="author">Duc Anh Hoang</p>
+<p class="links"><a href="report.pdf">Paper</a><a href="https://github.com/hoangducanh1865/PI/tree/main/video_eval">Code</a>
+</p>
+<p class="abstract">Video world models are compared mostly by how their frames look. EVID reads the end-effector
+trajectory back from a generated video with an inverse dynamics model and measures how far it deviates from the
+commanded actions, and whether a real WidowX 250 arm could execute it, without any real video.</p>
+<h2>Results viewer</h2>
 <p class="lead">Bridge clips generated from the same first frame and actions. Arrows give the better direction.
 EVID cycle error: distance between the end-effector path read back from the video by the Cosmos3-Nano inverse dynamics
 model and the commanded path; it needs no real video.</p>
@@ -73,7 +87,7 @@ model and the commanded path; it needs no real video.</p>
 <div class="scroll"><table id="scores"></table></div>
 <p class="note">Executable: every pose read back has a WidowX 250 inverse-kinematics solution within the joint limits
 and every step stays under the velocity limit (1 = yes). The real video row is the reader's own error (its floor); the
-still first frame is the floor of motion. Code: github.com/hoangducanh1865/PI/tree/main/video_eval.</p>
+still first frame is the floor of motion.</p>
 </main>
 <script>
 const DATA = __DATA__;
@@ -128,6 +142,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--gen", required=True)
     parser.add_argument("--out", required=True)
+    parser.add_argument("--paper", help="PDF of the report, copied as <OUT_DIR>/report.pdf")
     args = parser.parse_args()
 
     clips = sorted(
@@ -149,6 +164,8 @@ def main() -> None:
         for m, _ in MODELS:
             os.makedirs(os.path.join(args.out, "videos", m), exist_ok=True)
             shutil.copy(os.path.join(args.gen, m, f"{clip}.mp4"), os.path.join(args.out, "videos", m, f"{clip}.mp4"))
+    if args.paper:
+        shutil.copy(args.paper, os.path.join(args.out, "report.pdf"))
     with open(os.path.join(args.out, "index.html"), "w") as f:
         f.write(PAGE.replace("__DATA__", json.dumps(data)))
     print(f"wrote {args.out}/index.html: {len(clips)} clips, {len(MODELS)} videos each")
