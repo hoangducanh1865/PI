@@ -133,6 +133,7 @@ The arm motion shown by these models is therefore almost always executable, and 
 \paragraph{Action input matters.}
 On the 24 core clips, Cosmos-Predict2.5 base, given the first frame and the instruction but no actions, produces smooth videos, with a DINOv2 adjacent-frame similarity of 0.916 against 0.953 for real clips, whose robot does not follow the recorded motion: its cycle error of 10.30\,cm does not differ from the still video at 9.52\,cm ($p=0.32$), against 1.74\,cm for the same backbone with actions ($p=10^{-7}$).
 Its PSNR of 13.5\,dB is also far below every action-conditioned model, partly because of resampling its 49 frames at 16\,fps to our format.
+On the clip ``move the toy and put it in the vessel'' it even replaces the WidowX with a different, white robot arm, a failure of embodiment that the commanded actions prevent.
 
 \paragraph{Temporal consistency and judges.}
 On the 24 core clips, DINOv2 adjacent-frame similarity is 0.953 for real clips and 0.924 to 0.938 for the latent models, while the still video scores 1.000, so these metrics measure stability rather than correct motion.
