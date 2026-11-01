@@ -1,23 +1,28 @@
 # Physical AI research code
 
-Code written for the Physical AI programme of QACI (FPT Frontier Innovators 2026): two assignments, each in its own
-folder, and one research direction that grows out of the second.
+Code for the Physical AI programme of QACI (FPT Frontier Innovators 2026). Each project is a self-contained folder with
+its own README, requirements and scripts; commands run from inside it (`cd <folder>`).
 
-| Folder | Work | Status |
-|---|---|---|
-| [`lang_grasp/`](lang_grasp/) | Assignment 1 (Prof. Anh Nguyen): language-driven grasp detection on Grasp-Anything++; region-text contrastive grounding over a reproduced GR-ConvNet + CLIP baseline | done: code and 2-page paper |
-| [`video_eval/`](video_eval/) | Assignment 2 (Dr. Ngan Le): evaluating generated videos for robot trajectories; reproduces IRASim and the baselines released with it on Bridge, and scores them with real-video references | in progress |
-| [`sim2real_worldmodel/`](sim2real_worldmodel/) | Research direction: does synthetic robot data (simulator or world model) move like human demonstrations? | early: simulator benchmark, MimicGen trajectories |
+| Folder | Project |
+|---|---|
+| [`lang_grasp/`](lang_grasp/) | **RTC-Grasp**: region-text contrastive grounding for language-driven grasp detection on Grasp-Anything++ (code and paper) |
+| [`video_eval/`](video_eval/) | Evaluating generated robot videos: IRASim and Cosmos-Predict scored against real-video references (in progress) |
+| [`sim2real_worldmodel/`](sim2real_worldmodel/) | Does synthetic robot data (simulator or world model) move like human demonstrations? (early stage) |
 
-Each folder has its own README, `requirements.txt` and scripts, and its commands run from inside it (`cd <folder>`).
-`lang_grasp/` follows [lightning-hydra-template](https://github.com/ashleve/lightning-hydra-template) (configs, `src/`,
-tests); the other two are script-based so far.
+Shared by every project:
 
-Shared by every folder: `scripts/` (run commands on Kaggle and Colab from a local terminal; `data_sync.py` moves the
-working data between machines through a private Hugging Face repo), `terminal_commands.md`
-(every command, per platform and per folder) and `pyproject.toml` (lint settings). Data never goes into the repo: each
-platform has `<BASE>/code/<repo>/` for the code and `<BASE>/data/` for the data, with the datasets in `data/datasets/`
-and one folder per task (`data/<task>/`) for everything a task writes.
+| Path | Content |
+|---|---|
+| `scripts/kaggle_run.py` | run one command on a Kaggle GPU as a batch kernel, from a local terminal |
+| `scripts/kaggle_shell.py` | run commands in an open Kaggle notebook session through its Jupyter server URL |
+| `scripts/colab_ssh.sh`, `notebooks/colab.ipynb` | SSH into a Colab runtime (paid plans) |
+| `scripts/data_sync.py` | move the working data between machines through a private Hugging Face dataset |
+| `terminal_commands.md` | every command, per platform and per project |
+| `pyproject.toml` | lint settings (`ruff`) |
+
+Data never goes into the repository: each platform has `<BASE>/code/` for the code and `<BASE>/data/` for datasets and
+outputs, and each project reads its paths from `configs/paths/<platform>.yaml`. Secrets go in `.env` (see
+`.env.example`), which is ignored by git.
 
 ## Author
 

@@ -1,124 +1,131 @@
-# Region-Text Contrastive Grounding for Language-driven Grasp Detection
+# RTC-Grasp: Region-Text Contrastive Grounding for Language-driven Grasping
 
-Given an RGB image and a text prompt such as "Lift the hairbrush by its handle.", predict one 2D grasp rectangle
-(x, y, w, h, θ) for a two-finger gripper. Dataset: [Grasp-Anything++](https://airvlab.github.io/grasp-anything/)
-(Vuong et al., CVPR 2024).
+Language-driven grasp detection on [Grasp-Anything++](https://airvlab.github.io/grasp-anything/): given an RGB image
+and a prompt such as "Lift the hairbrush by its handle.", predict a 2D grasp rectangle (x, y, w, h, θ).
 
-This folder contains:
+The most common failure of the GR-ConvNet + CLIP baseline is a grasp on the wrong object. RTC-Grasp adds a
+region-text contrastive loss during training: the encoder features pooled over the prompted object's mask must match
+the prompt's CLIP embedding better than the other objects of the scene and the background. Masks are used in training
+only; the network at inference is the baseline's.
 
-1. a reproduction of the **GR-ConvNet + CLIP** baseline of Grasp-Anything++ (frozen CLIP text encoder, one ALBEF-style
-   cross-attention layer);
-2. a **failure analysis** of that baseline: an automatic sort of every failure plus two vision-language judges on 1,000
-   failures, which shows that most failures grasp another object than the prompted one;
-3. the proposed **region-text contrastive grounding loss**: during training, the encoder features of the prompted object
-   (pooled over its mask) must match the CLIP embedding of the prompt better than the other objects of the same scene
-   and the background. The loss is used in training only; the network at inference is the baseline's.
+![RTC-Grasp](paper/fig/architecture.drawio.png)
+
+## Table of contents
+
+1. [Results](#results)
+2. [Installation](#installation)
+3. [Dataset](#dataset)
+4. [Training](#training)
+5. [Evaluation](#evaluation)
+6. [Reproducing the official baselines](#reproducing-the-official-baselines)
+7. [Project structure](#project-structure)
+8. [Acknowledgement](#acknowledgement)
 
 ## Results
 
-Official split of the LGD code (`split/grasp-anything++` of [Fsoft-AIC/LGD](https://github.com/Fsoft-AIC/LGD)):
-10,130 training, 515 Seen and 212 Unseen test objects with released labels (28.6k / 1,376 / 601 prompts). Settings of
-the authors' scripts: Adam, learning rate 1e-3, batch 8, 50 epochs of 1,000 batches, model chosen on the Seen test;
-success = IoU > 25% and angle error < 30° with a ground-truth grasp (predicted opening scaled by 150, as their
-`inference/post_process.py`); H = harmonic mean of Seen and Unseen. Mean ± std over seeds 123, 124, 125.
+Success rate (IoU > 25% and angle error < 30°) on the Grasp-Anything++ split of the official LGD code; H is the
+harmonic mean of Seen and Unseen. Mean ± std over seeds 123, 124, 125.
 
-| Model | Text | Seen | Unseen | H |
-|---|---|---|---|---|
-| GR-ConvNet + CLIP, official code re-run ‡ | object name | (0.33 *) | 0.18 | - |
-| LGD, released model, official code ‡ | object name | - | 0.29 ± 0.03 (168 random prompts) | - |
-| GR-ConvNet + CLIP, ours (ALBEF fusion) | instruction | 0.331 ± 0.019 | 0.392 ± 0.017 | 0.358 |
-| **+ region-text contrastive (λ = 0.01)** | instruction | **0.365 ± 0.006** | **0.403 ± 0.032** | **0.383** |
+| Method | Seen | Unseen | H |
+|---|---|---|---|
+| GR-ConvNet + CLIP (our implementation) | 0.331 ± 0.019 | 0.392 ± 0.017 | 0.358 |
+| RTC-Grasp (λ = 0.01) | **0.365 ± 0.006** | **0.403 ± 0.032** | **0.383** |
 
-‡ Run with the authors' code and README commands, unchanged. * Their training script and Seen evaluation both read
-`split/grasp-anything++/test/seen.obj`, so only Unseen is comparable. Published numbers: GR-ConvNet + CLIP 0.37 / 0.18,
-LGD 0.48 / 0.42.
+With the grasp restricted at inference to a Grounding DINO box or to the ground-truth mask of the prompted object,
+Unseen success rises to 0.464 and 0.565 for RTC-Grasp (0.443 and 0.518 for the baseline). Re-run with the authors' code,
+GR-ConvNet + CLIP reaches 0.18 on Unseen (0.18 reported) and the released LGD model 0.29 on 168 random Unseen prompts.
+Details are in the paper (`paper/`).
 
-- The H gain (+2.5) is positive in every seed. Paired per prompt over the 3 seeds: Seen +3.5 points (sign test
-  p = 1e-6); official Unseen +1.1 (p = 0.32, only 601 prompts); all 13,464 labelled Unseen prompts of the
-  Grasp-Anything list +0.9 (p = 5e-5).
-- Weight sensitivity: λ = 0.03 gives H 0.375 ± 0.054; λ = 0.1 collapses in one seed (the contrastive term stops the
-  quality map from forming with batch 8).
-- Grounding gates (mean of 3 seeds, Unseen): the grasp restricted to the prompted object's ground-truth mask (oracle)
-  reaches 0.518 (baseline) and 0.565 (ours); restricted to a Grounding DINO box, 0.443 and 0.464.
-
-Protocol details of the released LGD code, checked at commit 0223d43: its evaluation feeds the object name, not the
-Grasp-Anything++ instruction; its GR-ConvNet + CLIP detaches the image features before adding the text.
-
-Checkpoints, per-prompt predictions and logs of these runs are kept in a private Hugging Face dataset (available on
-request); the runs of the earlier version below are in the Kaggle Dataset
-[hoangducanh1865/fpt-entrance-test-runs](https://www.kaggle.com/datasets/hoangducanh1865/fpt-entrance-test-runs).
-
-An earlier version of this work (our own split of the Grasp-Anything lists, 2 x T4) analysed the baseline's failures
-with two vision-language judges: about half of them grasp another object than the prompted one, which motivated the
-loss (`scripts/analyze_errors.py`, `scripts/judge_failures.py`).
-
-## Layout
-
-The code follows [lightning-hydra-template](https://github.com/ashleve/lightning-hydra-template) and runs unchanged on a
-local machine, Google Colab and Kaggle (the platform is detected; per-platform paths are in `configs/paths/`).
-
-| Path | Content |
-|---|---|
-| `configs/` | [Hydra](https://hydra.cc) configs: `train.yaml`, `eval.yaml`; `experiment/` one file per run (only what differs); `paths/` one file per platform |
-| `src/train.py`, `src/eval.py` | training and evaluation entry points |
-| `src/data/grasp_anything.py` | dataset and Lightning DataModule (packed HDF5, cached CLIP text features, region masks) |
-| `src/models/grconvnet.py` | GR-ConvNet with the ALBEF-style text fusion |
-| `src/models/region_text_contrast.py` | **the proposed loss** |
-| `src/models/grasp_module.py` | LightningModule: grasp loss + weighted contrastive loss |
-| `src/utils/grasp.py` | grasp maps, decoding, success metric |
-| `scripts/prepare_data.py`, `resplit_lgd.py`, `cache_text_emb.py` | pack Grasp-Anything++ into HDF5, re-split into the official LGD split, cache CLIP text features |
-| `scripts/detect_boxes.py` | Grounding DINO boxes for the detector gate |
-| `scripts/analyze_errors.py`, `judge_failures.py` | failure analysis and VLM judging |
-| `scripts/lgd_extract.py`, `lgd_official.sh`, `lgd_shard.py` | the official LGD code re-run (data layout, commands, sharded evaluation) |
-| `scripts/a100_lgd.sh`, `kaggle_pair.sh` | the jobs of the 3-seed runs (Colab A100, Kaggle 2 x T4) |
-| `tests/` | unit tests (`pytest`) |
-| `paper/` | LaTeX source of the paper (CVPR 2026 template) |
-| `../scripts/`, `../terminal_commands.md` | remote runs on Kaggle and Colab (shared by every task of the repo); every command, per platform |
-
-## Usage
-
-Every command runs from this folder (`cd lang_grasp`).
+## Installation
 
 ```bash
-pip install -r requirements.txt     # plus torch and torchvision for your platform
-pytest -q
-
-# 1. Data: download airvlab/Grasp-Anything and airvlab/Grasp-Anything-pp from Hugging Face into <DATA>/datasets/raw
-python scripts/prepare_data.py --raw <DATA>/datasets/raw --out <DATA>/datasets/processed/Grasp-Anything-pp
-python scripts/resplit_lgd.py --src <DATA>/datasets/processed/Grasp-Anything-pp --out <LGD>   # official split
-python scripts/cache_text_emb.py --processed <LGD>
-
-# 2. Train (baseline, then ours) and evaluate the best checkpoint
-python src/train.py experiment=grconvnet_clip seed=123 paths.data_dir=<LGD>
-python src/train.py experiment=grconvnet_clip_contrast model.contrast_weight=0.01 seed=123 paths.data_dir=<LGD>
-python src/eval.py ckpt_path=<RUN>/checkpoints/<BEST>.ckpt paths.data_dir=<LGD> "splits=[test_seen,test_unseen,test_unseen_all]"
-
-# 3. Grounding gates
-python scripts/detect_boxes.py --data <LGD> --out <BOXES>
-python src/eval.py ckpt_path=<CKPT> paths.data_dir=<LGD> gate=oracle
-python src/eval.py ckpt_path=<CKPT> paths.data_dir=<LGD> gate=detector boxes=<BOXES>
-
-# 4. Failure analysis of an evaluation, then the VLM judges (any OpenAI-compatible endpoint)
-python scripts/analyze_errors.py --eval <EVAL_RUN> --data <LGD> --out <OUT> \
-    --export "background=500,wrong_object=250,wrong_geometry=250"
-python scripts/judge_failures.py --dir <OUT>/export --model <MODEL> --base-url <URL>
+git clone https://github.com/hoangducanh1865/PI.git && cd PI/lang_grasp
+pip install torch torchvision          # any recent version for your CUDA
+pip install -r requirements.txt
+pytest                                 # unit tests, CPU, under a minute
 ```
 
-The official LGD code is re-run with `scripts/lgd_official.sh` (see its header for the setup: their repository at
-commit 0223d43, the released checkpoint from their README, the official Hugging Face data, Python 3.9 and torch 1.12).
+## Dataset
 
-## Reused code
+Download `airvlab/Grasp-Anything` and `airvlab/Grasp-Anything-pp` from Hugging Face into `<RAW>`, then pack them into
+HDF5, re-split them into the official LGD split and cache the CLIP text features:
 
-- GR-ConvNet network (`src/models/grconvnet.py`) and the grasp maps, decoding and metric (`src/utils/grasp.py`) are
-  adapted from the Grasp-Anything authors' code, [Fsoft-AIC/Grasp-Anything](https://github.com/Fsoft-AIC/Grasp-Anything)
-  (MIT licence), itself based on GR-ConvNet (Kumra et al., IROS 2020). Each file header says what was taken and what
-  changed.
-- The CLIP text encoder is `openai/clip-vit-base-patch32` from Hugging Face Transformers.
-- The official LGD code ([Fsoft-AIC/LGD](https://github.com/Fsoft-AIC/LGD)) is only run, never copied into this
-  repository; `scripts/lgd_shard.py` wraps its evaluation script without changing it.
-- Grounding DINO (`IDEA-Research/grounding-dino-base`) from Hugging Face Transformers, for the detector gate only.
-- Everything else, including the proposed loss (`src/models/region_text_contrast.py`), the data packing and the
-  failure analysis, is new.
+```bash
+python scripts/prepare_data.py --raw <RAW> --out <PROCESSED>
+python scripts/resplit_lgd.py --src <PROCESSED> --out <DATA>     # 10,130 train / 515 Seen / 212 Unseen objects
+python scripts/cache_text_emb.py --processed <DATA>
+```
+
+## Training
+
+Configs use [Hydra](https://hydra.cc): `configs/train.yaml` holds the defaults (the authors' settings: Adam, learning
+rate 1e-3, batch 8, 50 epochs of 1,000 batches) and `configs/experiment/` one file per model.
+
+```bash
+python src/train.py experiment=grconvnet_clip seed=123 paths.data_dir=<DATA>            # baseline
+python src/train.py experiment=grconvnet_clip_contrast seed=123 paths.data_dir=<DATA>   # RTC-Grasp
+```
+
+Any value can be overridden on the command line (e.g. `model.contrast_weight=0.03`). A run writes its config,
+`metrics.csv` and checkpoints (best by Seen success, and `last.ckpt` to resume with `ckpt_path=`) to
+`<log_dir>/<experiment>/<date>_<time>/`.
+
+## Evaluation
+
+```bash
+python src/eval.py ckpt_path=<CKPT> paths.data_dir=<DATA>                        # Seen, Unseen, H
+python src/eval.py ckpt_path=<CKPT> paths.data_dir=<DATA> gate=oracle            # grasp inside the ground-truth mask
+python scripts/detect_boxes.py --data <DATA> --out <BOXES>                       # Grounding DINO boxes
+python src/eval.py ckpt_path=<CKPT> paths.data_dir=<DATA> gate=detector boxes=<BOXES>
+```
+
+Each evaluation writes `results.json` and per-prompt predictions. The failure analysis of the paper's introduction is
+`scripts/analyze_errors.py` (automatic sorting) followed by `scripts/judge_failures.py` (two vision-language judges
+through any OpenAI-compatible endpoint).
+
+## Reproducing the official baselines
+
+The official LGD code ([Fsoft-AIC/LGD](https://github.com/Fsoft-AIC/LGD), commit 0223d43) is run unchanged:
+
+```bash
+bash scripts/lgd_setup.sh      # their code, released checkpoint, official data, Python 3.9 + torch 1.12 environment
+bash scripts/lgd_official.sh   # released LGD model and their GR-ConvNet + CLIP, with their README commands
+```
+
+`scripts/lgd_shard.py` splits the LGD evaluation (about 74 s per sample on an A100) over several processes without
+changing it. In that code, training data is drawn from the Seen test objects, so its models are compared on Unseen only.
+
+## Project structure
+
+The layout follows [lightning-hydra-template](https://github.com/ashleve/lightning-hydra-template).
+
+```
+configs/                 Hydra configs: train.yaml, eval.yaml, experiment/ (one per model), paths/ (one per platform)
+src/
+  train.py, eval.py      entry points
+  data/grasp_anything.py dataset and data module (packed HDF5, cached CLIP features, region masks)
+  models/
+    grconvnet.py         GR-ConvNet with ALBEF cross-attention fusion of the CLIP text tokens
+    region_text_contrast.py   the proposed loss
+    grasp_module.py      LightningModule: grasp loss + λ x contrastive loss
+  utils/grasp.py         grasp maps, decoding, success metric
+  utils/platform.py      picks configs/paths/<local|colab|kaggle>.yaml
+scripts/                 data preparation, Grounding DINO boxes, failure analysis, official LGD re-run, cloud jobs
+tests/                   unit tests
+paper/                   LaTeX source of the paper (CVPR template)
+```
+
+The same commands run on a local machine, Google Colab and Kaggle: the platform is detected and its paths are read
+from `configs/paths/`. The tools to run jobs on Colab and Kaggle from a terminal are in `../scripts/` (see
+`../terminal_commands.md`).
+
+## Acknowledgement
+
+The GR-ConvNet network and the grasp maps, decoding and metric are adapted from
+[Fsoft-AIC/Grasp-Anything](https://github.com/Fsoft-AIC/Grasp-Anything) (MIT licence), itself based on
+[GR-ConvNet](https://github.com/skumra/robotic-grasping); each file header says what was changed. The text encoder is
+CLIP ViT-B/32 and the detector Grounding DINO, both from Hugging Face Transformers. The proposed loss, data packing,
+evaluation gates and failure analysis are new.
 
 ## Author
 
