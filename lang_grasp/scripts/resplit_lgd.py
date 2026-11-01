@@ -8,8 +8,8 @@ Usage (any platform, CPU, a few minutes):
 
 The LGD repository (github.com/Fsoft-AIC/LGD, the code of the Grasp-Anything++ paper) lists the objects of its split in
 split/grasp-anything++/{train/seen,test/seen,test/unseen}.obj (14,516 / 573 / 230 objects; pickled lists of
-"<image>_<object>"). Every one of them that has Grasp-Anything++ labels is already in <PROCESSED_DIR> (checked on
-2026-10-27: 10,130 + 515 + 212 objects), so the new split is made from the packed files, without the raw data.
+"<image>_<object>"). Every one of them that has Grasp-Anything++ labels is already in <PROCESSED_DIR>
+(10,130 + 515 + 212 objects), so the new split is made from the packed files, without the raw data.
 Output in <OUT_DIR>, same format as prepare_data.py:
     train.h5             official train objects
     test_seen.h5         official Seen test objects

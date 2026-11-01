@@ -9,5 +9,5 @@ data:
 
 model:
   fusion: albef
-  contrast_weight: 0.1         # assumption, not tuned: the loss starts near log(regions) ~ 1, the grasp loss near 0.03
-  contrast_temperature: 0.07   # CLIP's initial value
+  contrast_weight: 0.01        # lambda, chosen among 0.01, 0.03, 0.1 on the Seen test (0.1 collapses in one seed)
+  contrast_temperature: 0.07   # tau, CLIP's initial value

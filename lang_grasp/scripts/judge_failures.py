@@ -3,8 +3,8 @@ Ask a vision-language model, through an OpenAI-compatible endpoint, where each e
 
 Usage (on the Mac or wherever the endpoint is reachable; the images come from analyze_errors.py --export):
     python scripts/judge_failures.py --dir <EXPORT_DIR> --model <MODEL> [--base-url URL] [--key-env NAME] [--workers 8]
-    e.g. python scripts/judge_failures.py --dir export --model ag/gemini-3.8-flash-medium \\
-             --base-url http://localhost:20128/v1 --key-env GEMINI_API_KEY
+    e.g. python scripts/judge_failures.py --dir export --model <MODEL> --base-url <OPENAI_COMPATIBLE_URL> \\
+             --key-env <API_KEY_VARIABLE>
 
 Each image shows a scene with one predicted grasp rectangle and its centre in yellow; the judge gets the image and the
 prompt and answers in JSON: the object the prompt asks for, the object under the yellow centre (or "none"), whether it

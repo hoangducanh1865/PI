@@ -4,7 +4,7 @@ Find the platform the code runs on (local, colab or kaggle), to pick configs/pat
 "local" is the Mac or the PC. The PLATFORM environment variable overrides the detection. Kaggle's image is built on
 Colab's (it also has /content, google.colab and COLAB_* variables, and Colab has /kaggle/input), so the one reliable
 sign of Kaggle is its own KAGGLE_KERNEL_RUN_TYPE variable (set in every Kaggle kernel and its subprocesses, never on
-Colab); Colab is then recognised by its google.colab package, which also works in an SSH shell (seen on 2026-10-26).
+Colab); Colab is then recognised by its google.colab package, which also works in an SSH shell.
 
 Author: Duc Anh Hoang
 """

@@ -11,7 +11,7 @@ inference/post_process.py, MIT licence) for (x, y, w, h, theta) arrays, with the
     success  IoU > 25% with any ground-truth grasp whose angle differs by less than 30 degrees
 Width scale as in the authors' code: the dataset divides the opening by 112 (output_size / 2, WIDTH_SCALE) and the
 evaluation multiplies the predicted width map by 150 (inference/post_process.py of github.com/Fsoft-AIC/LGD at
-0223d43, EVAL_WIDTH_SCALE); decode uses the latter by default (user, 2026-10-31: follow the official evaluation).
+0223d43, EVAL_WIDTH_SCALE); decode uses the latter by default, as the official evaluation.
 
 Author: Duc Anh Hoang
 """

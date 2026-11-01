@@ -101,7 +101,7 @@ class GraspAnything(Dataset):
 
 
 class GraspAnythingData(L.LightningDataModule):
-    """Train on train.h5, validate on test_seen.h5 (the authors keep the last 10% of the Seen objects for this)."""
+    """Train on train.h5, validate on test_seen.h5 (the best checkpoint is chosen on it, as in the authors' code)."""
 
     def __init__(self, dir, text_model=None, batch_size=8, num_workers=2, regions=False):
         super().__init__()

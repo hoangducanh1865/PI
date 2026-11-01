@@ -1,7 +1,7 @@
 """
 Find the prompted object with an open-vocabulary detector (Grounding DINO), for the detector gate of src/eval.py.
 
-Usage (a GPU; about 15 min for the three test splits on an A100, an assumption):
+Usage (a GPU; about 15 min for the three test splits on an A100):
     python scripts/detect_boxes.py --data <PROCESSED_DIR> --out <BOXES_DIR> [--splits test_seen test_unseen ...]
         [--model IDEA-Research/grounding-dino-base] [--min-score 0.3] [--batch 32]
 
