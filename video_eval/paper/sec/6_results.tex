@@ -112,6 +112,18 @@ Its per-clip score correlates with LPIPS at $\rho=0.52$, but the part exceeding 
 On the 24 core clips it ranks the models in the same order as the reference-based scores: Frame-Ada 1.86 to 2.12\,cm over six seeds, Video-Ada 2.09 and 2.13 over two seeds, LVDM 2.15 and 2.53, and VDM 10.68.
 \Cref{fig:paths} shows one clip: the paths read from the real video and from both action-conditioned models stay within about 2\,cm of the commanded one, while the model without actions moves the arm elsewhere.
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\linewidth]{fig/agreement.pdf}
+  \caption{Spearman correlation between metrics over the 502 generated Bridge clips scored by every metric, each oriented so that higher is better.}
+  \label{fig:agreement}
+\end{figure}
+
+\paragraph{Metric agreement.}
+Over the 502 generated clips scored by every metric (\cref{fig:agreement}), the appearance metrics PSNR, SSIM, LPIPS, and the warp error form one tight group, with Spearman correlations of 0.84 to 0.95, which the trajectory metrics join only moderately, at 0.45 to 0.64.
+The cycle error of \ours{}, computed without the real video, correlates as much with the 2-D track, 0.54 and 0.56, as with the appearance metrics, 0.48 to 0.59.
+All correlations are positive partly because a hard clip is hard for every metric; the perturbation test (\cref{tab:perturb}) shows where the two groups disagree.
+
 \paragraph{Executability.}
 The check passes 104 of the 105 recorded Bridge trajectories; the one rejected brings the forearm roll joint to its limit of $\pm\pi$, so about 1\% of clips are false alarms.
 On the motion read from the videos, 99.0\% of clips are executable for the real videos and for every action-conditioned model, the one failure being the same clip in all of them, where the inverse dynamics model reads poses out of the arm's reach even from the real video; Cosmos-Predict2.5 without actions passes 23 of 24 clips, and the static video passes all of them.
