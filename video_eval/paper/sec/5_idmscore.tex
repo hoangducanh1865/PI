@@ -1,0 +1,30 @@
+\section{IDM-Score: a reference-free 3-D action score}
+\label{sec:improve}
+
+\paragraph{Idea.}
+Every score in \cref{tab:metrics} except the judges needs the real video of the same actions, which does not exist when a world model serves as a simulator.
+We therefore read the actions back from the generated video with an inverse dynamics model and compare them with the commanded ones (\cref{fig:pipeline}).
+We use NVIDIA Cosmos3-Nano~\cite{nvidia2026cosmos3} in its inverse dynamics mode for Bridge, the domain \texttt{bridge\_orig\_lerobot}, without any training of ours.
+
+\paragraph{Decoding the model output.}
+For each pair of consecutive frames the model returns 10 numbers.
+Following the encoder of~\cite{nvidia2026framework} for this domain, they are the relative pose $T_i^{-1}T_{i+1}$ of the end-effector, given as the translation and the first two columns of the rotation matrix, followed by the commanded gripper state, each quantile-normalised as
+\begin{equation}
+  \hat a = 2\,\frac{a-q_{01}}{q_{99}-q_{01}} - 1,
+  \label{eq:quantile}
+\end{equation}
+where $q_{01}$ and $q_{99}$ are the published 1st and 99th percentiles of each dimension.
+We invert \cref{eq:quantile}, complete the rotation matrix with the cross product of its two columns, project it onto the nearest rotation, and chain the relative poses from the true first pose $T_0$, expressed in the flange frame of the encoder, which gives the recovered path $\hat p_{1:15}$; nothing is fitted.
+The Bridge states used by IRASim differ from the LeRobot version used by NVIDIA by a roll of $\pi$, with a median roll of 2.47\,rad in our clips against 0.00 in LeRobot, so we set $R_{\mathrm{LeRobot}} = R_{\mathrm{IRASim}}\, R_x(\pi)$.
+Encoding our states with the code of~\cite{nvidia2026framework} and decoding them with ours returns them within $2\cdot10^{-4}$\,mm.
+The score of a clip is the mean distance between the recovered and the commanded end-effector positions,
+\begin{equation}
+  \mathrm{IDM\text{-}Score} = \frac{1}{15}\sum_{t=1}^{15} \lVert \hat p_t - p_t \rVert_2 ,
+  \label{eq:idmscore}
+\end{equation}
+in centimetres, lower being better.
+
+\paragraph{Uses.}
+Because IDM-Score needs no real video, it can rank several samples generated from the same actions and keep the best one, which we test as best-of-$N$ selection.
+It can also test executability: the recovered poses can be passed to the inverse kinematics of the WidowX 250 arm to check reach, joint limits, and joint speeds, and replayed in a simulator of the Bridge setup such as SIMPLER~\cite{li2024simpler}.
+\TODO{report the executability check here if it is run; otherwise keep it as the proposed test.}

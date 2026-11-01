@@ -1,15 +1,12 @@
 \section{Introduction}
 \label{sec:intro}
 
-A video world model for manipulation takes the current camera frame and a sequence of robot actions and predicts the video the robot would record.
-If the prediction is right, it can replace a physics simulator for policy evaluation, planning and data generation \cite{zhu2024irasim,nvidia2025cosmos}.
-These models are usually compared with frame metrics (PSNR, SSIM \cite{wang2004ssim}, LPIPS \cite{zhang2018lpips}) or distribution metrics such as FVD.
-Such scores reward a video that looks like the recorded one; they do not ask whether the robot in it executes the given actions, whether objects move only when touched, or whether the task ends as it should.
+A video world model for robot manipulation takes the first camera frame $I_0$ and a sequence of actions $a_{1:T}$ and predicts the video $\hat V$ the robot would record.
+If the prediction is right, the model can replace a physics simulator for policy evaluation, planning, and data generation~\cite{yang2023unisim,zhu2024irasim,nvidia2025cosmos}.
+Such models are compared mostly with frame metrics against the recorded video, namely PSNR, SSIM~\cite{wang2004ssim}, and LPIPS~\cite{zhang2018lpips}, or with FVD~\cite{unterthiner2018fvd} over a set of videos.
+These metrics reward a video that looks like the recorded one, but they do not check whether the robot in it executes the given actions, whether objects move only when touched, or whether the task ends as it should.
 
-This report studies that gap on real robot data. Our contributions:
-\begin{itemize}
-\item a reproduction of IRASim and its three released baselines on Bridge \cite{walke2023bridgedata} and Language-Table \cite{lynch2022interactive}, with paired per-clip statistics (Sec.~\ref{sec:reproduce});
-\item an evaluation framework with five metric groups, each stated with what it measures and what it cannot establish, applied to six models and two references (Sec.~\ref{sec:framework}, \ref{sec:results});
-\item a perturbation test showing that pixel metrics prefer a frozen video to a generation from corrupted actions, while trajectory scores do not (Sec.~\ref{sec:results});
-\item a reference-free 3-D action-consistency score built on an off-the-shelf inverse dynamics model, validated on real clips, and its use for best-of-N selection and for an executability check in simulation (Sec.~\ref{sec:improve}).
-\end{itemize}
+We reproduce IRASim~\cite{zhu2024irasim} on Bridge~\cite{walke2023bridgedata} and regenerate 24 clips from corrupted actions: PSNR and SSIM rank a video that holds the first frame still above every corrupted generation, while the end-effector track in the image, compared with the track in the real video, falls with the corruption.
+Comparing tracks, however, needs the real video of the same actions, which does not exist when the model serves as a simulator; what always exists is the commanded action sequence.
+
+Our main contributions are: (1) an evaluation framework that states for each metric group what it measures and what it cannot establish, with a perturbation test that checks whether a metric notices wrong actions, and (2) IDM-Score, a reference-free score that reads the 3-D end-effector path back from a generated video with an off-the-shelf inverse dynamics model, decoded exactly as its authors encode Bridge actions, and compares it with the commanded path.

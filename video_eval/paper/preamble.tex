@@ -18,7 +18,7 @@
 %% work harder in optimizing text layout. Typically shrinks text by 1/6 of page, enable
 %% it at the very end of the writing process, when you are just above the page limit
 %%
-% \usepackage{microtype}
+\usepackage{microtype}
 
 %%
 %% fine-tune paragraph spacing
@@ -49,3 +49,11 @@
 %%
 % \usepackage{soul}
 % \setuldepth{foobar}
+
+% Local builds with tectonic run XeTeX, which cannot load the Times fonts of cvpr.sty and falls back to Latin Modern
+% without bold; use TeX Gyre Termes (a Times clone) there. pdfLaTeX builds are unchanged.
+\usepackage{iftex}
+\ifXeTeX
+  \usepackage{fontspec}
+  \setmainfont{texgyretermes}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold, ItalicFont=*-italic, BoldItalicFont=*-bolditalic]
+\fi

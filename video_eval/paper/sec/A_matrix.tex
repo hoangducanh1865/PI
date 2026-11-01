@@ -1,4 +1,30 @@
 \section{Literature matrix}
 \label{sec:matrix}
 
-\TODO{7 to 8 verified sources; columns: inputs, outputs, evaluation methods, assumptions, limitations, evidence of physical plausibility or executability.}
+\begin{table*}[h]
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{2.5pt}
+  \renewcommand{\arraystretch}{1.1}
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.95cm}>{\raggedright\arraybackslash}p{2.4cm}>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{3.3cm}>{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}p{3.3cm}@{}}
+    \toprule
+    Source & Inputs & Outputs & Evaluation & Assumptions & Limitations \\
+    \midrule
+    \multicolumn{6}{@{}l}{\textit{Video world models}} \\
+    UniSim~\cite{yang2023unisim} & observation, language instruction or low-level control & video of the visual outcome & FID, FVD, IS, CLIP score in ablations; policies trained purely in the simulator and deployed zero-shot on real robots & mixing internet, simulation, and robot data yields one simulator of real interaction & hallucinated outcomes for unrealistic actions and limited memory, as stated by the authors \\
+    IRASim~\cite{zhu2024irasim} & first frame, end-effector action trajectory & 16 frames at $256\times320$ & PSNR, SSIM, latent L2, FID, FVD against recorded videos; human preference & closeness to the recorded video measures simulation quality & frame metrics do not test action following directly; one embodiment per checkpoint \\
+    Cosmos~\cite{nvidia2025cosmos} & video and text; actions after post-training & video & 3-D consistency by epipolar error and pose estimation; physics alignment by PSNR, SSIM, DreamSim, IoU on simulated scenes & pretraining on large video data transfers to physical AI after post-training & physics alignment measured on simulated scenes \\
+    \midrule
+    \multicolumn{6}{@{}l}{\textit{Video models turned into actions by inverse dynamics}} \\
+    UniPi~\cite{du2023unipi} & first frame, text goal & video plan, then actions from an inverse dynamics model & task success in simulated manipulation; on Bridge, CLIP score, FID, FVD, and a success classifier on the last generated frame & a generated plan is executable and its actions can be recovered & slow diffusion sampling, as stated by the authors; plan errors reach the robot unchecked \\
+    DreamGen~\cite{jang2025dreamgen} & first frame, language, target robot & video, then pseudo-actions from a latent action or inverse dynamics model & DreamGen Bench with instruction following and physics alignment by VLM and human judges; downstream policy success & pseudo-actions from generated videos are useful training data & the benchmark scores the video, not the recovered actions \\
+    \midrule
+    \multicolumn{6}{@{}l}{\textit{Evaluation of physical plausibility and of policies}} \\
+    VideoPhy~\cite{bansal2024videophy} & text prompt & text-to-video generation & human judgement of semantic adherence and physical commonsense; automatic judge VideoCon-Physics & physical commonsense can be judged from the video alone & no actions or robots; best model correct on 39.6\% of prompts \\
+    Physics-IQ~\cite{motamed2025physicsiq} & frames of a real physical experiment & predicted continuation & spatial and spatiotemporal IoU, weighted spatial IoU, and MSE of motion against the recorded continuation & the real continuation is the reference & needs the real video; no robot actions \\
+    SIMPLER~\cite{li2024simpler} & robot policy & rollouts in simulated scenes matched to real setups & correlation of simulated and real success rates & reducing control and visual gaps suffices without full digital twins & evaluates policies rather than videos; few real setups \\
+    \bottomrule
+  \end{tabular}
+  \caption{Literature matrix. Evaluation methods are taken from each paper.}
+  \label{tab:matrix}
+\end{table*}

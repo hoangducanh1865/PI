@@ -1,9 +1,7 @@
 \begin{abstract}
-Action-conditioned video models are proposed as simulators for robot manipulation, but they are judged mostly by how real their frames look.
-We reproduce IRASim \cite{zhu2024irasim} with its released Bridge checkpoints and baselines, add NVIDIA Cosmos-Predict2.5 \cite{nvidia2025cosmos} with and without action input, and score 105 Bridge and 57 Language-Table clips with five metric groups: pixel fidelity, temporal consistency, 2-D end-effector tracking, two VLM judges, and a 3-D action score.
-Pixel metrics rank a frozen first frame above generations from corrupted actions, while the tracking score falls with the corruption.
-As an improvement we propose a reference-free 3-D action-consistency score: an off-the-shelf inverse dynamics model (Cosmos3-Nano) reads the end-effector motion back from a generated video, decoded exactly as NVIDIA encodes Bridge actions, and the result is compared with the commanded actions.
-On real clips it recovers the path within 1.50\,cm (clips move 25\,cm on average) and a still video scores 9.06\,cm; it rises monotonically with corrupted actions and ranks the models as reference-based scores do.
-Cosmos-Predict2.5 with actions follows them best (1.64\,cm, IRASim-Frame-Ada 1.81), while without actions it is no better than a still video.
-\TODO{executability}
+Action-conditioned video world models predict the video a robot would record when it executes given actions, and they are compared mostly with frame metrics such as PSNR against the recorded video.
+We reproduce IRASim and its baselines, add Cosmos-Predict2.5 with and without action input, and score 105 Bridge and 57 Language-Table clips: frame metrics rank a video that holds the first frame still above videos generated from corrupted actions, while a 2-D end-effector track compared with the real video falls with the corruption.
+Since the real video does not exist when the model serves as a simulator, we propose IDM-Score, a reference-free score that reads the 3-D end-effector path back from the generated video with the Cosmos3-Nano inverse dynamics model and measures its distance to the commanded path.
+IDM-Score recovers real clips within 1.50\,cm while a still video scores 9.06\,cm, rises monotonically with the action corruption, and ranks Cosmos-Predict2.5 with actions first at 1.64\,cm ahead of IRASim-Frame-Ada at 1.81\,cm, while the same backbone without actions is no better than a still video.
+Code is available at \href{https://github.com/hoangducanh1865/PI/tree/main/video_eval}{github.com/hoangducanh1865/PI}.
 \end{abstract}

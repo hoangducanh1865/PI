@@ -1,0 +1,81 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="pipeline" name="pipeline">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1090" pageHeight="440" math="1" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="oursbox" parent="1" style="rounded=1;arcSize=6;dashed=1;dashPattern=6 4;fillColor=#FDF2F2;strokeColor=#B85450;strokeWidth=1.5;verticalAlign=bottom;align=right;spacingRight=10;spacingBottom=4;fontStyle=2;fontSize=13;fontColor=#B85450;" value="Reference-free (ours)" vertex="1">
+          <mxGeometry height="185" width="690" x="400" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="frame" parent="1" style="shape=mxgraph.basic.layered_rect;dx=8;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=14;" value="First frame \(I_0\)" vertex="1">
+          <mxGeometry height="70" width="130" x="30" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="actions" parent="1" style="shape=mxgraph.basic.layered_rect;dx=8;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=14;" value="Actions \(a_{1:15}\)" vertex="1">
+          <mxGeometry height="70" width="130" x="30" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="wm" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=14;" value="Video World Model&lt;br&gt;(frozen)" vertex="1">
+          <mxGeometry height="70" width="170" x="210" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="gen" parent="1" style="shape=mxgraph.basic.layered_rect;dx=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=14;" value="Generated video \(\hat V\)&lt;br&gt;16 frames" vertex="1">
+          <mxGeometry height="70" width="150" x="430" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="refm" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=14;" value="Reference-based metrics&lt;br&gt;PSNR, SSIM, LPIPS, 2-D track" vertex="1">
+          <mxGeometry height="70" width="210" x="650" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="real" parent="1" style="shape=mxgraph.basic.layered_rect;dx=8;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=14;" value="Real video \(V\)" vertex="1">
+          <mxGeometry height="60" width="150" x="910" y="45" as="geometry" />
+        </mxCell>
+        <mxCell id="idm" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=14;" value="Cosmos3-Nano&lt;br&gt;IDM (frozen)" vertex="1">
+          <mxGeometry height="70" width="150" x="430" y="265" as="geometry" />
+        </mxCell>
+        <mxCell id="decode" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=14;" value="Decode \(T_i^{-1}T_{i+1}\),&lt;br&gt;integrate from \(p_0\)" vertex="1">
+          <mxGeometry height="70" width="180" x="700" y="265" as="geometry" />
+        </mxCell>
+        <mxCell id="cmd" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B85450;fontSize=14;" value="Commanded path \(p_{1:15}\)" vertex="1">
+          <mxGeometry height="50" width="180" x="700" y="355" as="geometry" />
+        </mxCell>
+        <mxCell id="score" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=14;" value="3-D score (cm)&lt;br&gt;\(\frac{1}{15}\sum_t \lVert \hat p_t - p_t \rVert\)" vertex="1">
+          <mxGeometry height="90" width="140" x="935" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="frame" target="wm" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#6C8EBF;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="actions" target="wm" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#6C8EBF;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="295" y="185" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="wm" target="gen" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#6C8EBF;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="gen" target="refm" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="real" target="refm" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="t1" edge="1" parent="1" source="gen" target="idm" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#EA9999;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="t2" edge="1" parent="1" source="idm" target="decode" value="10 numbers&lt;br&gt;per step" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#EA9999;fontSize=12;labelBackgroundColor=#FDF2F2;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="t3" edge="1" parent="1" source="decode" target="score" value="\(\hat p_{1:15}\)" style="entryX=0;entryY=0.25;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#EA9999;fontSize=14;labelBackgroundColor=#FDF2F2;">
+          <mxGeometry relative="1" as="geometry" y="-12"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        <mxCell id="t4" edge="1" parent="1" source="cmd" target="score" style="entryX=0;entryY=0.75;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#EA9999;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="t5" edge="1" parent="1" source="actions" target="cmd" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#EA9999;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="95" y="380" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
