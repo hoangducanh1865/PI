@@ -3,5 +3,5 @@ Language-driven grasp detection predicts a grasp for the object named in a natur
 On Grasp-Anything++, the most common failure of a GR-ConvNet + CLIP baseline is grasping the wrong object, since its grasp-map regression never ties the prompt to an object.
 We propose RTC-Grasp, a region-text contrastive loss that trains mask-pooled features of the prompted object to match the prompt better than the other objects and the background; it is used only in training, so inference is unchanged.
 It improves the harmonic mean of Seen and Unseen success by 2.5 points over three seeds, and restricting grasps to Grounding DINO boxes or ground-truth masks adds up to 6.1 and 16.2 Unseen points, showing that grounding remains the main bottleneck.
-Code is available at \url{https://github.com/hoangducanh1865/PI}.
+Code is available at \href{https://github.com/hoangducanh1865/PI}{github.com/hoangducanh1865/PI}.
 \end{abstract}

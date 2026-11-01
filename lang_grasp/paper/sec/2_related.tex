@@ -1,9 +1,9 @@
 \section{Related work}
 \label{sec:related}
 
+Grasp-Anything~\cite{vuong2023grasp} synthesizes large-scale grasp annotations with foundation models, and Grasp-Anything++~\cite{vuong2024language} adds language instructions.
 Grounding DINO~\cite{liu2024grounding} performs open-set object detection by fusing visual and language features in a Transformer detector to ground text phrases into bounding boxes.
 The InfoNCE loss~\cite{oord2018cpc} pulls positive pairs together and pushes negatives apart; CLIP~\cite{radford2021clip} uses it to pretrain image and text encoders, and ALBEF~\cite{li2021albef} to align both modalities before cross-attention fusion.
-Grasp-Anything~\cite{vuong2023grasp} synthesizes large-scale grasp annotations with foundation models, and Grasp-Anything++~\cite{vuong2024language} adds language instructions.
 % "Closest to us, MaskGrasp [8] uses segmentation features at inference and a triplet loss between grasp-region and mask features.": Remove this
 % "Our loss instead contrasts image regions with the prompt ": Rewrite, make the motivation more clear
 % "(the InfoNCE loss of CLIP [7] and ALBEF [2], applied to object regions),": Remove this, use (...) in paper is unprofessional

@@ -4,7 +4,7 @@
 Grasp-Anything++~\cite{vuong2024language}, built on the synthetic Grasp-Anything~\cite{vuong2023grasp}, defines language-driven grasp detection: given an RGB image and a prompt, predict a 2D grasp rectangle $g = (x, y, w, h, \theta)$ for a two-finger gripper.
 % "such as ``pick up the pear by its stem''": Remove this
 
-We reproduce GR-ConvNet + CLIP~\cite{kumra2020antipodal,vuong2024language} and let two vision-language models judge 1,000 random failures: 47\% grasp another object than the prompted one, while 34\% grasp the right object with a wrong angle $\theta$ or width $w$.
+We reproduce GR-ConvNet + CLIP~\cite{kumra2020antipodal,vuong2024language} and let two vision-language models judge 1,000 random failures: 47\% grasp an object other than the prompted one, while 34\% grasp the right object with a wrong angle $\theta$ or width $w$.
 Its smooth L1 loss supervises only the output grasp maps, so it tells the model where to grasp geometrically, but nothing tells the model which object the prompt names.
 % "Two vision-language models judged 1,000 failures of a reproduced GR-ConvNet + CLIP [1, 9] on an earlier split:" -> "As we reproduce GR-ConvNet + CLIP [1, 9] results, we then use two VLM models to judge its random 1000 failures, we found that"
 % "a wrong grasp on the right object": How is wrong grasp? Give me an example

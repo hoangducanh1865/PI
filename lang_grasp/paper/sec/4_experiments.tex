@@ -2,9 +2,9 @@
 \label{sec:experiments}
 
 \paragraph{Setup.}
-We evaluate on Grasp-Anything++~\cite{vuong2024language} with 10,130 training, 515 Seen, and 212 Unseen test objects, totaling 28.6k, 1,376, and 601 image-prompt samples.
+We evaluate on Grasp-Anything++~\cite{vuong2024language} with 10,130 training, 515 Seen, and 212 Unseen (categories absent from training) test objects, totaling 28.6k, 1,376, and 601 image-prompt samples.
 We follow the standard training settings~\cite{vuong2024language}: Adam, learning rate $10^{-3}$, batch size 8, 50 epochs of 1,000 batches, selecting the checkpoint on the Seen test set.
-A grasp succeeds if its IoU exceeds 25\% and its angle error is under $30^{\circ}$ with opening width scaled by 150; H is the harmonic mean.
+A grasp succeeds if its IoU exceeds 25\% and its angle error is under $30^{\circ}$ with the predicted width scaled by 150 as in~\cite{vuong2024language}; H is the harmonic mean.
 We set $\lambda = 0.01$, tuned among $0.01, 0.03, 0.1$ on Seen, and $\tau = 0.07$, reporting mean $\pm$ std over seeds 123 to 125.
 %  "official split": Do not need to use this collocation, in real and professional paper they do not write like this, just describe the testset
 % "released": The same with this word, write like this just make our paper loooks more unreliable
@@ -40,7 +40,7 @@ Its default training data are drawn from the Seen test objects, so for a fair co
     RTC-Grasp (ours) & instr. & \textbf{.365}$\pm$.006 & \textbf{.403}$\pm$.032 & \textbf{.383} \\
     \bottomrule
   \end{tabular}
-  \caption{Success rates on Grasp-Anything++. $^\S$168 random Unseen prompts.}
+  \caption{Success rates on Grasp-Anything++. Text: object name or full instruction given to the model. $^\S$168 random Unseen prompts.}
   \label{tab:main}
 \end{table}
 
@@ -64,13 +64,13 @@ Its default training data are drawn from the Seen test objects, so for a fair co
     Ground-truth mask & \textbf{0.543} & \textbf{0.565} & \textbf{0.554} \\
     \bottomrule
   \end{tabular}
-  \caption{Success rates with inference restricted to a region.}
+  \caption{Success rates with inference restricted to a region, mean over 3 seeds.}
   \label{tab:gates}
 \end{table}
 % This table structure is weird, just present in style Table 1, I think we should swap the columns and the rows
 
 \paragraph{Results.}
-With $\lambda = 0.01$, our loss improves the baseline by 3.4 Seen, 1.1 Unseen, and 2.5 H points, with an H gain in every seed (\cref{tab:main}), and by 0.9 points on the full list of 13.5k Unseen prompts.
+With $\lambda = 0.01$, our loss improves the baseline by 3.4 Seen, 1.1 Unseen, and 2.5 H points, with an H gain in every seed (\cref{tab:main}), and by 0.9 points on all 13.5k labelled Unseen prompts.
 Larger weights are less stable: $0.375 \pm 0.054$ H for $\lambda = 0.03$, and one seed collapses for $\lambda = 0.1$.
 Reproduced with the authors' codebase, GR-ConvNet + CLIP reaches 0.18 Unseen, matching the reported value, while LGD reaches $0.29 \pm 0.03$ on 168 random Unseen prompts.
-In \cref{tab:gates}, the oracle gate adds 12.6 Unseen points to the baseline and 16.2 to ours, and Grounding DINO adds 5.1 and 6.1, showing that contrastive alignment and spatial localization combine.
+In \cref{tab:gates}, the oracle gate adds 12.6 Unseen points to the baseline and 16.2 to ours, and Grounding DINO adds 5.1 and 6.1, showing that contrastive alignment and spatial localization are complementary.
