@@ -1,26 +1,6 @@
 \section{Strengths and limitations of IRASim}
 \label{sec:analysis}
 
-\begin{figure*}[t]
-  \centering
-  \footnotesize
-  \setlength{\tabcolsep}{3pt}
-  \begin{tabular}{@{}*{3}{>{\centering\arraybackslash}p{0.322\textwidth}}@{}}
-    \includegraphics[width=0.322\textwidth]{fig/strip_13_0_0.jpg} &
-    \includegraphics[width=0.322\textwidth]{fig/strip_6_0_32.jpg} &
-    \includegraphics[width=0.322\textwidth]{fig/strip_1183_0_0.jpg} \\
-    (a) ``put eggplant in pot'': success &
-    (b) ``put the toy in the vessel'': the toy vanishes &
-    (c) ``wipe pot with sponge'': the gripper dissolves \\
-    PSNR 23.33, cycle error 1.18 vs 1.00\,cm &
-    PSNR 24.55, cycle error 2.57 vs 2.52\,cm &
-    PSNR 22.27, cycle error 2.95 vs 1.80\,cm \\
-  \end{tabular}
-  \caption{Frames 0, 8, and 15 of the real video (top rows) and of IRASim-Frame-Ada from the same actions (bottom rows); both judges agree on each verdict. The cycle errors of \ours{} are given for the generated and the real video. In (b) the arm follows the actions and the PSNR is the highest of the three, yet the object vanishes, which neither metric detects; in (c) the contact failure also shows in the cycle error.}
-  \label{fig:strips}
-\end{figure*}
-
-Examples are shown in \cref{fig:strips}.
 
 \paragraph{Strengths.}
 \textit{S1, the robot follows the actions.}

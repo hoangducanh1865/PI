@@ -35,7 +35,7 @@ Cosmos videos are resampled to the IRASim format of 16 frames at $256\times320$;
 \end{table*}
 
 \paragraph{Metric groups.}
-\Cref{tab:metrics} states what each group measures and what it cannot establish.
+\Cref{tab:metrics} lists what each group measures and what it cannot measure.
 Every metric is computed per clip, and models are compared with paired Wilcoxon signed-rank tests over the same clips.
 The 2-D track score follows the end-effector in the image.
 CoTracker3~\cite{karaev2024cotracker3} tracks a $20\times20$ grid of points from frame 0 through the real and the generated video, and the end-effector point is the moving point whose real track is best explained by the recorded end-effector position through an affine camera; two vision-language models confirm that the point lies on the gripper.
@@ -51,7 +51,7 @@ where DTW sums the pixel distances between the two tracks after aligning them in
   \footnotesize
   \begin{tabular}{@{}p{3.6cm}p{5.6cm}p{6.6cm}@{}}
     \toprule
-    Group and metrics & Measures & Cannot establish \\
+    Group and metrics & Measures & Cannot measure \\
     \midrule
     Visual quality: PSNR, SSIM~\cite{wang2004ssim}, LPIPS~\cite{zhang2018lpips} against the real clip & how close each frame looks to the recorded frame & whether the robot moved as commanded, since a still video keeps a high SSIM and small shifts are punished like large errors \\
     Temporal consistency: DINOv2~\cite{oquab2023dinov2} similarity of adjacent frames and to frame 0, optical-flow warp error & smoothness and identity stability across frames & correct motion, since the still video scores perfectly \\
