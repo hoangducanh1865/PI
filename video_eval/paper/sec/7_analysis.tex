@@ -4,7 +4,7 @@
 
 \paragraph{Strengths.}
 \textit{S1, the robot follows the actions.}
-The gripper of Frame-Ada follows the real image path, with NDTW 0.77 and a mean error of 6.3\,px on verified clips, and the 3-D path read back from its videos is within 1.81\,cm of the commanded one, against 1.50\,cm for the real videos.
+The gripper of Frame-Ada follows the real image path, with NDTW 0.709 and a mean error of 9.9\,px over 96 clips, and the 3-D path read back from its videos is within 1.82\,cm of the commanded one, against 1.50\,cm for the real videos.
 \textit{S2, per-frame conditioning helps.}
 With the same backbone and data, modulating each frame by its own action in Frame-Ada beats one embedding of the whole sequence in Video-Ada on PSNR and 2-D tracking over 105 paired clips.
 \textit{S3, stable and reproducible.}

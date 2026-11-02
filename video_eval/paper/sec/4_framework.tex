@@ -14,29 +14,33 @@ Cosmos-Predict2.5~\cite{nvidia2025cosmos} enters in two versions of the same 2B 
 Two references bound every score: the real video of the same actions is the ceiling, and the first frame held still for 16 frames is the floor, with perfect image quality and no motion.
 Cosmos videos are resampled to the IRASim format of 16 frames at $256\times320$; for the base model we keep every third of its 49 frames at 16\,fps, which spans the same 3\,s.
 
-\begin{table*}[t]
+\begin{table}[t]
   \centering
   \footnotesize
-  \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{@{}llll@{}}
+  \setlength{\tabcolsep}{3pt}
+  \resizebox{\columnwidth}{!}{%
+  \begin{tabular}{@{}lll@{}}
     \toprule
-    Model & Conditioning & Output & Sampling steps \\
+    Model & Conditioning on frame 0 and & Output \\
     \midrule
-    IRASim-Frame-Ada~\cite{zhu2024irasim} & frame 0, 15 actions, one per frame & $256\times320$, 16 frames & 50 \\
-    IRASim-Video-Ada~\cite{zhu2024irasim} & frame 0, 15 actions, one embedding per video & $256\times320$, 16 frames & 50 \\
-    LVDM~\cite{zhu2024irasim} & frame 0, 15 actions, one embedding per video & $256\times320$, 16 frames & 50 \\
-    VDM~\cite{zhu2024irasim} & frame 0, 15 actions, one embedding per video & $256\times320$, 16 frames & 50 \\
-    Cosmos-Predict2.5, actions~\cite{nvidia2025cosmos} & frame 0, chunks of 12 actions & $256\times320$, 13 frames per chunk & 35 \\
-    Cosmos-Predict2.5, base~\cite{nvidia2025cosmos} & frame 0, instruction text & $480\times640$, 49 frames at 16\,fps & 35 \\
+    \multicolumn{3}{@{}l}{\textit{IRASim~\cite{zhu2024irasim} and its baselines, 50 sampling steps}} \\
+    Frame-Ada & 15 actions, one per frame & 16 frames, $256\times320$ \\
+    Video-Ada & 15 actions, one embedding & 16 frames, $256\times320$ \\
+    LVDM & 15 actions, one embedding & 16 frames, $256\times320$ \\
+    VDM & 15 actions, one embedding & 16 frames, $256\times320$ \\
+    \midrule
+    \multicolumn{3}{@{}l}{\textit{Cosmos-Predict2.5~\cite{nvidia2025cosmos}, 35 sampling steps}} \\
+    With actions & chunks of 12 actions & 13 frames per chunk, $256\times320$ \\
+    Without actions & instruction text & 49 frames at 16\,fps, $480\times640$ \\
     \bottomrule
-  \end{tabular}
-  \caption{Models compared on Bridge. The Cosmos action model generates two chunks with guidance 0, keeping frames 0 to 15; the base model uses guidance 7 and runs on the 24 core clips only, at 3 min per clip on an A100.}
+  \end{tabular}}
+  \caption{Models compared on Bridge. Cosmos with actions generates two chunks with guidance 0, of which frames 0 to 15 are kept; without actions it uses guidance 7 and runs on the 24 core clips only.}
   \label{tab:models}
-\end{table*}
+\end{table}
 
 \paragraph{Metric groups.}
 \Cref{tab:metrics} lists what each group measures and what it cannot measure.
-Every metric is computed per clip, and models are compared with paired Wilcoxon signed-rank tests over the same clips.
+Every metric is computed per clip, and two models are compared with a paired Wilcoxon signed-rank test over the same clips; we call a difference significant when $p<0.05$, that is, when a difference this consistent across clips would arise by chance less than 5\% of the time if the two models were equally good.
 The 2-D track score follows the end-effector in the image.
 CoTracker3~\cite{karaev2024cotracker3} tracks a $20\times20$ grid of points from frame 0 through the real and the generated video, and the end-effector point is the moving point whose real track is best explained by the recorded end-effector position through an affine camera; two vision-language models confirm that the point lies on the gripper.
 NDTW~\cite{ilharco2019ndtw} compares the generated and the real track of that point,

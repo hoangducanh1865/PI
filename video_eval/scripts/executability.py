@@ -115,7 +115,7 @@ def check(poses: np.ndarray) -> dict:
         target[:3, :3], target[:3, 3] = Rotation.from_euler("xyz", pose[3:6]).as_matrix() @ TO_KINEMATICS, pose[:3]
         targets.append(target)
     best = chain(targets, None)
-    if best["executable"]:
+    if best["executable"] or best["solved"] < 1:  # a pose no starting guess solves stays unsolved on every branch
         return best
     aimed = [np.r_[np.arctan2(targets[0][1, 3], targets[0][0, 3]), g[1:]] for g in GRID]
     branches = {}

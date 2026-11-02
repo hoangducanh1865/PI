@@ -57,3 +57,13 @@
   \usepackage{fontspec}
   \setmainfont{texgyretermes}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold, ItalicFont=*-italic, BoldItalicFont=*-bolditalic]
 \fi
+
+% Float placement: let text share pages with floats instead of piling tables onto float-only pages.
+\renewcommand{\topfraction}{0.8}
+\renewcommand{\bottomfraction}{0.4}
+\renewcommand{\textfraction}{0.15}
+\renewcommand{\floatpagefraction}{0.8}
+\renewcommand{\dbltopfraction}{0.75}
+\renewcommand{\dblfloatpagefraction}{0.8}
+\setcounter{topnumber}{3}
+\setcounter{dbltopnumber}{2}
