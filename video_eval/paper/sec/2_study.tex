@@ -23,7 +23,7 @@ Like our reference-based metrics, it needs the real video, and neither benchmark
 % (Turn 2) "Physics-IQ": What does this work do? Has it already solved our raised problems?
 % Claude: it tests whether a video model understands passive physics (solids, fluids, optics) by continuing real experiment videos and measuring motion overlap with the true continuation. It does not solve our problem: it needs the real continuation, has no commanded actions, and no robot. It supports our first observation (looking real is not being physically right). Now said in the text.
 SIMPLER~\cite{li2024simpler} evaluates real-robot policies in physics simulators matched to real setups, including the WidowX setup of Bridge; it is the kind of hand-built simulator that video world models aim to replace, and a place where motions read from generated videos could be replayed with physics.
-\Cref{tab:matrix} compares these sources by inputs, outputs, evaluation methods, assumptions, and limitations.
+\Cref{tab:matrix} in the appendix compares these sources by inputs, outputs, evaluation methods, assumptions, and limitations.
 % (Turn 2) "SIMPLER [7] evaluates real-robot policies in simulated scenes matched to real setups, including the Bridge setup.": How does this work relate to our homework?
 % Claude: two links, now written out: it is the physics-simulator alternative that world models want to replace (the reason the brief asks whether generated motion is executable), and it simulates the same WidowX robot as our clips, so it is the natural next step after our kinematic executability check (replay with dynamics and contacts).
 

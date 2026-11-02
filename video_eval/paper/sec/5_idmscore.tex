@@ -41,7 +41,7 @@ For each of the 16 poses read from the video, inverse kinematics searches the si
 A clip is executable when every pose has a solution, every solution lies within the joint limits, and no joint has to turn faster than its velocity limit of $\pi$\,rad/s between two poses 0.2\,s apart, one step of the 5\,Hz Bridge control.
 The kinematic model, the solver with its tolerances of 1\,mrad and 1\,mm, its three starting guesses, and the limits are those of the arm's Interbotix driver.
 That solver rejects 4 of the 105 trajectories recorded on the real arm, all low and steeply pitched, so we add three fallbacks with the same tolerances and limits: 125 more starting guesses, the solution closest to the previous frame when a step looks too fast, and a search over the solutions of the first pose when a clip still fails.
-Without the roll convention above, the check rejects 381 of the 384 recorded poses of the 24 core clips, so it is sensitive to errors in the pose frame.
+The Interbotix solver finds a solution for 1,625 of the 1,680 poses recorded on the real arm in our 105 clips, but for only 11 of them without the roll convention above, so the check is sensitive to errors in the pose frame.
 % (Turn 4) "6-DOF": or 6-DoF?
 % Claude: "6-DoF", the spelling IRASim uses for its action space ("7 degrees of freedom (DoFs)").
 % (Turn 4) Explain this whole paragraph "Executability" in details for me to understand since I have not work on this part yet, but you do it your self
