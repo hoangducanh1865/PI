@@ -40,6 +40,7 @@ def main() -> None:
     parser.add_argument("--dataset", choices=("bridge", "languagetable"), default="bridge")
     parser.add_argument("--annotation", default="annotation_subset", help="annotation folder of the clips' actions")
     parser.add_argument("--name", help="output folder name (default: the model name)")
+    parser.add_argument("--batch", type=int, help="clips per batch (default 4, VDM 1; T4 memory)")
     args = parser.parse_args()
 
     config = OmegaConf.load(os.path.join(args.irasim, "configs", "evaluation", args.dataset, f"{args.model}.yaml"))
@@ -49,7 +50,7 @@ def main() -> None:
         "annotation_name": args.annotation,
         "global_seed": args.seed,
         "anno": anno,
-        "local_val_batch_size": 1 if args.model == "vdm" else 4,
+        "local_val_batch_size": args.batch or (1 if args.model == "vdm" else 4),
         "num_workers": 2,
     }
     config = OmegaConf.merge(config, overrides)
