@@ -2,7 +2,8 @@
 # The perturbation test on the 105 Bridge clips, on one A100: IRASim-Frame-Ada (seed 3407) from corrupted actions
 # (scripts/make_perturbed_annotations.py), then the EVID cycle error (Cosmos3-Nano inverse dynamics), pixel and 2-D track
 # scores of each set, and a push of the results. Every video is copied to <OUT_DIR> (on Drive) within a minute of being
-# written, and the inverse dynamics answers are cached per clip there, so a dropped runtime loses little.
+# written, and the inverse dynamics answers are cached per clip there, so a dropped runtime loses little; a rerun skips
+# the sets whose videos are complete and the clips whose answers are cached.
 #
 # Usage (from video_eval/, HF_TOKEN and HF_WRITE_TOKEN in the environment):
 #   bash scripts/a100_perturb.sh <OUT_DIR>
@@ -42,8 +43,10 @@ python scripts/make_perturbed_annotations.py --data $DATA
 copier=$!
 
 wait $cosmos3_setup || echo "Cosmos3 server did not start: EVID is scored later"
+clips=$(ls "$OUT"/real/*.mp4 | wc -l)
 for name in $SETS; do
-    python -u scripts/run_irasim.py --irasim $IRASIM --model frame_ada --seed 3407 --out "$OUT" --batch "$BATCH" \
+    done_videos=$(ls "$OUT/frame_ada_$name/seed3407/"*.mp4 2> /dev/null | wc -l)
+    [ "$done_videos" -ge "$clips" ] || python -u scripts/run_irasim.py --irasim $IRASIM --model frame_ada --seed 3407 --out "$OUT" --batch "$BATCH" \
         --annotation "annotation_$name" --name "frame_ada_$name" || true
     curl -sf http://localhost:8000/health > /dev/null && \
         python -u scripts/cosmos3_idm.py --gen "$OUT" --models "frame_ada_$name/seed3407" > "$WORK/idm_$name.log" 2>&1 &
