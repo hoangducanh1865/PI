@@ -43,9 +43,9 @@ python scripts/make_perturbed_annotations.py --data $DATA
 copier=$!
 
 wait $cosmos3_setup || echo "Cosmos3 server did not start: EVID is scored later"
-clips=$(ls "$OUT"/real/*.mp4 | wc -l)
+clips=$(find "$OUT/real" -name '*.mp4' | wc -l)
 for name in $SETS; do
-    done_videos=$(ls "$OUT/frame_ada_$name/seed3407/"*.mp4 2> /dev/null | wc -l)
+    done_videos=$(find "$OUT/frame_ada_$name/seed3407" -name '*.mp4' 2> /dev/null | wc -l)
     [ "$done_videos" -ge "$clips" ] || python -u scripts/run_irasim.py --irasim $IRASIM --model frame_ada --seed 3407 --out "$OUT" --batch "$BATCH" \
         --annotation "annotation_$name" --name "frame_ada_$name" || true
     curl -sf http://localhost:8000/health > /dev/null && \
