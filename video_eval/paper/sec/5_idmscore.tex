@@ -5,19 +5,28 @@
 Every metric in \cref{tab:metrics} except the judges needs the real video of the same actions, and none checks whether the motion shown could be performed by the robot.
 \ours{} uses only what a simulator always has, the commanded actions: an inverse dynamics model reads the end-effector trajectory back from the generated video, and we measure how far it deviates from the commanded trajectory and whether the arm's inverse kinematics can execute it (\cref{fig:pipeline}).
 A video that shows the commanded motion closes the cycle from actions to video and back with a small error.
-We use NVIDIA Cosmos3-Nano~\cite{nvidia2026cosmos3} in its inverse dynamics mode for Bridge, the domain \texttt{bridge\_orig\_lerobot}, without any training of ours.
+We use NVIDIA Cosmos3-Nano~\cite{nvidia2026cosmos3} in its inverse dynamics mode for the Bridge robot, without any training of ours.
+% (Turn 4) "the domain bridge_orig_lerobot": I think we do not to specify this, in professional paper they do not write like this
+% Claude: agreed; the setting name stays in the code (scripts/cosmos3_idm.py).
 
-\paragraph{Decoding the model output.}
-For each pair of consecutive frames the model returns 10 numbers.
-Following the encoder of~\cite{nvidia2026framework} for this domain, they are the relative pose $T_i^{-1}T_{i+1}$ of the end-effector, given as the translation and the first two columns of the rotation matrix, followed by the commanded gripper state, each quantile-normalised as
+\paragraph{From the model output to a trajectory.}
+Let $T_t$ be the pose of the end-effector at frame $t$, a $4\times4$ matrix holding its rotation and position.
+For each pair of consecutive frames, the model returns 10 numbers $\hat a_t$ that encode the motion between them, $\Delta_t = T_{t-1}^{-1}T_t$: three for the translation, six for the rotation, and one for the gripper command.
+NVIDIA's encoder~\cite{nvidia2026framework} scales each number $a$ to about $[-1, 1]$ with the 1st and 99th percentiles $q_{01}$ and $q_{99}$ it publishes for this robot,
 \begin{equation}
-  \hat a = 2\,\frac{a-q_{01}}{q_{99}-q_{01}} - 1,
+  \hat a = 2\,\frac{a-q_{01}}{q_{99}-q_{01}} - 1 .
   \label{eq:quantile}
 \end{equation}
-where $q_{01}$ and $q_{99}$ are the published 1st and 99th percentiles of each dimension.
-We invert \cref{eq:quantile}, complete the rotation matrix with the cross product of its two columns, project it onto the nearest rotation, and chain the relative poses from the true first pose $T_0$, expressed in the flange frame of the encoder, which gives the trajectory $\hat p_{1:15}$ read from the video; nothing is fitted.
-The Bridge states used by IRASim differ from the LeRobot version used by NVIDIA by a roll of $\pi$, with a median roll of 2.47\,rad in our clips against 0.00 in LeRobot, so we set $R_{\mathrm{LeRobot}} = R_{\mathrm{IRASim}}\, R_x(\pi)$.
-Encoding our states with the code of~\cite{nvidia2026framework} and decoding them with ours returns them within $2\cdot10^{-4}$\,mm.
+We solve \cref{eq:quantile} for $a$ to recover each motion $\hat\Delta_t$, then add the motions up from the true first pose,
+\begin{equation}
+  \hat T_0 = T_0, \qquad \hat T_t = \hat T_{t-1}\,\hat\Delta_t, \quad t = 1, \dots, 15,
+  \label{eq:chain}
+\end{equation}
+and the positions of $\hat T_{1:15}$ form the trajectory $\hat p_{1:15}$ read from the video.
+Nothing is fitted: these are NVIDIA's own formulas run backwards, and passing recorded Bridge states through their encoder and our decoder returns them within $2\cdot10^{-4}$\,mm.
+The only adjustment is a convention: the Bridge states used by IRASim measure the roll angle of the gripper with an offset of $\pi$ from the data NVIDIA trained on.
+% (Turn 4) "We invert \cref{eq:quantile}, complete the rotation matrix with the cross product of its two columns, project it onto the nearest rotation, and chain the relative poses from the true first pose $T_0$, expressed in the flange frame of the encoder, which gives the trajectory $\hat p_{1:15}$ read from the video; nothing is fitted.": This is too technical detailed, and the reader will find it hard to follow, and they will not understand where does the "trajectory $\hat p_{1:15}$" come from, how is this related to "\hat a = 2\,\frac{a-q_{01}}{q_{99}-q_{01}} - 1,". The same for the remain part of this paragraph I think.
+% Claude: agreed. The paragraph now goes in order: what T_t is, what the 10 numbers mean (one step of motion), Eq. (2) is how NVIDIA scaled them, we undo it, Eq. (3) adds the steps up from the first pose, and p_hat is the position part of the result. The rotation completion, the frame constants and the median roll angles moved to the code (scripts/cosmos3_idm.py); the paper keeps the round-trip check and the one convention that matters.
 
 \paragraph{Cycle error.}
 The cycle error of a clip is the mean distance between the end-effector positions read from the video and the commanded ones,
@@ -28,10 +37,17 @@ The cycle error of a clip is the mean distance between the end-effector position
 in centimetres, lower being better.
 
 \paragraph{Executability.}
-We solve the inverse kinematics of the WidowX 250 6-DOF arm, the Bridge robot, for each of the 16 poses read from the video, following the Interbotix driver: the screw axes and home pose of the arm, Newton iterations with tolerances of 1\,mrad and 1\,mm from three default initial guesses, the joint limits, and the joint velocity limit of $\pi$\,rad/s, checked between consecutive poses 0.2\,s apart at the 5\,Hz Bridge control rate.
-Newton's method from the three default guesses misses valid solutions for low, steeply pitched poses, rejecting 4 of the 105 recorded Bridge trajectories, so we add a grid of 125 initial guesses with the same tolerances and limits.
-A clip is executable when every pose has a solution within the joint limits and every step stays below the velocity limit.
-With the wrong roll convention, none of the 384 recorded poses of the 24 core clips has a solution, so the check is sensitive to the frame convention.
+For each of the 16 poses read from the video, inverse kinematics searches the six joint angles of the WidowX 250, the 6-DoF arm of Bridge, that place the gripper at that pose.
+A clip is executable when every pose has a solution, every solution lies within the joint limits, and no joint has to turn faster than its velocity limit of $\pi$\,rad/s between two poses 0.2\,s apart, one step of the 5\,Hz Bridge control.
+The kinematic model, the solver with its tolerances of 1\,mrad and 1\,mm, its three starting guesses, and the limits are those of the arm's Interbotix driver.
+That solver rejects 4 of the 105 trajectories recorded on the real arm, all low and steeply pitched, so we add three fallbacks with the same tolerances and limits: 125 more starting guesses, the solution closest to the previous frame when a step looks too fast, and a search over the solutions of the first pose when a clip still fails.
+Without the roll convention above, the check rejects 381 of the 384 recorded poses of the 24 core clips, so it is sensitive to errors in the pose frame.
+% (Turn 4) "6-DOF": or 6-DoF?
+% Claude: "6-DoF", the spelling IRASim uses for its action space ("7 degrees of freedom (DoFs)").
+% (Turn 4) Explain this whole paragraph "Executability" in details for me to understand since I have not work on this part yet, but you do it your self
+% Claude: rewritten in plainer order (what is searched, when a clip passes, whose settings, why we added fallbacks); the detailed explanation is in the chat and in reading_guide.md section 2.5. The old text listed only one of the three fallbacks the code uses; now all three are named.
 
 \paragraph{Use for selection.}
-Because \ours{} needs no real video, it can rank several samples generated from the same actions and keep the one with the lowest cycle error, which we test as best-of-$N$ selection.
+Among the metrics of \cref{tab:metrics}, only \ours{}, the judges, and the temporal scores work without a real video, and only \ours{} checks the commanded actions, so it can rank several samples generated from the same actions by their cycle error and keep the best one, which we test as best-of-$N$ selection.
+% (Turn 4) "it can rank several samples generated from the same actions and keep the one with the lowest cycle error,": Is this claim true? Don't you think that other metrics can also do this?
+% Claude: partly right. Any per-clip score can rank samples, but PSNR, SSIM, LPIPS and the 2-D track need the real video, which selection at simulation time does not have, and FVD gives no per-clip score. The VLM judges and the temporal scores can rank without a real video, but they do not look at the commanded actions, and the temporal scores even prefer a still video. So the claim holds only as "the one reference-free metric that checks the actions"; the text now says exactly that.
