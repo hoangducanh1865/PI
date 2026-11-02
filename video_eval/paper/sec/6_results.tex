@@ -89,7 +89,7 @@ The executability check accepts 99\% of clips for every action-conditioned model
 \subsection{What \ours{} reveals}
 Without actions, Cosmos-Predict2.5 produces smooth videos, with a DINOv2 adjacent-frame similarity of 0.916 against 0.952 for real ones, whose robot does not follow the recorded motion: on the 24-clip subset its EVID error of 10.30\,cm does not differ significantly from the still video's 9.52\,cm, against 1.74\,cm with actions, and it can even replace the WidowX by another robot arm.
 Two vision-language judges, gemini-3.8-flash and gpt-6.1-sol, differ in strictness, flagging 32\% and 1\% of real clips; for every IRASim model they most often flag objects that change or vanish, in 47\% and 10\% of Frame-Ada clips, which neither \ours{} nor the appearance metrics detect (\cref{fig:strips}).
-Keeping the sample with the lowest EVID error among six Frame-Ada seeds raises PSNR from 23.92 to 24.07\,dB, a small but significant gain, a sixth of what an oracle selecting by PSNR with the real video reaches.
+Keeping the sample with the lowest EVID error among six Frame-Ada seeds raises PSNR from 23.92 to 24.07\,dB and the 2-D NDTW from 0.720 to 0.736, small but significant gains on metrics that use the real video, which the selection does not; for PSNR this is a sixth of what an oracle selecting with the real video reaches.
 
 % ---- review comments, kept for the record (text above rewritten for concision on 2026-11-02) ----
 % (Turn 5) "($p<10^{-7}$)", "($p<0.05$)", ...: You did not explain what is p here, and I am concern that is it necessary to calculate the p here? What does it represent for? The same with paragraph "Language-Table, 57 clips"

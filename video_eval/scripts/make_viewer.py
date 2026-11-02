@@ -214,8 +214,12 @@ def main() -> None:
             shutil.copy(os.path.join(source[m], m, f"{clip}.mp4"), os.path.join(args.out, "videos", m, f"{clip}.mp4"))
     if args.paper:
         shutil.copy(args.paper, os.path.join(args.out, "report.pdf"))
+    page = PAGE.replace("__DATA__", json.dumps(data))
+    if args.limit:
+        page = page.replace("The 105 Bridge clips,", f"{len(clips)} of the 105 Bridge clips (all of them at "
+                            '<a href="https://hoangducanh1865.github.io/PI/">hoangducanh1865.github.io/PI</a>),')
     with open(os.path.join(args.out, "index.html"), "w") as f:
-        f.write(PAGE.replace("__DATA__", json.dumps(data)))
+        f.write(page)
     print(f"wrote {args.out}/index.html: {len(clips)} clips, {len(source)} models")
 
 

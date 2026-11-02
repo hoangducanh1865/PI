@@ -34,7 +34,7 @@
         <mxCell id="cmd" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B85450;fontSize=14;" value="Commanded path \(p_{1:15}\)" vertex="1">
           <mxGeometry height="50" width="180" x="700" y="440" as="geometry" />
         </mxCell>
-        <mxCell id="score" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=14;" value="Cycle error (cm)&lt;br&gt;\(\frac{1}{15}\sum_t \lVert \hat p_t - p_t \rVert\)" vertex="1">
+        <mxCell id="score" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=14;" value="EVID error (cm)&lt;br&gt;\(\frac{1}{15}\sum_t \lVert \hat p_t - p_t \rVert\)" vertex="1">
           <mxGeometry height="70" width="140" x="950" y="265" as="geometry" />
         </mxCell>
         <mxCell id="e1" edge="1" parent="1" source="frame" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#6C8EBF;" target="wm">

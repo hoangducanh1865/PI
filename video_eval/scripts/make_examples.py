@@ -1,6 +1,6 @@
 """
 Side-by-side example videos for the submission: for each clip, the real video and the generated ones next to each
-other, each labelled with its model and the cycle error of EVID (scripts/cosmos3_idm.py), plus the instruction.
+other, each labelled with its model and its EVID error (scripts/cosmos3_idm.py), plus the instruction.
 
 Usage (from video_eval/):
     python scripts/make_examples.py --gen <GEN_DIR> --clips 6_0_32 1183_0_0 \
@@ -57,7 +57,7 @@ def main() -> None:
                 x = i * (WIDTH + GAP)
                 canvas.paste(Image.fromarray(video[t]), (x, BAR))
                 error = errors.get((folder, clip))
-                note = f"cycle error {error:.2f} cm" if error is not None else ""
+                note = f"EVID error {error:.2f} cm" if error is not None else ""
                 draw.text((x + 6, BAR + HEIGHT + 4), label, fill="#1f1f1d", font=small)
                 draw.text((x + 6, BAR + HEIGHT + 22), note, fill="#55554f", font=small)
             out.append(np.asarray(canvas))
