@@ -1,11 +1,10 @@
-# Our scripts only; IRASim's own pinned packages are installed apart by scripts/setup_irasim.sh, Cosmos's by
-# scripts/setup_cosmos.sh.
-cotracker @ git+https://github.com/facebookresearch/co-tracker.git@82e02e8029753ad4ef13cf06be7f4fc5facdda4d   # scripts/eval_motion.py --tracker cotracker
-diffusers
+# Our code only; IRASim's own pinned packages are installed apart by scripts/setup/irasim.sh, Cosmos-Predict2.5's by
+# scripts/setup/cosmos.sh, Cosmos3-Nano's server by scripts/setup/cosmos3.sh.
+cotracker @ git+https://github.com/facebookresearch/co-tracker.git@82e02e8029753ad4ef13cf06be7f4fc5facdda4d   # src/metrics/track2d.py --tracker cotracker
 huggingface_hub
 imageio[ffmpeg]
 lpips
-modern_robotics   # scripts/executability.py
+modern_robotics   # src/metrics/executability.py
 omegaconf
 opencv-python
 scikit-image

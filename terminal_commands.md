@@ -226,18 +226,18 @@ Large files (checkpoints of 0.7 to 11 GB, the Bridge test set) live in `/tmp` of
 mkdir -p /kaggle/working/code /kaggle/working/data/video_eval/logs
 git clone -q https://github.com/hoangducanh1865/PI.git /kaggle/working/code/fpt_entrance_test
 cd /kaggle/working/code/fpt_entrance_test/video_eval
-python -u scripts/fetch_irasim.py get bridge_checkpoints_data --out /tmp/irasim --match '(frame_ada|video_ada|lvdm|vdm)/.*[.]pt$'   # ~6 min
-python -u scripts/fetch_irasim.py get bridge_train_data --out /tmp/irasim --match '/test/' > /dev/null                            # ~6 min
-bash scripts/setup_irasim.sh /tmp/IRASim /tmp/irasim
-python scripts/select_episodes.py --data /tmp/irasim --out /kaggle/working/data/video_eval/gen
-PYTHONPATH=/tmp/IRASim/pkgs python scripts/make_references.py --data /tmp/irasim --out /kaggle/working/data/video_eval/gen
+python -u scripts/data/fetch_irasim.py get bridge_checkpoints_data --out /tmp/irasim --match '(frame_ada|video_ada|lvdm|vdm)/.*[.]pt$'   # ~6 min
+python -u scripts/data/fetch_irasim.py get bridge_train_data --out /tmp/irasim --match '/test/' > /dev/null                            # ~6 min
+bash scripts/setup/irasim.sh /tmp/IRASim /tmp/irasim
+python scripts/data/select_episodes.py --data /tmp/irasim --out /kaggle/working/data/video_eval/gen
+PYTHONPATH=/tmp/IRASim/pkgs python scripts/data/make_references.py --data /tmp/irasim --out /kaggle/working/data/video_eval/gen
 ```
 
 Expected: `24 clips -> .../gen/{real,still,states}`. Then one run per model and seed (one GPU each; run long queues
 with `setsid nohup ... &` so they survive the shell):
 
 ```bash
-python -u scripts/run_irasim.py --irasim /tmp/IRASim --model frame_ada --seed 3407 --gpu 0 --out /kaggle/working/data/video_eval/gen
+python -u src/generate/irasim.py --irasim /tmp/IRASim --model frame_ada --seed 3407 --gpu 0 --out /kaggle/working/data/video_eval/gen
 ```
 
 Expected: `frame_ada seed 3407: exit 0, 24 videos in ... s` (about 37 min on a T4; VDM about 2.5 h, one clip at a time).
@@ -245,7 +245,7 @@ Expected: `frame_ada seed 3407: exit 0, 24 videos in ... s` (about 37 min on a T
 ### Kaggle batch kernel (a second machine), from the repo root
 
 ```bash
-python scripts/kaggle_run.py "bash scripts/kaggle_batch.sh /kaggle/working/data/video_eval/gen video_ada:3408:0 frame_ada:3411:0 lvdm:3408:1 frame_ada:3412:1" --task video_eval --kernel video-eval-batch
+python scripts/kaggle_run.py "bash scripts/jobs/kaggle_irasim.sh /kaggle/working/data/video_eval/gen video_ada:3408:0 frame_ada:3411:0 lvdm:3408:1 frame_ada:3412:1" --task video_eval --kernel video-eval-batch
 ```
 
 Each `<MODEL>:<SEED>:<GPU>` is one run; runs on the same GPU go one after the other. Results come back with
@@ -255,7 +255,7 @@ Each `<MODEL>:<SEED>:<GPU>` is one run; runs on the same GPU go one after the ot
 
 ```bash
 pip install -r requirements.txt
-python scripts/eval_metrics.py --gen <BASE>/data/video_eval/gen --models frame_ada/seed3407 still [--wandb video_eval]
+python src/metrics/pixel.py --gen <BASE>/data/video_eval/gen --models frame_ada/seed3407 still [--wandb video_eval]
 ```
 
 Expected: one line per model (`clips 24  psnr ...  ssim ...  lpips ...`); rows go to `gen/metrics_pixel.csv`, and

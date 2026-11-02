@@ -28,9 +28,9 @@ Since \ours{} needs no real video, it can also select the best of several sample
 
 % ---- review comments, kept for the record (text above rewritten for concision on 2026-11-02) ----
 % (Turn 4) "the domain bridge_orig_lerobot": I think we do not to specify this, in professional paper they do not write like this
-% Claude: agreed; the setting name stays in the code (scripts/cosmos3_idm.py).
+% Claude: agreed; the setting name stays in the code (src/metrics/evid.py).
 % (Turn 4) "We invert \cref{eq:quantile}, complete the rotation matrix with the cross product of its two columns, project it onto the nearest rotation, and chain the relative poses from the true first pose $T_0$, expressed in the flange frame of the encoder, which gives the trajectory $\hat p_{1:15}$ read from the video; nothing is fitted.": This is too technical detailed, and the reader will find it hard to follow, and they will not understand where does the "trajectory $\hat p_{1:15}$" come from, how is this related to "\hat a = 2\,\frac{a-q_{01}}{q_{99}-q_{01}} - 1,". The same for the remain part of this paragraph I think.
-% Claude: agreed. The paragraph now goes in order: what T_t is, what the 10 numbers mean (one step of motion), Eq. (2) is how NVIDIA scaled them, we undo it, Eq. (3) adds the steps up from the first pose, and p_hat is the position part of the result. The rotation completion, the frame constants and the median roll angles moved to the code (scripts/cosmos3_idm.py); the paper keeps the round-trip check and the one convention that matters.
+% Claude: agreed. The paragraph now goes in order: what T_t is, what the 10 numbers mean (one step of motion), Eq. (2) is how NVIDIA scaled them, we undo it, Eq. (3) adds the steps up from the first pose, and p_hat is the position part of the result. The rotation completion, the frame constants and the median roll angles moved to the code (src/metrics/evid.py); the paper keeps the round-trip check and the one convention that matters.
 % (Turn 4) "6-DOF": or 6-DoF?
 % Claude: "6-DoF", the spelling IRASim uses for its action space ("7 degrees of freedom (DoFs)").
 % (Turn 4) Explain this whole paragraph "Executability" in details for me to understand since I have not work on this part yet, but you do it your self
