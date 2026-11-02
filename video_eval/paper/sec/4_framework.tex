@@ -3,66 +3,31 @@
 
 \begin{figure*}[t]
   \centering
-  \includegraphics[width=0.9\textwidth]{fig/pipeline.drawio.png}
-  \caption{Evaluation pipeline. Both networks are frozen; reference-based metrics need the real video, while \ours{} (dashed box) needs only the commanded actions: it measures the deviation of the trajectory read back from the video and checks whether the WidowX 250 arm could execute it.}
+  \includegraphics[width=0.82\textwidth]{fig/pipeline.drawio.png}
+  \caption{Evaluation pipeline. Both networks are frozen; reference-based metrics need the real video, while \ours{} (dashed box) needs only the commanded actions.}
   \label{fig:pipeline}
 \end{figure*}
-
-\paragraph{Models and references.}
-\Cref{tab:models} lists the inputs and outputs of the models we compare, and \cref{fig:pipeline} shows how each video is scored.
-Cosmos-Predict2.5~\cite{nvidia2025cosmos} enters in two versions of the same 2B backbone: the model post-trained on Bridge with actions, and the model without actions, given only the first frame and the instruction text, which tests whether the action input matters.
-Two references bound every score: the real video of the same actions is the ceiling, and the still video, the first frame held for 16 frames, is the floor, with perfect image quality and no motion.
-Cosmos videos are resampled to the IRASim format of 16 frames at $256\times320$; for the model without actions we keep every third of its 49 frames at 16\,fps, which spans the same 3\,s.
-
-\begin{table}[t]
-  \centering
-  \footnotesize
-  \setlength{\tabcolsep}{3pt}
-  \begin{tabular}{@{}lll@{}}
-    \toprule
-    Model & Input besides frame 0 & Output \\
-    \midrule
-    \multicolumn{3}{@{}l}{\textit{IRASim~\cite{zhu2024irasim} and its baselines, 50 sampling steps}} \\
-    Frame-Ada & 15 actions, one per frame & 16 frames, $256\times320$ \\
-    Video-Ada & 15 actions, one embedding & 16 frames, $256\times320$ \\
-    LVDM & 15 actions, one embedding & 16 frames, $256\times320$ \\
-    VDM & 15 actions, one embedding & 16 frames, $256\times320$ \\
-    \midrule
-    \multicolumn{3}{@{}l}{\textit{Cosmos-Predict2.5~\cite{nvidia2025cosmos}, 35 sampling steps}} \\
-    With actions & chunks of 12 actions & 2 chunks of 13, $256\times320$ \\
-    Without actions & instruction text & 49 at 16\,fps, $480\times640$ \\
-    \bottomrule
-  \end{tabular}
-  \caption{Models compared on Bridge; outputs in frames. Cosmos with actions uses guidance 0 and keeps frames 0 to 15 of its two chunks; without actions it uses guidance 7.}
-  \label{tab:models}
-\end{table}
-
-\paragraph{Metric groups.}
-\Cref{tab:metrics} lists what each group measures and what it cannot measure.
-Every metric is computed per clip, and two models are compared with a paired Wilcoxon signed-rank test over the same clips; we call a difference significant when $p<0.05$, that is, when a difference this consistent across clips would arise by chance less than 5\% of the time if the two models were equally good.
-The 2-D track score follows the end-effector in the image.
-CoTracker3~\cite{karaev2024cotracker3} tracks a $20\times20$ grid of points from frame 0 through the real and the generated video, and the end-effector point is the moving point whose real track is best explained by the recorded end-effector position through an affine camera; two vision-language models confirm that the point lies on the gripper.
-NDTW~\cite{ilharco2019ndtw} compares the generated and the real track of that point,
-\begin{equation}
-  \mathrm{NDTW} = \exp\!\left(-\frac{\mathrm{DTW}(\hat x_{0:15}, x_{0:15})}{16\, d_{\mathrm{th}}}\right),
-  \label{eq:ndtw}
-\end{equation}
-where DTW sums the pixel distances between the two tracks after aligning them in time, and $d_{\mathrm{th}} = 20$\,px; NDTW is 1 for identical paths and tends to 0 for unrelated ones.
 
 \begin{table*}[t]
   \centering
   \footnotesize
-  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.8cm}>{\raggedright\arraybackslash}p{5.6cm}>{\raggedright\arraybackslash}p{6.4cm}@{}}
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{5.4cm}>{\raggedright\arraybackslash}p{6.2cm}@{}}
     \toprule
     Group and metrics & Measures & Cannot measure \\
     \midrule
-    Appearance: PSNR, SSIM~\cite{wang2004ssim}, LPIPS~\cite{zhang2018lpips} against the real clip & how close each frame looks to the recorded frame & whether the robot moved as commanded, since a still video keeps a high SSIM and small shifts are punished like large errors \\
-    Temporal consistency: DINOv2~\cite{oquab2023dinov2} similarity of adjacent frames and to frame 0, optical-flow warp error & smoothness and identity stability across frames & correct motion, since the still video scores perfectly \\
-    2-D track: CoTracker3~\cite{karaev2024cotracker3} end-effector track against the real clip, NDTW~\cite{ilharco2019ndtw}, pixel error & whether the gripper moves along the same image path as in the real clip & depth and orientation; it needs the real clip and an end-effector point checked by vision-language models \\
-    Physical plausibility and outcome: two vision-language judges & violations a judge sees, such as objects that vanish or change and a robot that deforms, and whether the final state matches the real clip & a reliable verdict, since the judges differ in strictness and change answers between runs \\
-    Action fidelity: \ours{}, ours & whether the 3-D end-effector trajectory read from the video matches the commanded one, in cm, and whether the arm could execute it, without a real video & object motion and contact, collisions and torques; it is bounded by the error of the inverse dynamics model, 1.50\,cm on real clips \\
+    Appearance: PSNR, SSIM~\cite{wang2004ssim}, LPIPS~\cite{zhang2018lpips} & how close each frame looks to the recorded one & whether the robot moved as commanded: a still video keeps a high SSIM \\
+    Temporal: DINOv2~\cite{oquab2023dinov2} frame similarity, warp error & smoothness and identity across frames & correct motion: the still video scores perfectly \\
+    2-D track: CoTracker3~\cite{karaev2024cotracker3} end-effector track, NDTW~\cite{ilharco2019ndtw} & whether the gripper follows the image path of the real clip & depth and rotation; needs the real clip \\
+    Judges: two vision-language models & visible violations and whether the final state matches the real clip & a stable verdict: the judges differ in strictness \\
+    Action fidelity: \ours{}, ours & whether the 3-D trajectory read from the video matches the commanded one, and whether the arm could execute it & objects and contact; resolution bounded by the reader's error, 1.50\,cm \\
     \bottomrule
   \end{tabular}
   \caption{Metric groups. Task completion is covered by the outcome question of the judges.}
   \label{tab:metrics}
 \end{table*}
+
+Two references bound every score: the real video of the same actions is the ceiling, and the still video, the first frame held for 16 frames, is the floor, with perfect image quality and no motion.
+Cosmos-Predict2.5~\cite{nvidia2025cosmos} enters with actions, post-trained on Bridge, and without actions, given only the first frame and the instruction, which tests whether the action input matters.
+\Cref{tab:metrics} lists the metric groups; all are computed per clip, and we call a difference between two models significant when a paired Wilcoxon signed-rank test over the clips gives $p<0.05$.
+The 2-D track follows the moving CoTracker3 point best explained by the recorded end-effector position, confirmed to lie on the gripper by two vision-language models, and compares its generated and real tracks with $\mathrm{NDTW}=\exp(-\mathrm{DTW}/(16\,d_{\mathrm{th}}))$, $d_{\mathrm{th}}=20$\,px.

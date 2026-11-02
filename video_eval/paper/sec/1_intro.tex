@@ -1,25 +1,20 @@
 \section{Introduction}
 \label{sec:intro}
 
-A video world model for robot manipulation takes the first camera frame $I_0$ and a sequence of actions $a_{1:T}$ and predicts the video $\hat V$ the robot would record.
-If the prediction is right, the model can replace a physics simulator for policy evaluation, planning, and data generation~\cite{yang2023unisim,zhu2024irasim,nvidia2025cosmos}.
-Such models are compared mostly with frame-level appearance metrics against the recorded video, namely PSNR, SSIM~\cite{wang2004ssim}, and LPIPS~\cite{zhang2018lpips}, or with FVD~\cite{unterthiner2018fvd} over a set of videos.
-These metrics leave two gaps.
-First, they need the real video of the same actions, which does not exist when the model generates the outcome of a new action sequence, the very use of a simulator.
-Second, they score how the frames look, not whether the robot in the video performs the commanded motion, whether a real arm could perform it, or whether objects move only when touched.
+A video world model for robot manipulation predicts the video $\hat V$ a robot would record from its first frame $I_0$ and commanded actions $a_{1:T}$; if accurate, it can replace a physics simulator for policy evaluation, planning, and data generation~\cite{yang2023unisim,zhu2024irasim,nvidia2025cosmos}.
+Such models are compared mostly with frame-level appearance metrics against the recorded video, PSNR, SSIM~\cite{wang2004ssim}, and LPIPS~\cite{zhang2018lpips}, or with FVD~\cite{unterthiner2018fvd} over sets of videos.
+These metrics need the real video, which a simulator does not have for new actions, and they score how frames look, not whether the robot performs the commanded motion or whether a real arm could.
 
-We reproduce IRASim~\cite{zhu2024irasim} on Bridge~\cite{walke2023bridgedata} and generate our 105 Bridge clips again from deliberately corrupted actions.
-SSIM rates a still video above every corrupted generation and as high as the generation from the correct actions, and PSNR and LPIPS prefer it to the three strongest corruptions, whereas the end-effector track in the image, compared with the track in the real video, degrades steadily as the corruption grows.
-Comparing tracks, however, needs the real video, which a simulator does not have for a new action sequence.
-What it does have is the commanded actions, so a generated video can be checked against them instead of against a real video, which is the idea of our metric.
+Regenerating 105 Bridge~\cite{walke2023bridgedata} clips with IRASim~\cite{zhu2024irasim} from deliberately corrupted actions confirms the gap: SSIM rates a still video as high as the correct generation and above every corrupted one, whereas an end-effector track compared with the real video degrades steadily.
+What a simulator always has is the commanded actions, so we check the video against them.
+Inverse dynamics models have been used to read actions from generated videos and execute them, scoring task success~\cite{qin2024worldsimbench,fan2026wowwoval,zhang2026worldinworld}; such scores need a matched simulator or robot and mix the errors of the reader with those of the world model~\cite{liu2026kinebench}.
+We instead compare the trajectory read from the video directly with the commanded one and measure the reader's own error on real videos.
+
+Our main contributions are: (1) an evaluation framework that lists what each metric group measures and cannot measure, with a perturbation test of whether a metric notices wrong actions, and (2) \ours{}, a reference-free metric of action fidelity with an executability check, validated on real and corrupted videos and applied to IRASim, its baselines, and Cosmos-Predict2.5.
+
+% ---- review comments, kept for the record (text above rewritten for concision on 2026-11-02) ----
 % (Turn 2) "What a simulator always has, even without a real video, is the commanded action sequence.": What is the purpose of this claim? How does this relate to the above claims?
 % Claude: it was the bridge from the problem to our idea, but the link was implicit; now said in two sentences (tracks need the real video, a simulator only has the commanded actions). (Review 2026-11-02: this comment had been split by an automatic edit and part of it was printed in the PDF; restored.)
-
-Inverse dynamics models, which predict the action between two frames, have been used to read actions from generated videos and execute them in a simulator or on a robot, scoring the video by task success~\cite{qin2024worldsimbench,fan2026wowwoval,zhang2026worldinworld}; such scores need a matched simulator or robot and mix the errors of the reader with those of the world model~\cite{liu2026kinebench}.
-We instead compare the trajectory read from the video directly with the commanded one, and measure the reader's own error on the real videos of the same actions.
-
-Our main contributions are: (1) an evaluation framework that lists, for each metric group, what it measures and what it cannot measure, with a perturbation test that checks whether a metric notices wrong actions, and (2) \ours{}, a reference-free metric that reads the end-effector trajectory back from a generated video with an off-the-shelf inverse dynamics model, decoded with its authors' own formulas, measures its deviation from the commanded trajectory, and checks whether the WidowX 250 arm could execute it.
-Applied to IRASim, its baselines, and Cosmos-Predict2.5, \ours{} shows that the action input, not the smoothness of the frames, decides whether the robot follows the commands, and that the remaining failures concern objects rather than infeasible arm motion.
 % (Turn 2) "states for": This collocation is a little bit hard and AI-generated, use a simpler one
 % Claude: agreed; now "lists, for each metric group, what it measures and what it cannot measure".
 % (Turn 2) "decoded exactly as its authors encode Bridge actions,": What does this mean?

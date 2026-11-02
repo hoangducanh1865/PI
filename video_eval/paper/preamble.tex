@@ -67,3 +67,17 @@
 \renewcommand{\dblfloatpagefraction}{0.8}
 \setcounter{topnumber}{3}
 \setcounter{dbltopnumber}{2}
+
+% Concise report: tighter spacing, as in the lang_grasp paper.
+\setlength{\textfloatsep}{6pt plus 1pt minus 1pt}
+\setlength{\floatsep}{5pt plus 1pt minus 1pt}
+\setlength{\dbltextfloatsep}{6pt plus 1pt minus 1pt}
+\setlength{\abovecaptionskip}{3pt}
+\setlength{\belowcaptionskip}{0pt}
+\captionsetup{skip=3pt}
+\AtBeginEnvironment{thebibliography}{\setlength{\bibsep}{0pt}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}{2pt plus 0.5pt minus 0.5pt}{-0.5em}{\normalfont\normalsize\bfseries}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}{-4pt plus -1pt minus -1pt}{2pt}{\normalfont\normalsize\bfseries}}
+\def\cvprsection{\@startsection{section}{1}{\z@}{-6pt plus -1pt minus -1pt}{3pt}{\large\bf}}
+\makeatother
