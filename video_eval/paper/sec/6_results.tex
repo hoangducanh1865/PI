@@ -139,12 +139,12 @@ The arm motion in these videos is therefore almost always feasible; their failur
     \includegraphics[width=0.322\textwidth]{fig/strip_1183_0_0.jpg} \\
     (a) ``put eggplant in pot'': success &
     (b) ``put the toy in the vessel'': the toy vanishes &
-    (c) ``wipe pot with sponge'': the gripper dissolves \\
-    PSNR 23.33, EVID 1.18 vs 1.00\,cm &
-    PSNR 24.55, EVID 2.57 vs 2.52\,cm &
-    PSNR 22.27, EVID 2.95 vs 1.80\,cm \\
+    (c) ``wipe pot with sponge'': the sponge breaks up \\
+    PSNR 23.85, EVID 1.04 vs 1.00\,cm &
+    PSNR 24.01, EVID 3.28 vs 2.52\,cm &
+    PSNR 21.90, EVID 2.59 vs 1.80\,cm \\
   \end{tabular}
-  \caption{Frames 0, 8, and 15 of the real video (top rows) and of IRASim-Frame-Ada from the same actions (bottom rows); both judges agree on each verdict. The EVID errors are given for the generated and the real video. In (b) the arm follows the actions and the PSNR is the highest of the three, yet the object vanishes, which neither metric detects; in (c) the contact failure also shows in the EVID error.}
+  \caption{Frames 0, 8, and 15 of the real video (top rows) and of IRASim-Frame-Ada from the same actions (bottom rows); both judges agree on each verdict. EVID errors are given for the generated and the real video. Both object failures raise the EVID error by less than 1\,cm over the real video, and PSNR rates (b) highest of the three: the judges see these failures, neither metric does.}
   \label{fig:strips}
 \end{figure*}
 
@@ -155,8 +155,8 @@ On the clip ``move the toy and put it in the vessel'' it even replaces the Widow
 
 \paragraph{Smoothness, objects, and outcomes.}
 On the 105 clips, DINOv2 adjacent-frame similarity is 0.952 for real clips and 0.925 to 0.935 for the action-conditioned models, while the still video scores 1.000, so these metrics measure stability rather than correct motion.
-On the 24 core clips, two vision-language judges, gemini-3.8-flash and gpt-6.1-sol, rate physical plausibility and whether the final state matches the real clip; they agree on the ranking but not on strictness, flagging 21\% and 4\% of real clips.
-The most frequent violation for every latent model is an object that changes or vanishes, in 46\% and 17\% of Frame-Ada clips, and the still video is judged plausible every time, caught only by the outcome question with 0.00 and 0.04.
+Two vision-language judges, gemini-3.8-flash and gpt-6.1-sol, rate physical plausibility and whether the final state matches the real clip; they differ in strictness, flagging 32\% and 1\% of real clips as implausible, and agree on plausibility for only 42 to 69\% of the clips of each set.
+Objects that change or vanish are the most frequent violation of every IRASim model, in 47\% and 10\% of Frame-Ada clips, while the still video is judged plausible in 95\% and 100\% of clips and is caught only by the outcome question, which it passes in 0\% and 6\% of clips.
 
 \paragraph{Best-of-$N$ selection.}
 For each of the 24 core clips we generate six Frame-Ada videos and keep the one with the lowest EVID error.
