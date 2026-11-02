@@ -159,6 +159,6 @@ Two vision-language judges, gemini-3.8-flash and gpt-6.1-sol, rate physical plau
 Objects that change or vanish are the most frequent violation of every IRASim model, in 47\% and 10\% of Frame-Ada clips, while the still video is judged plausible in 95\% and 100\% of clips and is caught only by the outcome question, which it passes in 0\% and 6\% of clips.
 
 \paragraph{Best-of-$N$ selection.}
-For each of the 24 core clips we generate six Frame-Ada videos and keep the one with the lowest EVID error.
-On the independent reference-based scores the selection brings no significant gain: PSNR is 24.02 against 23.93\,dB for the average seed and NDTW 0.717 against 0.709, while an oracle choosing by PSNR itself, which needs the real video, would reach 24.86\,dB.
-Seeds of Frame-Ada differ little, so there is little to select from; the selection may matter for models whose samples differ more.
+For each of the 105 clips we generate six Frame-Ada videos and keep the one with the lowest EVID error.
+On the independent reference-based scores the selection brings a small but significant gain: PSNR rises from 23.92\,dB for the average seed to 24.07 and SSIM from 0.809 to 0.811, a sixth of the gain of an oracle that selects by PSNR itself and therefore needs the real video, 24.89\,dB.
+Seeds of Frame-Ada differ little, so there is little to select from; the selection should matter more for models whose samples differ more.
