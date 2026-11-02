@@ -93,13 +93,14 @@ The appearance metrics do not: SSIM rates the static video significantly above e
 \end{figure}
 
 \paragraph{Validating \ours{}.}
-On the 105 real clips, the relative motion read by the inverse dynamics model correlates with the recorded one, with $r$ of 0.92, 0.93, and 0.88 for $x$, $y$, and $z$ and 0.81 to 0.92 for the rotation entries, and the EVID error is 1.50\,cm, with a 95\% bootstrap interval of 1.36 to 1.68, for clips that move 25\,cm on average.
-On the still video it is 9.06\,cm, as bad as assuming no motion at 9.32\,cm, so the model reads the motion from the frames rather than from a prior.
-The gripper command is read with a balanced accuracy of 0.87, against 0.50 for always predicting an open gripper.
-Frame-Ada scores 1.82\,cm, significantly worse than the real videos, yet better on 27 to 29\% of clips, because the error of the inverse dynamics model on a clip is shared by the real and the generated video, with a Spearman correlation of 0.81 between the two.
-Its per-clip score correlates with LPIPS at $\rho=0.52$, but the part exceeding the score of the real video barely does, at $\rho=0.21$ for LPIPS and 0.09 for NDTW, so \ours{} measures something the pixel and image-track scores do not.
-It ranks the models in the same order as the reference-based scores (\cref{tab:bridge}), and each step of the ranking is significant.
+We check in four ways that \ours{} measures what it should.
+On real videos its error stays at the floor set by the inverse dynamics model, 1.50\,cm for clips that move 25\,cm on average, while a still video scores six times worse, as poorly as assuming no motion at all, so the model reads the motion from the frames rather than from a prior.
+It grows steadily as the actions are corrupted (\cref{tab:perturb}).
+It ranks the models in the same order as the reference-based scores, each step of the ranking being significant (\cref{tab:bridge}).
+Across generated clips it correlates with LPIPS, but its excess over the error on the real video of the same clip barely does, so it measures something the appearance scores do not.
 \Cref{fig:paths} shows one clip: the paths read from the real video and from both action-conditioned models stay within about 2\,cm of the commanded one, while the model without actions moves the arm elsewhere.
+% (Turn 6) This paragraph has too many numbers, which is too hard to follow for readers
+% Claude: agreed; the paragraph is now organised as four checks with one key number each. Moved out (kept in reading_guide.md for the defence): per-axis correlations 0.88 to 0.93, gripper balanced accuracy 0.87, the bootstrap interval, the 27 to 29% of clips where a generated video scores better than its real video, and the correlation values.
 
 \begin{figure}[t]
   \centering
@@ -114,10 +115,12 @@ Over the 502 generated clips scored by every metric (\cref{fig:agreement}), the 
 All correlations are positive partly because a hard clip is hard for every metric; the perturbation test (\cref{tab:perturb}) shows where the two groups disagree.
 
 \paragraph{Executability.}
-The check passes 104 of the 105 recorded Bridge trajectories; the one rejected brings the forearm roll joint to its limit of $\pm\pi$, so about 1\% of clips are false alarms.
-On the motion read from the videos, 99.0\% of clips are executable for the real videos and for every action-conditioned model, the one failure being the same clip in all of them, where the inverse dynamics model reads poses out of the arm's reach even from the real video; Cosmos-Predict2.5 without actions passes 23 of 24 clips, and the static video passes all of them.
-In the perturbation test only mirrored motion fails often, on 7\% of clips (\cref{tab:perturb}).
-The arm motion shown by these models is therefore almost always executable, and the check separates only grossly wrong motion: executability is a necessary condition, while the EVID error is what separates the models.
+The executability check of \ours{} asks only whether the WidowX 250 could perform the arm motion read from a video, not whether that motion is the commanded one, so a still video passes trivially.
+It accepts 104 of the 105 trajectories recorded on the real arm.
+On generated videos it accepts 99\% of clips for every action-conditioned model, the one failure being a clip that the inverse dynamics model misreads on the real video as well, and it rejects 7\% of the videos generated from mirrored actions (\cref{tab:perturb}).
+The arm motion in these videos is therefore almost always feasible; their failures lie in following the actions, which the EVID error measures, and in objects, which none of our metrics measures reliably.
+% (Turn 6) How do you check if a clip is executable? If executable is just simply that the WindowX 250 6-DoF  robot can perform the action trajactories, so does this experiment make any sense? Should we remove it or use another checking mechanism?
+% Claude: How: inverse kinematics of the WidowX 250 for each of the 16 poses read from the video, then joint limits and joint speeds between frames (Sec. 5). Does it make sense: yes, as a necessary condition, and I recommend keeping it in this shortened form. (1) It is the only measurement in the report of the brief's third question, whether generated motion is executable; removing it would leave that question unanswered. (2) Its answer is informative even though it barely separates the models: the arm motion of current models is feasible, so their failures are in action following and objects, not in impossible arm motion. (3) It does react to grossly wrong motion (mirrored actions). Its limit is now stated in the first sentence. A stronger mechanism is replay in a physics simulator of the same robot (SIMPLER), which adds dynamics, contacts and collisions; it needs a new environment and cannot be done reliably before 18:00, so it stays as the next step in the conclusion and slides.
 
 \begin{figure*}[t]
   \centering
