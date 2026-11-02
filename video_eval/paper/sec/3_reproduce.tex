@@ -4,10 +4,10 @@
 \paragraph{Pipeline.}
 IRASim~\cite{zhu2024irasim} predicts 16 frames from the first frame and 15 actions.
 Each action is the end-effector motion between two frames, expressed in the end-effector frame of the earlier one: the position change $R_{t-1}^\top(p_t-p_{t-1})$, the Euler angles of the rotation change $R_{t-1}^\top R_t$, and the gripper state, with the arm part scaled by 20.
-The SDXL VAE encodes each $256\times320$ frame into a $4\times32\times40$ latent, and a diffusion transformer with patch size 2, IRASim-XL/2~\cite{peebles2023dit}, denoises the latents of frames 1 to 15 while the clean latent of frame 0 serves as the condition.
+The SDXL~\cite{podell2023sdxl} VAE encodes each $256\times320$ frame into a $4\times32\times40$ latent, and a diffusion transformer with patch size 2, IRASim-XL/2~\cite{peebles2023dit}, denoises the latents of frames 1 to 15 while the clean latent of frame 0 serves as the condition.
 Actions enter through adaptive layer norm with zero-initialised gates: Frame-Ada modulates the tokens of each frame by that frame's action, while Video-Ada modulates every frame by one embedding of the whole sequence.
-Training minimises the mean squared error between the added and the predicted noise on frames 1 to 15, with a linear schedule of 1,000 steps, 300k iterations, and learning rate $10^{-4}$, and sampling uses PNDM with 50 steps.
-The baselines of~\cite{zhu2024irasim} are LVDM, a latent video diffusion model with a UNet, and VDM, a diffusion model in pixel space, both conditioned on the whole action sequence.
+Training minimises the mean squared error between the added and the predicted noise~\cite{ho2020ddpm} on frames 1 to 15, with a linear schedule of 1,000 steps, 300k iterations, and learning rate $10^{-4}$, and sampling uses PNDM~\cite{liu2022pndm} with 50 steps.
+The baselines of~\cite{zhu2024irasim} are LVDM~\cite{he2022lvdm}, a latent video diffusion model with a UNet, and VDM~\cite{ho2022vdm}, a diffusion model in pixel space, both conditioned on the whole action sequence.
 
 \paragraph{Setup.}
 We use the code, checkpoints, and evaluation settings of~\cite{zhu2024irasim}.

@@ -3,7 +3,8 @@
 
 On real robot data, frame-level appearance metrics cannot tell whether the robot in a generated video followed its actions: SSIM rates a static video as high as the generation from the correct actions, while trajectory-based scores degrade as the actions get worse.
 \ours{} provides this check without any real video, by reading the actions back with an off-the-shelf inverse dynamics model decoded exactly as its authors encode them: IRASim-Frame-Ada follows Bridge actions to within about 0.3\,cm of what the same model reads from real videos, Cosmos-Predict2.5 with actions comes closer still, and the same backbone without actions moves the robot no better than a static frame.
-Almost every arm motion read from the generated videos is executable by the WidowX 250, so these models fail on objects, which change or vanish, rather than on the arm.
+Almost every arm motion read from the generated videos is executable by the WidowX 250: the models differ in how closely they follow the actions, and their most frequent visible errors are objects that change or vanish.
 Selecting the best of six IRASim samples by \ours{} did not improve independent scores, since the samples differ little.
-The study is limited to a few hundred clips, one embodiment for \ours{}, judges that are not stable between runs, and an inverse dynamics model whose own error of 1.50\,cm bounds what \ours{} can resolve and whose training data may include Bridge test episodes.
+The study is limited to 105 Bridge clips chosen as the first episodes of each verb, which are harder than the average test clip, one embodiment for \ours{}, judges that are not stable between runs, and an inverse dynamics model whose own error of 1.50\,cm bounds what \ours{} can resolve and whose training data may include Bridge test episodes.
 Replaying the motion read from a video in a physics simulator of the same robot, such as SIMPLER~\cite{li2024simpler}, would extend the executability check to dynamics, contacts, and collisions.
+\par

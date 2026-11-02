@@ -8,7 +8,7 @@ The gripper of Frame-Ada follows the real image path, with NDTW 0.709 and a mean
 \textit{S2, per-frame conditioning helps.}
 With the same backbone and data, modulating each frame by its own action in Frame-Ada beats one embedding of the whole sequence in Video-Ada on PSNR and 2-D tracking over 105 paired clips.
 \textit{S3, stable and reproducible.}
-Temporal consistency is close to the real videos, two seeds give statistically equal scores, and a rerun with the same batches reproduces the videos exactly.
+Temporal consistency is close to the real videos, its two seeds do not differ significantly, and a rerun with the same batches reproduces the videos exactly.
 
 \paragraph{Limitations.}
 \textit{L1, objects do not keep their identity.}
@@ -16,6 +16,6 @@ The most frequent violation found by the judges is an object that changes shape 
 \textit{L2, correct motion does not imply the correct outcome.}
 Only 50\% and 75\% of Frame-Ada clips end in the same state as the real clip according to the two judges.
 \textit{L3, errors grow with contact and time.}
-The gap between the cycle error of Frame-Ada and that of the real video is largest for wipe (\cref{fig:strips}c), turn, slide, and topple, at 0.5 to 0.7\,cm, and close to zero for open, flip, and fold; within a clip the error grows towards the last frames.
+The gap between the EVID error of Frame-Ada and that of the real video is largest for wipe (\cref{fig:strips}c), turn, slide, and topple, at 0.5 to 0.7\,cm, and close to zero for open, flip, and fold.
 \textit{L4, short clips of one embodiment.}
 Each checkpoint covers one dataset at $256\times320$ and 16 frames, about 3\,s; longer horizons need autoregressive chaining, which we do not test.

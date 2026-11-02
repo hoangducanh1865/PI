@@ -6,7 +6,7 @@
   \footnotesize
   \setlength{\tabcolsep}{2.5pt}
   \renewcommand{\arraystretch}{1.1}
-  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.95cm}>{\raggedright\arraybackslash}p{2.4cm}>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{3.3cm}>{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}p{3.3cm}@{}}
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.45cm}>{\raggedright\arraybackslash}p{2.15cm}>{\raggedright\arraybackslash}p{2.4cm}>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{3.25cm}@{}}
     \toprule
     Source & Inputs & Outputs & Evaluation & Assumptions & Limitations \\
     \midrule
@@ -19,13 +19,16 @@
     UniPi~\cite{du2023unipi} & first frame, text goal & video plan, then actions from an inverse dynamics model & task success in simulated manipulation; on Bridge, CLIP score, FID, FVD, and a success classifier on the last generated frame & a generated plan is executable and its actions can be recovered & slow diffusion sampling, as stated by the authors; plan errors reach the robot unchecked \\
     DreamGen~\cite{jang2025dreamgen} & first frame, language, target robot & video, then pseudo-actions from a latent action or inverse dynamics model & DreamGen Bench with instruction following and physics alignment by VLM and human judges; downstream policy success & pseudo-actions from generated videos are useful training data & the benchmark scores the video, not the recovered actions \\
     \midrule
-    \multicolumn{6}{@{}l}{\textit{Evaluation of physical plausibility and of policies}} \\
+    \multicolumn{6}{@{}l}{\textit{Evaluation of generated videos and of policies}} \\
+    EWMBench~\cite{yue2025ewmbench} & first frame, language instruction & robot manipulation video & scene consistency, end-effector trajectory against the ground truth, semantic alignment & the recorded video and its trajectory are the reference & needs the real video; a static video can score high on scene consistency, as the authors note \\
+    WorldSimBench~\cite{qin2024worldsimbench} & first frame, instruction & video, then actions from a video-to-action model & human-preference evaluator; task success of the actions executed in simulators (Minecraft, CARLA, CALVIN) & a generated video is good if the actions it implies succeed & needs a simulator of the task; errors of the video-to-action model mix with those of the video \\
+    KineBench~\cite{liu2026kinebench} & generated video & 6-D end-effector poses from vision foundation models, replayed in ManiSkill3 & closed-loop task success and kinematic metrics on 20 tasks & explicit pose estimation avoids the errors of a learned inverse dynamics model & simulated tasks only; orientation estimates limit precision, as the authors note \\
     VideoPhy~\cite{bansal2024videophy} & text prompt & text-to-video generation & human judgement of semantic adherence and physical commonsense; automatic judge VideoCon-Physics & physical commonsense can be judged from the video alone & no actions or robots; best model correct on 39.6\% of prompts \\
     Physics-IQ~\cite{motamed2025physicsiq} & frames of a real physical experiment & predicted continuation & spatial and spatiotemporal IoU, weighted spatial IoU, and MSE of motion against the recorded continuation & the real continuation is the reference & needs the real video; no robot actions \\
     SIMPLER~\cite{li2024simpler} & robot policy & rollouts in simulated scenes matched to real setups & correlation of simulated and real success rates & reducing control and visual gaps suffices without full digital twins & evaluates policies rather than videos; few real setups \\
     \bottomrule
   \end{tabular}
-  \captionof{table}{Literature matrix. Evaluation methods are taken from each paper.}
+  \captionof{table}{Literature matrix of the main sources. Evaluation methods are taken from each paper.}
   \label{tab:matrix}
   \vspace{8pt}
 }]
