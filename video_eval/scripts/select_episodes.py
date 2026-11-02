@@ -1,11 +1,14 @@
 """
 Choose the test episodes to generate. Bridge: the first <PER_VERB> episodes (by id) whose instruction starts with each
 verb, so the set covers different manipulations (pick-and-place, open, close, flip, fold, wipe, ...). Language-Table:
-its annotations carry no instruction, so the first <COUNT> episodes by id.
+its annotations carry no instruction, so the first <COUNT> episodes by id. --random N instead draws N test episodes at
+random (to compare with scores on the whole test set); --from-csv reuses the episodes of an earlier episodes.csv.
 
 Usage (from video_eval/):
     python scripts/select_episodes.py --data <DATA_DIR> --out <OUT_DIR> [--per-verb 2] [--verbs put move ...]
     python scripts/select_episodes.py --data <DATA_DIR> --out <OUT_DIR> --dataset languagetable [--count 48]
+    python scripts/select_episodes.py --data <DATA_DIR> --out <OUT_DIR> --random 40 [--random-seed 0]
+    python scripts/select_episodes.py --data <DATA_DIR> --out <OUT_DIR> --from-csv <EARLIER_OUT_DIR>/episodes.csv
 
 <DATA_DIR> holds opensource_robotdata/ (scripts/fetch_irasim.py). The chosen annotation files are linked into
 opensource_robotdata/<dataset>/annotation_subset/test/, where IRASim reads them (annotation_name: annotation_subset),
@@ -19,6 +22,7 @@ import csv
 import glob
 import json
 import os
+import random
 import shutil
 
 VERBS = ("put", "move", "take", "open", "close", "flip", "fold", "wipe", "turn", "pour", "slide", "topple")
@@ -33,6 +37,9 @@ def main() -> None:
     parser.add_argument("--per-verb", type=int, default=2, help="Bridge: episodes per verb")
     parser.add_argument("--verbs", nargs="+", default=VERBS, help="Bridge: instruction verbs")
     parser.add_argument("--count", type=int, default=48, help="Language-Table: number of episodes")
+    parser.add_argument("--random", type=int, help="draw this many test episodes at random instead")
+    parser.add_argument("--random-seed", type=int, default=0)
+    parser.add_argument("--from-csv", help="reuse the episodes listed in this episodes.csv instead")
     args = parser.parse_args()
 
     root = os.path.join(args.data, "opensource_robotdata", args.dataset)
@@ -45,7 +52,15 @@ def main() -> None:
         episodes.append((label["episode_id"], frames, text, path))
     episodes = sorted((e for e in episodes if e[1] >= MIN_FRAMES), key=lambda e: int(e[0]))  # ids may be zero-padded
 
-    if args.dataset == "bridge":
+    if args.from_csv:
+        with open(args.from_csv) as f:
+            wanted = [row["episode"] for row in csv.DictReader(f)]
+        by_id = {str(int(e[0])): e for e in episodes}
+        chosen = [(*by_id[str(int(w))], "") for w in wanted]
+    elif args.random:
+        chosen = [(*e, "") for e in sorted(random.Random(args.random_seed).sample(episodes, args.random),
+                                           key=lambda e: int(e[0]))]  # fmt: skip
+    elif args.dataset == "bridge":
         chosen = []
         for verb in args.verbs:
             matches = [e for e in episodes if e[2].lower().split()[:1] == [verb]]

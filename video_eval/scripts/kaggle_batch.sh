@@ -11,6 +11,7 @@
 # actions into <OUT_DIR>/<MODEL>_<PERTURBATION>/. The clip set is scripts/select_episodes.py with PER_VERB episodes per
 # verb (default 2) among VERBS (default: put move take open close flip fold wipe), e.g. PER_VERB=6 VERBS="..." bash ...
 # DATASET=languagetable (default bridge) switches the dataset; its clip set is the first COUNT episodes (default 48).
+# SELECT_ARGS adds options to select_episodes.py (e.g. "--random 40"); SKIP_MOTION=1 skips the 2-D track scores.
 # Large files go to /tmp (/kaggle/working keeps only 20 GB).
 #
 # Author: Duc Anh Hoang
@@ -27,7 +28,7 @@ python -u scripts/fetch_irasim.py get "${DATASET}_checkpoints_data" --out $DATA 
 python -u scripts/fetch_irasim.py get "${DATASET}_train_data" --out $DATA --match '/test/' > /dev/null
 bash scripts/setup_irasim.sh $IRASIM $DATA
 python scripts/select_episodes.py --data $DATA --out "$OUT" --dataset "$DATASET" --per-verb "${PER_VERB:-2}" \
-    --verbs ${VERBS:-put move take open close flip fold wipe} --count "${COUNT:-48}"
+    --verbs ${VERBS:-put move take open close flip fold wipe} --count "${COUNT:-48}" ${SELECT_ARGS:-}
 PYTHONPATH=$IRASIM/pkgs python scripts/make_references.py --data $DATA --out "$OUT" --dataset "$DATASET"
 python scripts/make_perturbed_annotations.py --data $DATA --dataset "$DATASET"
 
@@ -50,4 +51,4 @@ find "$OUT" -name '*.mp4' | sed "s|$OUT/||" | cut -d/ -f1-2 | sort | uniq -c
 pip install -q -r requirements.txt
 generated=$(cd "$OUT" && ls -d */seed* | paste -sd' ')
 python scripts/eval_metrics.py --gen "$OUT" --models $generated still
-python scripts/eval_motion.py --gen "$OUT" --tracker cotracker --models real still $generated
+[ -n "${SKIP_MOTION:-}" ] || python scripts/eval_motion.py --gen "$OUT" --tracker cotracker --models real still $generated
