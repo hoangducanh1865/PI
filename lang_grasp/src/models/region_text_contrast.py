@@ -3,9 +3,9 @@ Proposed method: region-text contrastive grounding loss, used only during traini
 
 Motivation (our failure analysis of the reproduced GR-ConvNet + CLIP baseline): its most common failure grasps an object
 other than the prompted one. The baseline's grasp loss only says where to grasp; nothing explicitly tells the image
-encoder, trained from scratch, which object a prompt names. This loss does: the encoder features of the prompted
-object, pooled over its mask, must match the prompt's CLIP embedding better than the features of the other objects of the same scene
-(hard negatives) and of the rest of the scene. Masks are needed only here, so inference costs nothing extra.
+encoder, trained from scratch, which object a prompt names. This loss does: the encoder features of the prompted object,
+pooled over its mask, must match the prompt's CLIP embedding better than the features of the other objects of the same
+scene (hard negatives) and of the rest of the scene. Masks are needed only here, so inference costs nothing extra.
 
     r_k = sum_p w_k(p) f(p) / sum_p w_k(p)             region k: encoder features f (56 x 56) pooled with weights w_k
     s_k = cos(P_r r_k, P_t t) / tau                    P_r, P_t: linear projections; t: the prompt's CLIP embedding
