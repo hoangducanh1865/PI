@@ -26,15 +26,19 @@ class RegionTextContrast(nn.Module):
         self.text_proj = nn.Linear(text_dim, dim)
         self.temperature = temperature
 
-    def forward(self, feats, regions, valid, text):
+    def scores(self, feats, regions, valid, text):
         """feats (B, C, H, W); regions (B, R, H, W) pooling weights, slot 0 = the prompted object; valid (B, R) bool;
-        text (B, text_dim). Returns the loss and the share of samples whose prompted object scores highest."""
+        text (B, text_dim). Returns s_k (B, R), -inf for invalid regions."""
         weights = regions / regions.sum((2, 3), keepdim=True).clamp(min=1e-6)
         pooled = torch.einsum("bchw,brhw->brc", feats.float(), weights)
         z_region = F.normalize(self.region_proj(pooled), dim=-1)
         z_text = F.normalize(self.text_proj(text.float()), dim=-1)
         logits = torch.einsum("brd,bd->br", z_region, z_text) / self.temperature
-        logits = logits.masked_fill(~valid, float("-inf"))
+        return logits.masked_fill(~valid, float("-inf"))
+
+    def forward(self, feats, regions, valid, text):
+        """Same inputs as scores. Returns the loss and the share of samples whose prompted object scores highest."""
+        logits = self.scores(feats, regions, valid, text)
         used = valid[:, 0] & valid[:, 1:].any(1)  # a target and at least one negative
         if not used.any():
             return logits.new_zeros(()), logits.new_zeros(())
