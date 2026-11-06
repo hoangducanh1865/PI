@@ -9,7 +9,7 @@
 \end{figure}
 
 \paragraph{Baselines.}
-GR-ConvNet~\cite{kumra2020antipodal} encodes a $224 \times 224$ image into features $F \in \mathbb{R}^{128 \times 56 \times 56}$ and decodes four maps: a pixel-wise grasp quality map $Q \in [0, 1]^{224 \times 224}$ scoring grasp success probability at each pixel, angle maps $\cos 2\theta$ and $\sin 2\theta$, and gripper width $w$, reading the grasp at the peak of $Q$.
+GR-ConvNet~\cite{kumra2020antipodal} encodes a $224 \times 224$ image into features $F \in \mathbb{R}^{128 \times 56 \times 56}$ and decodes four maps: a pixel-wise grasp quality map $Q \in \mathbb{R}^{224 \times 224}$ trained toward 1 on graspable pixels, angle maps $\cos 2\theta$ and $\sin 2\theta$, and gripper width $w$, reading the grasp at the peak of $Q$.
 % What is "quality Q"?
 In the GR-ConvNet + CLIP baseline~\cite{vuong2024language}, a frozen CLIP text encoder~\cite{radford2021clip} and an ALBEF cross-attention layer~\cite{li2021albef}, where each position of $F$ attends to text tokens, fuse the prompt into $F$.
 LGD~\cite{vuong2024language} denoises grasps via a diffusion model conditioned on ALBEF features, and LLGD~\cite{nguyen2024lightweight} distills it into a few-step consistency model.
