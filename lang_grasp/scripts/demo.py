@@ -11,7 +11,8 @@ Usage (commands with real paths: terminal_commands.md):
     python scripts/demo.py --ckpt <CKPT> --sample <SPLIT>:<INDEX> --regions          # regions of the contrastive loss
 
 --data, --out and --boxes default to $DEMO_DATA, $DEMO_OUT and $DEMO_BOXES. Each row shows the grasp (yellow), the
-correct grasps (red) and the four output maps. --regions shows the regions of the loss; with an RTC-Grasp checkpoint
+correct grasps (red) and the four output maps. With a new --prompt the run is not scored: the correct grasps of the
+sample belong to its own prompt. --regions shows the regions of the loss; with an RTC-Grasp checkpoint
 also the probability that the prompt means each region. A new --prompt is encoded with CLIP (downloaded once).
 
 Author: Duc Anh Hoang
@@ -41,7 +42,9 @@ SCALE = SIZE / 224
 def encode(prompt, tag, device):
     """CLIP features of a new prompt, as scripts/cache_text_emb.py stores them."""
     from transformers import AutoTokenizer, CLIPTextModelWithProjection
+    from transformers.utils import logging
 
+    logging.set_verbosity_error()  # CLIP's vision weights are not used here
     name = f"openai/{tag}"
     tokens = AutoTokenizer.from_pretrained(name)([prompt], padding=True, truncation=True, return_tensors="pt")
     out = CLIPTextModelWithProjection.from_pretrained(name)(**tokens)
@@ -87,8 +90,8 @@ def load_sample(args, tag, device):
         mask=item["text_mask"][None].to(device),
         emb=item["text_emb"][None].to(device),
     )
-    if args.prompt:
-        sample.update(prompt=args.prompt, **encode(args.prompt, tag, device))
+    if args.prompt:  # the correct grasps belong to the sample's own prompt, so this run cannot be scored
+        sample.update(prompt=args.prompt, gts=None, **encode(args.prompt, tag, device))
     sample["region"] = None
     if args.gate == "oracle":
         sample["region"] = mask
