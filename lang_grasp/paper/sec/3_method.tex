@@ -39,7 +39,7 @@ We pool the visual features $F$ over each region, project the regions and the po
   \label{eq:loss}
 \end{equation}
 where $\mathcal{L}_{\mathrm{grasp}}$ sums the smooth L1 losses over $Q$, $\cos 2\theta$, $\sin 2\theta$, and $w$.
-Because prompts for different parts of an object share identical ground-truth grasps in 70\% of Seen and 83\% of Unseen multi-part objects, we merge all part masks of each object into one object mask $m_k$ instead of contrasting parts of the same object.
+Because prompts for different parts of an object share identical ground-truth grasps in 68\% of multi-part training objects, we merge all part masks of each object into one object mask $m_k$ instead of contrasting parts of the same object.
 Since $P_r$, $P_t$, and the masks $m_k$ are used only in training to compute $\mathcal{L}_{\mathrm{con}}$, inference needs no mask or segmentation model and keeps the baseline's exact network and speed.
 % "The part masks of an object are merged, since its part prompts mostly share the same grasps (70% Seen, 83% Unseen of 1,000 multi-part objects). ": What does this mean? 
 % "r , Pt and the masks are used in training only, so the inference network is unchanged.": Also explain why training only is make sense here, like we do not need mask in inference, if not the reader will not understand why we are repeated the collocation "training only" for what purpose
